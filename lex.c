@@ -71,7 +71,11 @@ int intLiteral(int code)
 {
     token(code);
 
-    nextToken->ival = atoi(nextToken->text);
+    char *temp = removeUnderscores(nextToken->text);
+
+    nextToken->ival = atoi(temp);
+
+    free(temp);
 
     return code;
 }
@@ -91,7 +95,11 @@ int hexLiteral(int code)
 {
     token(code);
 
-    sscanf(nextToken->text, "%x", &(nextToken->ival));
+    char *temp = removeUnderscores(nextToken->text);
+
+    sscanf(temp, "%x", &(nextToken->ival));
+
+    free(temp);
 
     return code;
 }
@@ -111,7 +119,11 @@ int doubleLiteral(int code)
 {
     token(code);
 
-    sscanf(nextToken->text, "%lf", &(nextToken->dval));
+    char *temp = removeUnderscores(nextToken->text);
+
+    sscanf(temp, "%lf", &(nextToken->dval));
+
+    free(temp);
 
     return code;
 }
@@ -223,6 +235,28 @@ int multiLineString(int code)
     
 
     return code;
+}
+
+char * removeUnderscores()
+{
+    char *nextCharLex = nextToken->text;
+    char *nextCharLit = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
+
+    while(*nextCharLex != '\0')
+    {
+        if(*nextCharLex == '_')
+        {
+            nextCharLex++;
+        }   
+        else
+        {
+            *nextCharLit = *nextCharLex;
+        }
+        nextCharLex++;
+        nextCharLit++;
+    }
+    *nextCharLit = '\0';
+    return nextCharLit;
 }
 
 void yyerror (char const *s) {
