@@ -1,6 +1,12 @@
 %{
     #include "lex.h"
+    #include "tree.h"
 %}
+
+
+%union {
+    struct tree *treeptr;
+}
 
 %token ASSIGNMENT
 %token ADD_ASSIGNMENT
