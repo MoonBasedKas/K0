@@ -246,7 +246,7 @@ int addSemi(){
         case BREAK:
         case CONTINUE:
         case RETURN:
-        // case MULTILINE_STRING: Test this seperately
+        case MULTILINE_STRING:
         case INCR:
         case DECR:
         case RSQUARE:
