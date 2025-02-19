@@ -38,7 +38,17 @@ int main(int argc, char *argv[])
     //checks that the file name is legal and opens the file
     openFile(argv[1]);
 
-    yyparse();
+    // yyparse();
+    while(yylex() != EOF_K){
+        // yylex();
+        printf("%s", nextToken->text);
+        // printf("cur: %s\n", nextToken->text);
+        // if(prevToken != 0x0) printf("past: %s\n", prevToken->text);
+        // printf("%d\n", rows);
+    };
+    
+    printf("\nHIT END\n");
+
 }
 
 void openFile(char *name)
