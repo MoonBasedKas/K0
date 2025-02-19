@@ -65,7 +65,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
 %%
 
-{new_line}										{ rows++; return token(NL); }
+{new_line}										{ rows++; if (addSemi()){return token(SEMICOLON);} }
 
 {white_space}									{ /* Discard white space */ }
 {line_comment}          						{ /* Discard comments */  }
