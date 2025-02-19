@@ -9,7 +9,6 @@
             #include "lex.h"
 			int rows = 1;
             struct token *nextToken;
-            struct token *prevToken = NULL;
 
 
 %}
@@ -68,7 +67,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
 %%
 
-{new_line}										{ rows++; if (addSemi()){return token(SEMICOLON);} }
+{new_line}										{ rows++; if (addSemi() == 1){return token(SEMICOLON);} }
 
 {white_space}									{ /* Discard white space */ }
 {line_comment}          						{ /* Discard comments */  }
