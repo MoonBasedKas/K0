@@ -1,16 +1,3 @@
-/*
-    I don't trust putting comments in my kotlex.l file so I'm going to put my 
-    thoughs here
-
-    I organized my tokens based on the lists given in the k0 specification
-
-    I print an error and exit at all tokens stated as illegal in the specifications and created 
-    token structures for the ones I was unsure about
-
-    I did not have time to do thorough testing of the non-trivial expressions 
-    but will do that this weekend for lab 2 - I am sure some of them need some work
-*/
-
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -22,8 +9,6 @@
 char *filename;
 char temp[100];
 
-void printList(struct tokenlist *head);
-void deallocate(struct tokenlist *head);
 void openFile(char *name);
 
 int main(int argc, char *argv[])
