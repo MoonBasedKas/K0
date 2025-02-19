@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lex.h"
+#include "k0gram.tab.h"
 
 //prints error for unsupported keywords
 void unsupportedKeyword()
@@ -35,6 +36,7 @@ void countNewLines()
 //allocates a token struct and fills all fields except literal values
 int token(int code)
 {
+    prevToken = nextToken;
     nextToken = (struct token*)malloc(sizeof(struct token));
 
     if(nextToken == NULL)
@@ -225,4 +227,34 @@ int multiLineString(int code)
 
 void yyerror (char const *s) {
     fprintf (stderr, "%s\n", s);
+}
+
+
+int addSemi(){
+    // If first Token is NL
+    // printf("---%s\n\n", nextToken->text);
+    // if (prevToken == NULL) return 0;
+
+
+    switch(nextToken->category){
+        case INTEGER_LITERAL:
+        case HEX_LITERAL:
+        case REAL_LITERAL:
+        case CHARACTER_LITERAL:
+        case IDENTIFIER:
+        case LINE_STRING:
+        case BREAK:
+        case CONTINUE:
+        case RETURN:
+        // case MULTILINE_STRING: Test this seperately
+        case INCR:
+        case DECR:
+        case RSQUARE:
+        case RPAREN:
+        case RCURL: 
+            yytext = ";";
+            return 1; // True
+        default: 
+            return 0; // False
+    }
 }

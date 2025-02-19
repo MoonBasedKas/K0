@@ -8,6 +8,7 @@
             #include "lex.h"
 			int rows = 1;
             struct token *nextToken;
+            struct token *prevToken = NULL;
 
 %}
 
