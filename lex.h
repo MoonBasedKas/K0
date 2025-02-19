@@ -8,6 +8,7 @@ void yyerror (char const *s);
 extern char *yytext;
 extern int rows;
 extern struct token *nextToken;
+extern struct token *prevToken;
 extern char *filename;
 
 void unsupportedKeyword();
