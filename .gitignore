@@ -5,3 +5,4 @@ lex.yy.c
 k0
 .vscode
 *.h.gch
+testFiles/*

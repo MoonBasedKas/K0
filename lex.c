@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lex.h"
+#include "k0gram.tab.h"
 
 //prints error for unsupported keywords
 void unsupportedKeyword()
@@ -231,10 +232,11 @@ void yyerror (char const *s) {
 
 int addSemi(){
     // If first Token is NL
-    if (prevToken == NULL) return 0;
+    // printf("---%s\n\n", nextToken->text);
+    // if (prevToken == NULL) return 0;
 
 
-    switch(prevToken->category){
+    switch(nextToken->category){
         case INTEGER_LITERAL:
         case HEX_LITERAL:
         case REAL_LITERAL:
@@ -250,7 +252,7 @@ int addSemi(){
         case RSQUARE:
         case RPAREN:
         case RCURL: 
-            yytext == ";";
+            yytext = ";";
             return 1; // True
         default: 
             return 0; // False
