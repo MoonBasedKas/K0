@@ -23,7 +23,8 @@ int floatLiteral(int code);
 int doubleLiteral(int code);
 int stringLiteral(int code);
 int multiLineString(int code);
-int addSemis();
+char * removeUnderscores();
+int addSemi();
 
 struct token {
    int category;   /* the integer code returned by yylex */
