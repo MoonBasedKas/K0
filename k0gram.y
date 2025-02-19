@@ -4,9 +4,9 @@
 %}
 
 
-%union {
+/* %union {
     struct tree *treeptr;
-}
+} */
 
 %token ASSIGNMENT
 %token ADD_ASSIGNMENT
