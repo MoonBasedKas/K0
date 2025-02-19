@@ -1,0 +1,7 @@
+*.o
+lex.yy.c
+*.tab.c
+*.tab.h
+k0
+.vscode
+*.h.gch
