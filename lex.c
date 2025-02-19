@@ -36,7 +36,6 @@ void countNewLines()
 //allocates a token struct and fills all fields except literal values
 int token(int code)
 {
-    prevToken = nextToken;
     nextToken = (struct token*)malloc(sizeof(struct token));
 
     if(nextToken == NULL)
@@ -231,11 +230,6 @@ void yyerror (char const *s) {
 
 
 int addSemi(){
-    // If first Token is NL
-    // printf("---%s\n\n", nextToken->text);
-    // if (prevToken == NULL) return 0;
-
-
     switch(nextToken->category){
         case INTEGER_LITERAL:
         case HEX_LITERAL:
