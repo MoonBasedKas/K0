@@ -78,36 +78,12 @@
 %token LINE_STRING
 %token MULTILINE_STRING
 
-%token NL
 %token EOF_K
 
 %start program
 
 %%
 
-// Basic separator rules
-semis:
-    semis semi
-    | semi
-    ;
-
-semi:
-    SEMICOLON optNewLine
-    | newLine optNewLine
-    ;
-
-optNewLine:
-    %empty
-    | newLine
-    | optNewLine newLine
-    ;
-
-newLine:
-    NL
-    | newLine NL
-    ;
-
-//program structure
 program:
     topLevelObjectList
     ;
@@ -121,72 +97,53 @@ topLevelObject:
     declaration semis 
     ;
 
+semis:
+    semis SEMICOLON
+    | SEMICOLON
+    ;
+
 declaration:
     functionDeclaration
     | propertyDeclaration
     ;
 
 propertyDeclaration:
-    VAL optNewLine optTypeParameters optNewLine optReciverType optNewLine variableDeclarations optNewLine optAssign semis
-    | VAR optNewLine optTypeParameters optNewLine optReciverType optNewLine variableDeclarations optNewLine optAssign semis
+    variable variableDeclaration semis
+    | variable variableDeclaration assignment semis
+    | variable reciverType variableDeclaration semis
+    | variable reciverType variableDeclaration assignment semis
+    | variable typeParameters variableDeclaration semis
+    | variable typeParameters variableDeclaration assignment semis
+    | variable typeParameters reciverType variableDeclaration semis
+    | variable typeParameters reciverType variableDeclaration assignment semis
 
-optTypeParameters:
-    typeParameters
-    | %empty
+variable:
+    VAL
+    | VAR
     ;
 
 typeParameters:
-    LANGLE optNewLine typeParameterList optNewLine RANGLE
+    LANGLE variableDeclarationList RANGLE
     ;
 
-typeParameterList:
-    typeParameterList optNewLine COMMA typeParameter
-    ;
-
-typeParameter:
-    IDENTIFIER COLON type
-    ;
-
-optReciverType:
-    %empty
-    | reciverType
-    ;
-
-optAssign:
-    %empty
-    | ASSIGNMENT optNewLine expression
-    ;
 
 functionDeclaration: 
-    FUN optNewLine IDENTIFIER optNewLine functionValueParameters optNewLine optType optNewLine optFunctionBody 
-    ;
-
-optType:
-    COLON optNewLine type
-    | %empty
-    ;
-
-optFunctionBody:
-    functionBody
-    | %empty
+    FUN IDENTIFIER functionValueParameters COLON type functionBody 
+    | FUN IDENTIFIER functionValueParameters COLON type 
     ;
 
 functionValueParameters:
-    LPAREN optNewLine functionValueParamList optNewLine RPAREN
+    LPAREN functionValueParamList RPAREN
     ;
 
 functionValueParamList:
-    functionValueParameter optNewLine COMMA optNewLine functionValueParamList
+    functionValueParameter COMMA functionValueParamList
     | functionValueParameter
     ;
 
 functionValueParameter:
-    parameter
-    | parameter optNewLine ASSIGNMENT optNewLine expression
-    ;
-
-parameter:
-    IDENTIFIER optNewLine COLON optNewLine type
+    variableDeclaration
+    | variableDeclaration ASSIGNMENT expression
     ;
 
 type: 
@@ -198,21 +155,22 @@ type:
 
 userType:
     simpleUserType
-    | userType optNewLine DOT optNewLine simpleUserType
+    | userType DOT simpleUserType
     ;
 
 simpleUserType:
     IDENTIFIER
-    | IDENTIFIER optNewLine typeArguments
+    | IDENTIFIER typeArguments
     ;
 
 typeArguments:
-    LANGLE optNewLine typeArgumentsList optNewLine RANGLE
-    | LANGLE optNewLine typeArgumentsList optNewLine RANGLE
+    LANGLE typeArgumentsList RANGLE
+    ;
 
 typeArgumentsList:
     typeArgument
-    | typeArgument optNewLine COMMA optNewLine typeArgumentsList
+    | typeArgument COMMA typeArgumentsList
+    ;
 
 typeArgument:
     type
@@ -225,31 +183,31 @@ reciverType:
     ;
 
 functionType:
-    reciverType optNewLine DOT optNewLine functionTypeParameters optNewLine ARROW optNewLine type
+    reciverType DOT functionTypeParameters ARROW type
     | functionTypeParameters ARROW type
     ;
 
 functionTypeParameters:
-    LPAREN optNewLine functionTypeParamList optNewLine RPAREN
+    LPAREN functionTypeParamList RPAREN
+    | LPAREN RPAREN
     ;
 
 functionTypeParamList:
-    functionTypeParameter optNewLine COMMA optNewLine functionTypeParamList
+    functionTypeParameter COMMA functionTypeParamList
     | functionTypeParameter
     ;
 
 functionTypeParameter:
-    parameter
+    variableDeclaration
     | type
-    | %empty
     ;
 
 parenthesizedType:
-    LPAREN optNewLine type optNewLine RPAREN
+    LPAREN type RPAREN
     ;
 
 nullableType:
-    parenthesizedType optNewLine quests
+    parenthesizedType quests
     ;
 
 quests:
@@ -264,15 +222,15 @@ quest:
 
 functionBody: 
     block 
-    | ASSIGNMENT optNewLine expression 
+    | ASSIGNMENT expression 
     ;
 
 block: 
-    LCURL optNewLine statements optNewLine RCURL 
+    LCURL RCURL
+    LCURL statements RCURL 
     ;
 
 statements:
-    %empty
     | statement
     | statement semis
     | statements semis statement
@@ -286,9 +244,9 @@ statement:
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT optNewLine expression
-    | IDENTIFIER ADD_ASSIGNMENT optNewLine expression
-    | IDENTIFIER SUB_ASSIGNMENT optNewLine expression
+    IDENTIFIER ASSIGNMENT expression
+    | IDENTIFIER ADD_ASSIGNMENT expression
+    | IDENTIFIER SUB_ASSIGNMENT expression
     ;
 
 loopStatement:
@@ -298,17 +256,17 @@ loopStatement:
     ;
 
 forStatement:
-    FOR optNewLine LPAREN variableDeclarations IN expression RPAREN optNewLine controlStructureBody
-    | FOR optNewLine LPAREN variableDeclarations IN expression RPAREN optNewLine 
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
+    | FOR LPAREN variableDeclarations IN expression RPAREN 
     ;
 
 whileStatement:
-    WHILE optNewLine LPAREN expression RPAREN optNewLine controlStructureBody
-    | WHILE optNewLine LPAREN expression RPAREN optNewLine SEMICOLON
+    WHILE LPAREN expression RPAREN controlStructureBody
+    | WHILE LPAREN expression RPAREN SEMICOLON
 
 doWhileStatement:
-    DO optNewLine controlStructureBody optNewLine WHILE optNewLine LPAREN expression RPAREN
-    | DO optNewLine WHILE optNewLine LPAREN expression RPAREN
+    DO controlStructureBody WHILE LPAREN expression RPAREN
+    | DO WHILE LPAREN expression RPAREN
     ;
 
 variableDeclarations:
@@ -317,15 +275,15 @@ variableDeclarations:
     ;
 
 variableDeclaration:
-    optNewLine IDENTIFIER optNewLine COLON optNewLine type
+    IDENTIFIER COLON type
     ;
 
 multiVariableDeclaration:
-    LPAREN optNewLine variableDeclarationList optNewLine RPAREN
+    LPAREN variableDeclarationList RPAREN
     ; 
 
 variableDeclarationList:
-    variableDeclarationList optNewLine COMMA optNewLine variableDeclaration
+    variableDeclarationList COMMA variableDeclaration
     ;
 
 expression:
@@ -427,41 +385,39 @@ primaryExpression:
     ;
 
 parenthesizedExpression:
-    LPAREN optNewLine expression optNewLine RPAREN
+    LPAREN expression RPAREN
     ;
 
 ifExpression:
-    IF optNewLine LPAREN optNewLine expression RPAREN optNewLine SEMICOLON 
-    | IF optNewLine LPAREN optNewLine expression RPAREN optNewLine controlStructureBody semis
-    | IF optNewLine LPAREN optNewLine expression RPAREN optNewLine controlStructureBody semi ELSE controlStructureBody
+    IF LPAREN expression RPAREN SEMICOLON 
+    | IF LPAREN expression RPAREN controlStructureBody semis
+    | IF LPAREN expression RPAREN controlStructureBody SEMICOLON ELSE controlStructureBody
     ;
 
 whenExpression:
-    WHEN optNewLine optWhenSubject optNewLine LCURL optNewLine optWhenEntries optNewLine RCURL
-    ;
-
-optWhenSubject:
-    %empty
-    | whenSubject
+    WHEN LCURL RCURL
+    | WHEN LCURL whenEntries RCURL
+    | WHEN whenSubject LCURL RCURL
+    | WHEN whenSubject LCURL whenEntries RCURL
     ;
 
 whenSubject:
     LPAREN expression RPAREN
-    LPAREN optNewLine VAL optNewLine variableDeclaration optNewLine ASSIGNMENT optNewLine expression RPAREN
+    LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
     ;
 
-optWhenEntries:
-    optWhenEntries whenEntry
-    | %empty
+whenEntries:
+    whenEntries whenEntry
+    | whenEntry
     ;
 
 whenEntry:
-    whenConditionList optNewLine ARROW optNewLine controlStructureBody semi
-    | ELSE optNewLine ARROW optNewLine controlStructureBody semi
+    whenConditionList ARROW controlStructureBody SEMICOLON
+    | ELSE ARROW controlStructureBody SEMICOLON
     ;
 
 whenConditionList:
-    whenConditionList optNewLine COMMA optNewLine whenCondition
+    whenConditionList COMMA whenCondition
 
 whenCondition:
     expression

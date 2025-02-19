@@ -22,6 +22,7 @@ int floatLiteral(int code);
 int doubleLiteral(int code);
 int stringLiteral(int code);
 int multiLineString(int code);
+char * removeUnderscores();
 int addSemi();
 
 struct token {
