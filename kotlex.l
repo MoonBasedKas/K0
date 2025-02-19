@@ -5,9 +5,11 @@
 %option nounput
 %{
 			#include "k0gram.tab.h"
+            #include "tree.h"
             #include "lex.h"
 			int rows = 1;
             struct token *nextToken;
+
 
 %}
 
