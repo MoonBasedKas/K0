@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
     yyparse();
 
     
-    printf("\nHIT END\n");
 
 }
 
