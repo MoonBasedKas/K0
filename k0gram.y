@@ -72,13 +72,6 @@
 %type <treeptr> controlStructureBody
 %type <treeptr> jumpExpression
 
-
-
-
-
-
-
-
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -102,7 +95,7 @@
 %token <treeptr> DISJ
 %token <treeptr> EXCL_NO_WS
 %token <treeptr> EXCL_WS
-%token <treeptr> QUEST_WS 
+%token <treeptr> QUEST_WS
 %token <treeptr> QUEST_NO_WS
 %token <treeptr> RANGE
 
@@ -171,8 +164,8 @@ topLevelObjectList:
     | topLevelObjectList topLevelObject
     ;
 
-topLevelObject: 
-    declaration semis 
+topLevelObject:
+    declaration semis
     ;
 
 semis:
@@ -205,9 +198,9 @@ typeParameters:
     ;
 
 
-functionDeclaration: 
-    FUN IDENTIFIER functionValueParameters COLON type functionBody 
-    | FUN IDENTIFIER functionValueParameters COLON type 
+functionDeclaration:
+    FUN IDENTIFIER functionValueParameters COLON type functionBody
+    | FUN IDENTIFIER functionValueParameters COLON type
     ;
 
 functionValueParameters:
@@ -224,10 +217,10 @@ functionValueParameter:
     | variableDeclaration ASSIGNMENT expression
     ;
 
-type: 
-    functionType 
-    | parenthesizedType 
-    | nullableType 
+type:
+    functionType
+    | parenthesizedType
+    | nullableType
     | userType
     ;
 
@@ -298,14 +291,14 @@ quest:
     | QUEST_WS
     ;
 
-functionBody: 
-    block 
-    | ASSIGNMENT expression 
+functionBody:
+    block
+    | ASSIGNMENT expression
     ;
 
-block: 
+block:
     LCURL RCURL
-    LCURL statements RCURL 
+    LCURL statements RCURL
     ;
 
 statements:
@@ -335,7 +328,7 @@ loopStatement:
 
 forStatement:
     FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
-    | FOR LPAREN variableDeclarations IN expression RPAREN 
+    | FOR LPAREN variableDeclarations IN expression RPAREN
     ;
 
 whileStatement:
@@ -358,7 +351,7 @@ variableDeclaration:
 
 multiVariableDeclaration:
     LPAREN variableDeclarationList RPAREN
-    ; 
+    ;
 
 variableDeclarationList:
     variableDeclarationList COMMA variableDeclaration
@@ -378,7 +371,7 @@ conjunction:
     | equality
     ;
 
-equality: 
+equality:
     equality EQEQ comparison
     | equality EXCL_EQ comparison
     | equality EQEQEQ comparison
@@ -467,7 +460,7 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON 
+    IF LPAREN expression RPAREN SEMICOLON
     | IF LPAREN expression RPAREN controlStructureBody semis
     | IF LPAREN expression RPAREN controlStructureBody SEMICOLON ELSE controlStructureBody
     ;
