@@ -9,9 +9,9 @@
  */
 int printNode(nodeptr t){
     if (t->nkids > 0) {
-        printf("node %s, %d: %d\n", t->symbolname, t->prodrule, t->nkids);
+        printf("node (%s, %d): %d\n", t->symbolname, t->prodrule, t->nkids);
     } else {
-        printf("token %s: %d\n", t->leaf->text, t->leaf->category); // print out token
+        printf("token (%s, %d)\n", t->leaf->text, t->leaf->category); // print out token
     }
     return 0;
 }
@@ -35,9 +35,4 @@ int printTree(nodeptr root, int depth){
     }
 
     return 0;
-}
-
-
-int humanReadable(nodeptr t){
-
 }

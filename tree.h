@@ -11,5 +11,8 @@ struct tree {
 
 typedef struct tree *nodeptr;
 nodeptr new_tree_node(int prodrule, int nkids, ...);
+int printNode(nodeptr t);
+int printTree(nodeptr root, int depth);
+
 
 #endif
