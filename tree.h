@@ -9,7 +9,6 @@ struct tree {
     struct token *leaf; // if nkids == 0, null for epsilon
 };
 
-typedef struct tree *nodeptr;
-nodeptr new_tree_node(int prodrule, int nkids, ...);
+struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...);
 
 #endif

@@ -8,6 +8,7 @@ void yyerror (char const *s);
 extern char *yytext;
 extern int rows;
 extern struct token *nextToken;
+extern struct token *prevToken;
 extern char *filename;
 
 void unsupportedKeyword();
@@ -23,7 +24,6 @@ int doubleLiteral(int code);
 int stringLiteral(int code);
 int multiLineString(int code);
 char *removeUnderscores();
-int addSemi();
 
 struct token {
    int category;   /* the integer code returned by yylex */
