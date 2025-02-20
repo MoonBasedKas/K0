@@ -6,6 +6,7 @@ BISON=bison
 HFLAG=-d
 
 k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o
+
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h

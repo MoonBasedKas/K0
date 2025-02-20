@@ -10,4 +10,5 @@ struct tree {
 };
 
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...);
+
 #endif

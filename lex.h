@@ -23,7 +23,7 @@ int floatLiteral(int code);
 int doubleLiteral(int code);
 int stringLiteral(int code);
 int multiLineString(int code);
-int addSemis();
+char *removeUnderscores();
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -34,9 +34,4 @@ struct token {
    double dval;	   /* for real constants, store binary value here */
    char *sval;     /* for string constants, malloc space, de-escape, store */
                    /*    the string (less quotes and after escapes) here */
-};
-
-struct tokenlist {
-    struct token *t;
-    struct tokenlist *next;
 };

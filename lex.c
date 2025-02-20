@@ -71,7 +71,11 @@ int intLiteral(int code)
 {
     token(code);
 
-    nextToken->ival = atoi(nextToken->text);
+    char *temp = removeUnderscores(nextToken->text);
+
+    nextToken->ival = atoi(temp);
+
+    free(temp);
 
     return code;
 }
@@ -91,7 +95,11 @@ int hexLiteral(int code)
 {
     token(code);
 
-    sscanf(nextToken->text, "%x", &(nextToken->ival));
+    char *temp = removeUnderscores(nextToken->text);
+
+    sscanf(temp, "%x", &(nextToken->ival));
+
+    free(temp);
 
     return code;
 }
@@ -111,7 +119,11 @@ int doubleLiteral(int code)
 {
     token(code);
 
-    sscanf(nextToken->text, "%lf", &(nextToken->dval));
+    char *temp = removeUnderscores(nextToken->text);
+
+    sscanf(temp, "%lf", &(nextToken->dval));
+
+    free(temp);
 
     return code;
 }
@@ -225,16 +237,33 @@ int multiLineString(int code)
     return code;
 }
 
-void yyerror (char const *s) {
-    fprintf (stderr, "%s\n", s);
+char * removeUnderscores()
+{
+    char *nextCharLex = nextToken->text;
+    char *nextCharLit = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
+
+    while(*nextCharLex != '\0')
+    {
+        if(*nextCharLex == '_')
+        {
+            nextCharLex++;
+        }   
+        else
+        {
+            *nextCharLit = *nextCharLex;
+        }
+        nextCharLex++;
+        nextCharLit++;
+    }
+    *nextCharLit = '\0';
+    return nextCharLit;
 }
 
+void yyerror (char const *s) {
+
+    fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
 
 int addSemi(){
-    // If first Token is NL
-    // printf("---%s\n\n", nextToken->text);
-    // if (prevToken == NULL) return 0;
-
 
     switch(nextToken->category){
         case INTEGER_LITERAL:
@@ -246,7 +275,7 @@ int addSemi(){
         case BREAK:
         case CONTINUE:
         case RETURN:
-        // case MULTILINE_STRING: Test this seperately
+        case MULTILINE_STRING:
         case INCR:
         case DECR:
         case RSQUARE:
