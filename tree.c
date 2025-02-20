@@ -11,7 +11,8 @@ int printNode(nodeptr t){
     if (t->nkids > 0) {
         printf("node (%s, %d): %d\n", t->symbolname, t->prodrule, t->nkids);
     } else {
-        printf("token (%s, %d)\n", t->leaf->text, t->leaf->category); // print out token
+        printf("token (%s, %d): %s %d\n", t->leaf->filename, t->leaf->lineno,
+                t->leaf->text, t->leaf->category);
     }
     return 0;
 }
