@@ -1,10 +1,28 @@
 #include "tree.h"
+#include "lex.h"
 
+/**
+ * @brief Prints out information about a singular node in the tree.
+ * 
+ * @param t 
+ * @return int 
+ */
 int printNode(nodeptr t){
-    printf("%s, %d: %d\n", t->symbolname, t->prodrule, t->nkids);
+    if (t->nkids > 0) {
+        printf("node %s, %d: %d\n", t->symbolname, t->prodrule, t->nkids);
+    } else {
+        printf("token %s: %d\n", t->leaf->text, t->leaf->category); // print out token
+    }
     return 0;
 }
 
+/**
+ * @brief prints out the entire tree recursively.
+ * 
+ * @param root root node
+ * @param depth depth initially should be 0.
+ * @return 
+ */
 int printTree(nodeptr root, int depth){
 
     for(int i = depth; i > depth; i++){
@@ -18,6 +36,7 @@ int printTree(nodeptr root, int depth){
 
     return 0;
 }
+
 
 int humanReadable(nodeptr t){
 
