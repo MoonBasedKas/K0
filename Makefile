@@ -6,7 +6,6 @@ BISON=bison
 HFLAG=-d
 
 k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o
-
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h
@@ -35,3 +34,6 @@ tree.o: tree.c tree.h
 
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch
+
+zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README
+	zip -r lab4_noll_maberry_houghteling.zip $^
