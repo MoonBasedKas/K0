@@ -15,6 +15,7 @@
 %type <treeptr> semis
 %type <treeptr> declaration
 %type <treeptr> propertyDeclaration
+%type <treeptr> variable
 %type <treeptr> functionDeclaration
 %type <treeptr> functionValueParameters
 %type <treeptr> functionValueParamList
@@ -98,7 +99,7 @@
 %token <treeptr> QUEST_WS
 %token <treeptr> QUEST_NO_WS
 %token <treeptr> RANGE
-
+%token <treeptr> RANGE_UNTIL
 %token <treeptr> DOT
 %token <treeptr> COMMA
 %token <treeptr> LPAREN
@@ -151,6 +152,15 @@
 
 %token <treeptr> EOF_K
 
+%right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
+%left DISJ
+%left CONJ
+%nonassoc EQEQ EQEQEQ EXCL_EQ EXCL_EQEQ
+%nonassoc LANGLE RANGLE LE GE
+%left ADD SUB
+%left MULT DIV MOD
+%right INCR DECR
+
 %start program
 
 %%
@@ -169,8 +179,8 @@ topLevelObject:
     ;
 
 semis:
-    semis SEMICOLON
-    | SEMICOLON
+    SEMICOLON
+    | semis SEMICOLON
     ;
 
 declaration:
@@ -178,7 +188,7 @@ declaration:
     | propertyDeclaration
     ;
 
-propertyDeclaration:
+propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
     variable variableDeclaration semis
     | variable variableDeclaration assignment semis
     | variable reciverType variableDeclaration semis
@@ -302,7 +312,7 @@ block:
     ;
 
 statements:
-    | statement
+    statement
     | statement semis
     | statements semis statement
     ;
@@ -318,6 +328,7 @@ assignment:
     IDENTIFIER ASSIGNMENT expression
     | IDENTIFIER ADD_ASSIGNMENT expression
     | IDENTIFIER SUB_ASSIGNMENT expression
+    | expression
     ;
 
 loopStatement:
@@ -354,7 +365,8 @@ multiVariableDeclaration:
     ;
 
 variableDeclarationList:
-    variableDeclarationList COMMA variableDeclaration
+    variableDeclaration
+    | variableDeclarationList COMMA variableDeclaration
     ;
 
 expression:
@@ -404,7 +416,7 @@ infixFunctionCall:
 
 rangeExpression:
     rangeExpression RANGE additiveExpression
-    | rangeExpression RANGE LANGLE additiveExpression
+    | rangeExpression RANGE_UNTIL additiveExpression
     | additiveExpression
     ;
 
