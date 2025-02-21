@@ -425,6 +425,7 @@ multiplicativeExpression:
     multiplicativeExpression MULT prefixUnaryExpression
     | multiplicativeExpression DIV prefixUnaryExpression
     | multiplicativeExpression MOD prefixUnaryExpression
+    | prefixUnaryExpression
     ;
 
 prefixUnaryExpression:
