@@ -36,6 +36,7 @@ void countNewLines()
 //allocates a token struct and fills all fields except literal values
 int token(int code)
 {
+    prevToken = nextToken;
     nextToken = (struct token*)malloc(sizeof(struct token));
 
     if(nextToken == NULL)
@@ -259,11 +260,11 @@ char * removeUnderscores()
 }
 
 void yyerror (char const *s) {
-    fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
-}
 
+    fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
 
 int addSemi(){
+
     switch(nextToken->category){
         case INTEGER_LITERAL:
         case HEX_LITERAL:

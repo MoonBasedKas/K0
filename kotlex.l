@@ -9,6 +9,8 @@
             #include "lex.h"
 			int rows = 1;
             struct token *nextToken;
+            struct token *prevToken = NULL;
+
 
 
 %}
@@ -99,7 +101,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "?"{hidden}										{ return token(QUEST_WS); } 
 "?"												{ return token(QUEST_NO_WS); }
 ".."											{ return token(RANGE); }
-
+"..<"											{ return token(RANGE_UNTIL); }
 "."												{ return token(DOT); }
 ","												{ return token(COMMA); }
 "("												{ return token(LPAREN); }
