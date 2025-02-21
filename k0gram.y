@@ -12,7 +12,6 @@
 %type <treeptr> program
 %type <treeptr> topLevelObjectList
 %type <treeptr> topLevelObject
-%type <treeptr> semis
 %type <treeptr> declaration
 %type <treeptr> propertyDeclaration
 %type <treeptr> variable
@@ -152,6 +151,7 @@
 
 %token <treeptr> EOF_K
 
+
 %right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
 %left DISJ
 %left CONJ
@@ -175,12 +175,7 @@ topLevelObjectList:
     ;
 
 topLevelObject:
-    declaration semis
-    ;
-
-semis:
-    SEMICOLON
-    | semis SEMICOLON
+    declaration SEMICOLON
     ;
 
 declaration:
@@ -189,14 +184,14 @@ declaration:
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
-    variable variableDeclaration semis
-    | variable variableDeclaration assignment semis
-    | variable reciverType variableDeclaration semis
-    | variable reciverType variableDeclaration assignment semis
-    | variable typeParameters variableDeclaration semis
-    | variable typeParameters variableDeclaration assignment semis
-    | variable typeParameters reciverType variableDeclaration semis
-    | variable typeParameters reciverType variableDeclaration assignment semis
+    variable variableDeclaration SEMICOLON
+    | variable variableDeclaration assignment SEMICOLON
+    | variable reciverType variableDeclaration SEMICOLON
+    | variable reciverType variableDeclaration assignment SEMICOLON
+    | variable typeParameters variableDeclaration SEMICOLON
+    | variable typeParameters variableDeclaration assignment SEMICOLON
+    | variable typeParameters reciverType variableDeclaration SEMICOLON
+    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON
 
 variable:
     VAL
@@ -227,7 +222,7 @@ functionValueParameter:
     | variableDeclaration ASSIGNMENT expression
     ;
 
-type:
+type: // Problem with userType->simpleUserType->typeArguments->typeArgumentsList->typeArgument
     functionType
     | parenthesizedType
     | nullableType
@@ -313,8 +308,8 @@ block:
 
 statements:
     statement
-    | statement semis
-    | statements semis statement
+    | statement SEMICOLON
+    | statements SEMICOLON statement
     ;
 
 statement:
@@ -473,7 +468,7 @@ parenthesizedExpression:
 
 ifExpression:
     IF LPAREN expression RPAREN SEMICOLON
-    | IF LPAREN expression RPAREN controlStructureBody semis
+    | IF LPAREN expression RPAREN controlStructureBody SEMICOLON
     | IF LPAREN expression RPAREN controlStructureBody SEMICOLON ELSE controlStructureBody
     ;
 
