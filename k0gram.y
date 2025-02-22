@@ -22,7 +22,6 @@
 %type <treeptr> type
 %type <treeptr> userType
 %type <treeptr> simpleUserType
-%type <treeptr> typeArguments
 %type <treeptr> typeArgumentsList
 %type <treeptr> typeArgument
 %type <treeptr> reciverType
@@ -222,7 +221,7 @@ functionValueParameter:
     | variableDeclaration ASSIGNMENT expression
     ;
 
-type: // Problem with userType->simpleUserType->typeArguments->typeArgumentsList->typeArgument
+type:
     functionType
     | parenthesizedType
     | nullableType
@@ -234,13 +233,9 @@ userType:
     | userType DOT simpleUserType
     ;
 
-simpleUserType:
+simpleUserType: //Merged typeArguments rule here: old rule was was just IDENTIFIER typeArguments
     IDENTIFIER
-    | IDENTIFIER typeArguments
-    ;
-
-typeArguments:
-    LANGLE typeArgumentsList RANGLE
+    | LANGLE typeArgumentsList RANGLE
     ;
 
 typeArgumentsList:
@@ -333,13 +328,18 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
-    | FOR LPAREN variableDeclarations IN expression RPAREN
+    FOR LPAREN variableDeclarations IN expression RPAREN forStatement_opt SEMICOLON
+    ;
+
+forStatement_opt:
+    controlStructureBody
+    | {/*epsilon*/}
     ;
 
 whileStatement:
     WHILE LPAREN expression RPAREN controlStructureBody
     | WHILE LPAREN expression RPAREN SEMICOLON
+    ;
 
 doWhileStatement:
     DO controlStructureBody WHILE LPAREN expression RPAREN
