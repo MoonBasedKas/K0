@@ -309,7 +309,6 @@ statements:
 
 statement:
     declaration
-    | assignment
     | loopStatement
     | expression
     ;
@@ -318,7 +317,6 @@ assignment:
     IDENTIFIER ASSIGNMENT expression
     | IDENTIFIER ADD_ASSIGNMENT expression
     | IDENTIFIER SUB_ASSIGNMENT expression
-    | expression
     ;
 
 loopStatement:
