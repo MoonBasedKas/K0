@@ -489,6 +489,7 @@ whenEntry:
 
 whenConditionList:
     whenConditionList COMMA whenCondition
+    | whenCondition;
 
 whenCondition:
     expression
