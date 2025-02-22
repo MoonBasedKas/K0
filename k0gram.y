@@ -328,12 +328,7 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN forStatement_opt SEMICOLON
-    ;
-
-forStatement_opt:
-    controlStructureBody
-    | {/*epsilon*/}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
     ;
 
 whileStatement:
@@ -343,7 +338,6 @@ whileStatement:
 
 doWhileStatement:
     DO controlStructureBody WHILE LPAREN expression RPAREN
-    | DO WHILE LPAREN expression RPAREN
     ;
 
 variableDeclarations:
