@@ -159,7 +159,7 @@
 %left MULT DIV MOD
 %right INCR DECR
 
-%start programx
+%start program
 
 %%
 
