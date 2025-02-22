@@ -29,8 +29,7 @@
 %type <treeptr> functionTypeParameters
 %type <treeptr> functionTypeParamList
 %type <treeptr> functionTypeParameter
-%type <treeptr> parenthesizedType
-%type <treeptr> nullableType
+%type <treeptr> parenthesizedType_opt
 %type <treeptr> quests
 %type <treeptr> functionBody
 %type <treeptr> block
@@ -69,6 +68,11 @@
 %type <treeptr> whenCondition
 %type <treeptr> controlStructureBody
 %type <treeptr> jumpExpression
+%type <treeptr> postfixUnaryOperator
+%type <treeptr> excl
+%type <treeptr> prefixUnaryOperator
+%type <treeptr> quest
+%type <treeptr> quests_opt
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -222,8 +226,7 @@ functionValueParameter:
 
 type:
     functionType
-    | parenthesizedType
-    | nullableType
+    | parenthesizedType_opt
     | userType
     ;
 
@@ -232,7 +235,7 @@ userType:
     | userType DOT simpleUserType
     ;
 
-simpleUserType: //Merged typeArguments rule here: old rule was was just IDENTIFIER typeArguments
+simpleUserType:
     IDENTIFIER
     | LANGLE typeArgumentsList RANGLE
     ;
@@ -248,8 +251,7 @@ typeArgument:
     ;
 
 reciverType:
-    parenthesizedType
-    | nullableType
+    parenthesizedType_opt
     ;
 
 functionType:
@@ -272,18 +274,22 @@ functionTypeParameter:
     | type
     ;
 
-parenthesizedType:
-    LPAREN type RPAREN
+parenthesizedType_opt:
+    LPAREN type RPAREN quests_opt
     ;
 
-nullableType:
-    parenthesizedType quests
+quests_opt:
+    quests
+    | {/*epsilon*/}
     ;
 
 quests:
-     quests QUEST_NO_WS
-    | quests QUEST_WS
-    | QUEST_NO_WS
+    quest
+    | quests quest
+    ;
+
+quest:
+    QUEST_NO_WS
     | QUEST_WS
     ;
 
@@ -294,7 +300,7 @@ functionBody:
 
 block:
     LCURL RCURL
-    LCURL statements RCURL
+    | LCURL statements RCURL
     ;
 
 statements:
@@ -423,21 +429,36 @@ multiplicativeExpression:
     ;
 
 prefixUnaryExpression:
-    INCR postfixUnaryExpression
-    | DECR postfixUnaryExpression
-    | ADD postfixUnaryExpression
-    | SUB postfixUnaryExpression
-    | EXCL_WS postfixUnaryExpression
-    | EXCL_NO_WS postfixUnaryExpression
-    | postfixUnaryExpression
+    postfixUnaryExpression
+    | prefixUnaryOperator postfixUnaryExpression
+    ;
+
+prefixUnaryOperator:
+    INCR
+    | DECR
+    | SUB
+    | ADD
+    | excl
     ;
 
 postfixUnaryExpression:
-    primaryExpression INCR
-    | primaryExpression DECR
-    | primaryExpression EXCL_NO_WS EXCL_NO_WS
-    | primaryExpression EXCL_NO_WS EXCL_WS
-    | primaryExpression
+    primaryExpression postfixUnaryOperator_opt
+    ;
+
+postfixUnaryOperator_opt:
+    postfixUnaryOperator
+    | {/*epsilon*/}
+    ;
+
+postfixUnaryOperator:
+    INCR
+    | DECR
+    | EXCL_NO_WS excl
+    ;
+
+excl:
+    EXCL_NO_WS
+    | EXCL_WS
     ;
 
 primaryExpression:
@@ -476,7 +497,7 @@ whenExpression:
 
 whenSubject:
     LPAREN expression RPAREN
-    LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
+    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
     ;
 
 whenEntries:
@@ -503,9 +524,9 @@ controlStructureBody:
     | statement
     ;
 
-jumpExpression:
-    RETURN expression
-    | RETURN
+jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?
+    RETURN SEMICOLON
+    | RETURN expression
     | CONTINUE
     | BREAK
     ;
