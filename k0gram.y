@@ -32,7 +32,6 @@
 %type <treeptr> parenthesizedType
 %type <treeptr> nullableType
 %type <treeptr> quests
-%type <treeptr> quest
 %type <treeptr> functionBody
 %type <treeptr> block
 %type <treeptr> statements
@@ -282,12 +281,9 @@ nullableType:
     ;
 
 quests:
-    quest quests
-    | quest
-    ;
-
-quest:
-    QUEST_NO_WS
+     quests QUEST_NO_WS
+    | quests QUEST_WS
+    | QUEST_NO_WS
     | QUEST_WS
     ;
 
@@ -495,6 +491,7 @@ whenEntry:
 
 whenConditionList:
     whenConditionList COMMA whenCondition
+    | whenCondition;
 
 whenCondition:
     expression
