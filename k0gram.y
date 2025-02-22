@@ -22,7 +22,6 @@
 %type <treeptr> type
 %type <treeptr> userType
 %type <treeptr> simpleUserType
-%type <treeptr> typeArguments
 %type <treeptr> typeArgumentsList
 %type <treeptr> typeArgument
 %type <treeptr> reciverType
@@ -33,7 +32,6 @@
 %type <treeptr> parenthesizedType
 %type <treeptr> nullableType
 %type <treeptr> quests
-%type <treeptr> quest
 %type <treeptr> functionBody
 %type <treeptr> block
 %type <treeptr> statements
@@ -222,7 +220,7 @@ functionValueParameter:
     | variableDeclaration ASSIGNMENT expression
     ;
 
-type: // Problem with userType->simpleUserType->typeArguments->typeArgumentsList->typeArgument
+type:
     functionType
     | parenthesizedType
     | nullableType
@@ -234,13 +232,9 @@ userType:
     | userType DOT simpleUserType
     ;
 
-simpleUserType:
+simpleUserType: //Merged typeArguments rule here: old rule was was just IDENTIFIER typeArguments
     IDENTIFIER
-    | IDENTIFIER typeArguments
-    ;
-
-typeArguments:
-    LANGLE typeArgumentsList RANGLE
+    | LANGLE typeArgumentsList RANGLE
     ;
 
 typeArgumentsList:
@@ -287,12 +281,9 @@ nullableType:
     ;
 
 quests:
-    quest quests
-    | quest
-    ;
-
-quest:
-    QUEST_NO_WS
+     quests QUEST_NO_WS
+    | quests QUEST_WS
+    | QUEST_NO_WS
     | QUEST_WS
     ;
 
@@ -314,7 +305,6 @@ statements:
 
 statement:
     declaration
-    | assignment
     | loopStatement
     | expression
     ;
@@ -323,7 +313,6 @@ assignment:
     IDENTIFIER ASSIGNMENT expression
     | IDENTIFIER ADD_ASSIGNMENT expression
     | IDENTIFIER SUB_ASSIGNMENT expression
-    | expression
     ;
 
 loopStatement:
@@ -333,13 +322,18 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
-    | FOR LPAREN variableDeclarations IN expression RPAREN
+    FOR LPAREN variableDeclarations IN expression RPAREN forStatement_opt SEMICOLON
+    ;
+
+forStatement_opt:
+    controlStructureBody
+    | {/*epsilon*/}
     ;
 
 whileStatement:
     WHILE LPAREN expression RPAREN controlStructureBody
     | WHILE LPAREN expression RPAREN SEMICOLON
+    ;
 
 doWhileStatement:
     DO controlStructureBody WHILE LPAREN expression RPAREN
@@ -497,6 +491,7 @@ whenEntry:
 
 whenConditionList:
     whenConditionList COMMA whenCondition
+    | whenCondition;
 
 whenCondition:
     expression

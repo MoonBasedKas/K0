@@ -6,3 +6,4 @@ k0
 .vscode
 *.h.gch
 testFiles/*
+test.kt
