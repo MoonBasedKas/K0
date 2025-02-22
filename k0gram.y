@@ -32,6 +32,7 @@
 %type <treeptr> parenthesizedType
 %type <treeptr> nullableType
 %type <treeptr> quests
+%type <treeptr> quest
 %type <treeptr> functionBody
 %type <treeptr> block
 %type <treeptr> statements
@@ -281,8 +282,13 @@ nullableType:
     ;
 
 quests:
-     quests QUEST_NO_WS
-    | quests QUEST_WS
+    quest quests
+    | quest
+    ;
+
+quest:
+    QUEST_NO_WS
+    | QUEST_WS
     ;
 
 functionBody:
