@@ -159,7 +159,7 @@
 %left MULT DIV MOD
 %right INCR DECR
 
-%start program
+%start programx
 
 %%
 
@@ -283,6 +283,8 @@ nullableType:
 quests:
      quests QUEST_NO_WS
     | quests QUEST_WS
+    | QUEST_NO_WS
+    | QUEST_WS
     ;
 
 functionBody:
