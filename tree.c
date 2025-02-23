@@ -6,9 +6,9 @@
 
 /**
  * @brief Prints out information about a singular node in the tree.
- * 
- * @param t 
- * @return int 
+ *
+ * @param t
+ * @return int
  */
 int printNode(nodeptr t){
     if (t->nkids > 0) {
@@ -22,10 +22,10 @@ int printNode(nodeptr t){
 
 /**
  * @brief prints out the entire tree recursively.
- * 
+ *
  * @param root root node
  * @param depth depth initially should be 0.
- * @return 
+ * @return
  */
 int printTree(nodeptr root, int depth){
 
