@@ -58,6 +58,7 @@
 %type <treeptr> prefixUnaryExpression
 %type <treeptr> postfixUnaryExpression
 %type <treeptr> primaryExpression
+%type <treeptr> expressionList
 %type <treeptr> parenthesizedExpression
 %type <treeptr> ifExpression
 %type <treeptr> whenExpression
@@ -72,7 +73,6 @@
 %type <treeptr> excl
 %type <treeptr> prefixUnaryOperator
 %type <treeptr> quest
-%type <treeptr> quests_opt
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -177,7 +177,7 @@ topLevelObjectList:
     ;
 
 topLevelObject:
-    declaration SEMICOLON
+    declaration
     ;
 
 declaration:
@@ -208,6 +208,7 @@ typeParameters:
 functionDeclaration:
     FUN IDENTIFIER functionValueParameters COLON type functionBody
     | FUN IDENTIFIER functionValueParameters COLON type
+    | FUN IDENTIFIER functionValueParameters functionBody
     ;
 
 functionValueParameters:
@@ -237,7 +238,7 @@ userType:
 
 simpleUserType:
     IDENTIFIER
-    | LANGLE typeArgumentsList RANGLE
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE
     ;
 
 typeArgumentsList:
@@ -275,12 +276,8 @@ functionTypeParameter:
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests_opt
-    ;
-
-quests_opt:
-    quests
-    | {/*epsilon*/}
+    LPAREN type RPAREN quests
+    | LPAREN type RPAREN
     ;
 
 quests:
@@ -304,9 +301,10 @@ block:
     ;
 
 statements:
-    statement
+    statement SEMICOLON
     | statement SEMICOLON
     | statements SEMICOLON statement
+    | SEMICOLON
     ;
 
 statement:
@@ -436,12 +434,8 @@ prefixUnaryOperator:
     ;
 
 postfixUnaryExpression:
-    primaryExpression postfixUnaryOperator_opt
-    ;
-
-postfixUnaryOperator_opt:
-    postfixUnaryOperator
-    | {/*epsilon*/}
+    primaryExpression postfixUnaryOperator
+    | primaryExpression
     ;
 
 postfixUnaryOperator:
@@ -470,6 +464,13 @@ primaryExpression:
     | ifExpression
     | whenExpression
     | jumpExpression
+    | IDENTIFIER LPAREN expressionList RPAREN
+    | IDENTIFIER LPAREN RPAREN
+    ;
+
+expressionList:
+    expression COMMA expression
+    | expression
     ;
 
 parenthesizedExpression:
