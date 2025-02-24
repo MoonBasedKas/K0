@@ -4,6 +4,18 @@
 %}
 
 
+enum{
+    TOPLEVELOBJECT = 1000,
+    TOPLEVELOBJECTLIST.
+    PROPERTYDECLRATION,
+    VARIABLE,
+    TYPEPARAMETERS,
+    FUNCTIONDECLARATION,
+    FUNCTIONVALUEPARAMETERS,
+    FUNCTIONVALUEPARAMLIST,
+    TYPE
+};
+
 %union {
     struct tree *treeptr;
 }
@@ -168,189 +180,189 @@
 %%
 
 program:
-    topLevelObjectList
+    topLevelObjectList {$$ = $1}
     ;
 
 topLevelObjectList:
-    topLevelObject
-    | topLevelObjectList topLevelObject
+    topLevelObject {$$ = 1}
+    | topLevelObjectList topLevelObject {$$ = alctoken(TOPLEVELOBJECT, "topLevelObject", 2, $1, $2)}
     ;
 
 topLevelObject:
-    declaration
+    declaration {$$ = $1}
     ;
 
 declaration:
-    functionDeclaration
-    | propertyDeclaration
+    functionDeclaration {$$ = 1}
+    | propertyDeclaration {$$ = 1}
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
-    variable variableDeclaration SEMICOLON
-    | variable variableDeclaration assignment SEMICOLON
-    | variable reciverType variableDeclaration SEMICOLON
-    | variable reciverType variableDeclaration assignment SEMICOLON
-    | variable typeParameters variableDeclaration SEMICOLON
-    | variable typeParameters variableDeclaration assignment SEMICOLON
-    | variable typeParameters reciverType variableDeclaration SEMICOLON
-    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON
+    variable variableDeclaration SEMICOLON {$ = $1}
+    | variable variableDeclaration assignment SEMICOLON {$ = $1}
+    | variable reciverType variableDeclaration SEMICOLON {$ = $1}
+    | variable reciverType variableDeclaration assignment SEMICOLON {$ = $1}
+    | variable typeParameters variableDeclaration SEMICOLON {$ = $1}
+    | variable typeParameters variableDeclaration assignment SEMICOLON {$ = $1}
+    | variable typeParameters reciverType variableDeclaration SEMICOLON {$ = $1}
+    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$ = $1}
 
 variable:
-    VAL
-    | VAR
+    VAL {$ = $1}
+    | VAR {$ = $1}
     ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE
+    LANGLE variableDeclarationList RANGLE {$ = $1}
     ;
 
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody
-    | FUN IDENTIFIER functionValueParameters COLON type
-    | FUN IDENTIFIER functionValueParameters functionBody
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$ = $1}
+    | FUN IDENTIFIER functionValueParameters COLON type {$ = $1}
+    | FUN IDENTIFIER functionValueParameters functionBody {$ = $1}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN
+    LPAREN functionValueParamList RPAREN {$ = $1}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList
-    | functionValueParameter
+    functionValueParameter COMMA functionValueParamList {$ = $1}
+    | functionValueParameter {$ = $1}
     ;
 
 functionValueParameter:
-    variableDeclaration
-    | variableDeclaration ASSIGNMENT expression
+    variableDeclaration {$ = $1}
+    | variableDeclaration ASSIGNMENT expression {$ = $1}
     ;
 
 type:
-    functionType
-    | parenthesizedType_opt
-    | userType
+    functionType {$ = $1}
+    | parenthesizedType_opt {$ = $1}
+    | userType {$ = $1}
     ;
 
 userType:
-    simpleUserType
-    | userType DOT simpleUserType
+    simpleUserType {$ = $1}
+    | userType DOT simpleUserType {$ = $1}
     ;
 
 simpleUserType:
-    IDENTIFIER
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE
+    IDENTIFIER {$ = $1}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$ = $1}
     ;
 
 typeArgumentsList:
-    typeArgument
-    | typeArgument COMMA typeArgumentsList
+    typeArgument {$ = $1}
+    | typeArgument COMMA typeArgumentsList {$ = $1}
     ;
 
 typeArgument:
-    type
-    | MULT
+    type {$ = $1}
+    | MULT {$ = $1}
     ;
 
 reciverType:
-    parenthesizedType_opt
+    parenthesizedType_opt {$ = $1}
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type
-    | functionTypeParameters ARROW type
+    reciverType DOT functionTypeParameters ARROW type {$ = $1}
+    | functionTypeParameters ARROW type {$ = $1}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN
-    | LPAREN RPAREN
+    LPAREN functionTypeParamList RPAREN {$ = $1}
+    | LPAREN RPAREN {$ = $1}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList
-    | functionTypeParameter
+    functionTypeParameter COMMA functionTypeParamList {$ = $1}
+    | functionTypeParameter {$ = $1}
     ;
 
 functionTypeParameter:
-    variableDeclaration
-    | type
+    variableDeclaration {$ = $1}
+    | type {$ = $1}
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests
-    | LPAREN type RPAREN
+    LPAREN type RPAREN quests {$ = $1}
+    | LPAREN type RPAREN {$ = $1}
     ;
 
 quests:
-    quest
-    | quests quest
+    quest {$ = $1}
+    | quests quest {$ = $1}
     ;
 
 quest:
-    QUEST_NO_WS
-    | QUEST_WS
+    QUEST_NO_WS {$ = $1}
+    | QUEST_WS {$ = $1}
     ;
 
 functionBody:
-    block
-    | ASSIGNMENT expression
+    block {$ = $1}
+    | ASSIGNMENT expression {$ = $1}
     ;
 
 block:
-    LCURL RCURL
-    | LCURL statements RCURL
+    LCURL RCURL {$ = $1}
+    | LCURL statements RCURL {$ = $1}
     ;
 
 statements:
-    statement SEMICOLON
-    | statement SEMICOLON
-    | statements SEMICOLON statement
-    | SEMICOLON
+    statement SEMICOLON {$ = $1}
+    | statement SEMICOLON {$ = $1}
+    | statements SEMICOLON statement {$ = $1}
+    | SEMICOLON {$ = $1}
     ;
 
 statement:
-    declaration
-    | loopStatement
-    | expression
+    declaration {$ = $1}
+    | loopStatement {$ = $1}
+    | expression {$ = $1}
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression
-    | IDENTIFIER ADD_ASSIGNMENT expression
-    | IDENTIFIER SUB_ASSIGNMENT expression
+    IDENTIFIER ASSIGNMENT expression {$ = $1}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$ = $1}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$ = $1}
     ;
 
 loopStatement:
-    forStatement
-    | whileStatement
-    | doWhileStatement
+    forStatement {$ = $1}
+    | whileStatement {$ = $1}
+    | doWhileStatement {$ = $1}
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$ = $1}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody
-    | WHILE LPAREN expression RPAREN SEMICOLON
+    WHILE LPAREN expression RPAREN controlStructureBody {$ = $1}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$ = $1}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$ = $1}
     ;
 
 variableDeclarations:
-    variableDeclaration
-    | multiVariableDeclaration
+    variableDeclaration {$ = $1}
+    | multiVariableDeclaration {$ = $1}
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type
+    IDENTIFIER COLON type {$ = $1}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN
+    LPAREN variableDeclarationList RPAREN {$ = $1}
     ;
-
+/* STOP HERE */
 variableDeclarationList:
     variableDeclaration
     | variableDeclarationList COMMA variableDeclaration
