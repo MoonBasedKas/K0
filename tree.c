@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 
+struct tree *root = NULL;
+
 /**
  * @brief Prints out information about a singular node in the tree.
  *
