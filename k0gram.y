@@ -208,7 +208,7 @@ enum{
 %%
 
 program:
-    topLevelObjectList {$$ = $1;}
+    topLevelObjectList {root = $$ = $1;}
     ;
 
 topLevelObjectList:
