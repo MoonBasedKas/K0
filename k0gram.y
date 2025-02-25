@@ -357,171 +357,171 @@ variableDeclarationList:
     ;
 
 expression:
-    disjunction
+    disjunction                         {$$ = $1;}
     ;
 
 disjunction:
-    disjunction DISJ conjunction
-    | conjunction
+    disjunction DISJ conjunction        {$$ = alctoken(1000, "disj", 3, $1, $2, $3);}
+    | conjunction                       {$$ = $1;}
     ;
 
 conjunction:
-    conjunction CONJ equality
-    | equality
+    conjunction CONJ equality           {$$ = alctoken(1001, "conj", 3, $1, $2, $3);}
+    | equality                          {$$ = $1;}
     ;
 
 equality:
-    equality EQEQ comparison
-    | equality EXCL_EQ comparison
-    | equality EQEQEQ comparison
-    | equality EXCL_EQEQ comparison
-    | comparison
+    equality EQEQ comparison            {$$ = alctoken(1002, "equal", 3, $1, $2, $3);}
+    | equality EXCL_EQ comparison       {$$ = alctoken(1003, "notEqual", 3, $1, $2, $3);}
+    | equality EQEQEQ comparison        {$$ = alctoken(1004, "eqeqeq", 3, $1, $2, $3);}
+    | equality EXCL_EQEQ comparison     {$$ = alctoken(1005, "not-eqeqeq", 3, $1, $2, $3);}
+    | comparison                        {$$ = $1;}
     ;
 
 comparison:
-    comparison LANGLE infixOperation
-    | comparison RANGE infixOperation
-    | comparison GE infixOperation
-    | comparison LE infixOperation
-    | infixOperation
-    ;
+    comparison LANGLE infixOperation    {$$ = alctoken(1006, "less", 3, $1, $2, $3);}
+    | comparison RANGE infixOperation   {$$ = alctoken(1007, "greater", 3, $1, $2, $3);}
+    | comparison GE infixOperation      {$$ = alctoken(1008, "lessEqual", 3, $1, $2, $3);}
+    | comparison LE infixOperation      {$$ = alctoken(1009, "greaterEqual", 3, $1, $2, $3);}
+    | infixOperation                    {$$ = $1;}
+    ;   
 
 infixOperation:
-    infixOperation IN elvisExpression
-    | elvisExpression
+    infixOperation IN elvisExpression   {$$ = alctoken(1010, "in", 3, $1, $2, $3);}
+    | elvisExpression                   {$$ = $1;}
     ;
 
 elvisExpression:
-    elvisExpression QUEST_NO_WS COLON infixFunctionCall
-    | infixFunctionCall
+    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(1011, "elvis", 3, $1, $2, $3);}
+    | infixFunctionCall                                     {$$ = $1;}
     ;
 
 infixFunctionCall:
-    infixFunctionCall IDENTIFIER rangeExpression
-    | rangeExpression
-    ;
+    infixFunctionCall IDENTIFIER rangeExpression            {$$ = alctoken(1012, "infixFunction", 3, $1, $2, $3);}
+    | rangeExpression                                       {$$ = $1;}
+    ;   
 
 rangeExpression:
-    rangeExpression RANGE additiveExpression
-    | rangeExpression RANGE_UNTIL additiveExpression
-    | additiveExpression
+    rangeExpression RANGE additiveExpression                {$$ = alctoken(1013, "range", 3, $1, $2, $3);}
+    | rangeExpression RANGE_UNTIL additiveExpression        {$$ = alctoken(1014, "rangeUntil", 3, $1, $2, $3);}
+    | additiveExpression                                    {$$ = $1;}  
     ;
 
 additiveExpression:
-    additiveExpression ADD multiplicativeExpression
-    | additiveExpression SUB multiplicativeExpression
-    | multiplicativeExpression
+    additiveExpression ADD multiplicativeExpression         {$$ = alctoken(1015, "add", 3, $1, $2, $3);}
+    | additiveExpression SUB multiplicativeExpression       {$$ = alctoken(1016, "sub", 3, $1, $2, $3);}
+    | multiplicativeExpression                              {$$ = $1;} 
     ;
 
 multiplicativeExpression:
-    multiplicativeExpression MULT prefixUnaryExpression
-    | multiplicativeExpression DIV prefixUnaryExpression
-    | multiplicativeExpression MOD prefixUnaryExpression
-    | prefixUnaryExpression
+    multiplicativeExpression MULT prefixUnaryExpression     {$$ = alctoken(1017, "mult", 3, $1, $2, $3);}
+    | multiplicativeExpression DIV prefixUnaryExpression    {$$ = alctoken(1018, "div", 3, $1, $2, $3);}
+    | multiplicativeExpression MOD prefixUnaryExpression    {$$ = alctoken(1019, "mod", 3, $1, $2, $3);}
+    | prefixUnaryExpression                                 {$$ = $1;} 
     ;
 
 prefixUnaryExpression:
-    postfixUnaryExpression
-    | prefixUnaryOperator postfixUnaryExpression
+    postfixUnaryExpression                                  {$$ = $1;} 
+    | prefixUnaryOperator postfixUnaryExpression            {$$ = alctoken(1020, "prefix", 2, $1, $2);}
     ;
 
 prefixUnaryOperator:
-    INCR
-    | DECR
-    | SUB
-    | ADD
-    | excl
+    INCR                {$$ = $1;}
+    | DECR              {$$ = $1;}
+    | SUB               {$$ = $1;}
+    | ADD               {$$ = $1;}
+    | excl              {$$ = $1;}
     ;
 
 postfixUnaryExpression:
-    primaryExpression postfixUnaryOperator
-    | primaryExpression
+    primaryExpression postfixUnaryOperator      {$$ = alctoken(1021, "postfix", 2, $1, $2);}
+    | primaryExpression                         {$$ = $1;}
     ;
 
 postfixUnaryOperator:
-    INCR
-    | DECR
-    | EXCL_NO_WS excl
+    INCR                                        {$$ = $1;}
+    | DECR                                      {$$ = $1;}
+    | EXCL_NO_WS excl                           {$$ = $1;}
     ;
 
 excl:
-    EXCL_NO_WS
-    | EXCL_WS
+    EXCL_NO_WS                                  {$$ = $1;}
+    | EXCL_WS                                   {$$ = $1;}
     ;
 
 primaryExpression:
-    parenthesizedExpression
-    | IDENTIFIER
-    | INTEGER_LITERAL
-    | HEX_LITERAL
-    | CHARACTER_LITERAL
-    | REAL_LITERAL
-    | TRUE
-    | FALSE
-    | NULL_K
-    | LINE_STRING
-    | MULTILINE_STRING
-    | ifExpression
-    | whenExpression
-    | jumpExpression
-    | IDENTIFIER LPAREN expressionList RPAREN
-    | IDENTIFIER LPAREN RPAREN
+    parenthesizedExpression                     {$$ = $1;}
+    | IDENTIFIER                                {$$ = $1;}
+    | INTEGER_LITERAL                           {$$ = $1;}
+    | HEX_LITERAL                               {$$ = $1;}
+    | CHARACTER_LITERAL                         {$$ = $1;}
+    | REAL_LITERAL                              {$$ = $1;}
+    | TRUE                                      {$$ = $1;}
+    | FALSE                                     {$$ = $1;}
+    | NULL_K                                    {$$ = $1;}
+    | LINE_STRING                               {$$ = $1;}
+    | MULTILINE_STRING                          {$$ = $1;}
+    | ifExpression                              {$$ = $1;}
+    | whenExpression                            {$$ = $1;}
+    | jumpExpression                            {$$ = $1;}
+    | IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
+    | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
     ;
 
 expressionList:
-    expression COMMA expression
-    | expression
+    expression COMMA expression                 {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
+    | expression                                {$$ = $1;}
     ;
 
 parenthesizedExpression:
-    LPAREN expression RPAREN
+    LPAREN expression RPAREN                    {$$ = alctoken(1025, "parenthesizedExpression", 1, $2);}
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON
-    | IF LPAREN expression RPAREN controlStructureBody SEMICOLON
-    | IF LPAREN expression RPAREN controlStructureBody SEMICOLON ELSE controlStructureBody
+    IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1026, "emptyIf", 2, $1, $3);}
+    | IF LPAREN expression RPAREN controlStructureBody                                  {$$ = alctoken(1027, "if", 3, $1, $3, $5);}
+    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody        {$$ = alctoken(1028, "ifElse", 5, $1, $3, $5, $6, $7);}
     ;
 
 whenExpression:
-    WHEN LCURL RCURL
-    | WHEN LCURL whenEntries RCURL
-    | WHEN whenSubject LCURL RCURL
-    | WHEN whenSubject LCURL whenEntries RCURL
+    WHEN LCURL RCURL                                                                    {$$ = alctoken(1029, "whenNoSubNoEnt", 1, $1);}
+    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(1030, "whenEnt", 2, $1, $3);}
+    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(1031, "whenSub", 1, $1, $2);}
+    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(1032, "whenSubEnt", 3, $1, $2, $3);}
     ;
 
 whenSubject:
-    LPAREN expression RPAREN
-    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN
+    LPAREN expression RPAREN                                                            {$$ = alctoken(1033, "whenSubExp", 1, $2);}
+    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN                       {$$ = alctoken(1034, "whenSubVar", 4, $2, $3, $4, $5);}
     ;
 
 whenEntries:
-    whenEntries whenEntry
-    | whenEntry
+    whenEntries whenEntry                                                               {$$ = alctoken(1035, "whenEntries", 2, $1, $2);}
+    | whenEntry                                                                         {$$ = $1;}
     ;
 
 whenEntry:
-    whenConditionList ARROW controlStructureBody SEMICOLON
-    | ELSE ARROW controlStructureBody SEMICOLON
+    whenConditionList ARROW controlStructureBody SEMICOLON                              {$$ = alctoken(1036, "whenEntryConds", 3, $1, $2, $3);}
+    | ELSE ARROW controlStructureBody SEMICOLON                                         {$$ = alctoken(1037, "whenEntryElse", 3, $1, $2, $3);}
     ;
 
 whenConditionList:
-    whenConditionList COMMA whenCondition
-    | whenCondition;
+    whenConditionList COMMA whenCondition                                               {$$ = alctoken(1038, "whenConds", 2, $1, $3);}
+    | whenCondition;                                                                    {$$ = $1;}
 
 whenCondition:
-    expression
-    | IN expression
+    expression                                                                          {$$ = $1;}
+    | IN expression                                                                     {$$ = alctoken(1039, "whenCondsIn", 2, $1, $2);}
     ;
 
 controlStructureBody:
-    block
-    | statement
+    block                                                                               {$$ = $1;}
+    | statement                                                                         {$$ = $1;}
     ;
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?
-    RETURN SEMICOLON
-    | RETURN expression
-    | CONTINUE
-    | BREAK
+    RETURN SEMICOLON                                                                    {$$ = $1;}
+    | RETURN expression                                                                 {$$ = alctoken(1038, "returnVal", 2, $1, $2);}
+    | CONTINUE                                                                          {$$ = $1;}
+    | BREAK                                                                             {$$ = $1;}
     ;
