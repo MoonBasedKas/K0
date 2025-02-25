@@ -302,7 +302,6 @@ block:
 
 statements:
     statement SEMICOLON
-    | statement SEMICOLON
     | statements SEMICOLON statement
     | SEMICOLON
     ;
