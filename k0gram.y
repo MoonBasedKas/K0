@@ -37,7 +37,8 @@ enum{
     VARIABLEDECLARATIONS,
     VARIABLEDECLARATION,
     VARIABLEDECLARATION
-    MULTIVARIABLEDECLARATION
+    MULTIVARIABLEDECLARATION,
+    VARIABLEDECLARATIONLIST
 
 
 };
@@ -245,23 +246,23 @@ typeParameters:
 
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken();}
-    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken();}
-    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken();}
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 6, $1, $2, $3, $4, $5, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 5, $1, $2, $3, $4, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 4, $1,$2,$3,$4);}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN {$$ = alctoken();}
+    LPAREN functionValueParamList RPAREN {$$ = alctoken(FUNCTIONVALUEPARAMETERS, "functionValueParameters", 3, $1, $2, $3);}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList {$$ = alctoken();}
+    functionValueParameter COMMA functionValueParamList {$$ = alctoken(FUNCTIONVALUEPARAMLIST, "functionValueParamList", 3, $1, $2, $3);}
     | functionValueParameter {$$ = $1;}
     ;
 
 functionValueParameter:
     variableDeclaration {$$ = $1;}
-    | variableDeclaration ASSIGNMENT expression {$$ = alctoken();}
+    | variableDeclaration ASSIGNMENT expression {$$ = alctoken(FUNCTIONVALUEPARAMETER, "functionValueParameter", 3, $1, $2, $3);}
     ;
 
 type:
@@ -272,17 +273,17 @@ type:
 
 userType:
     simpleUserType {$$ = $1;}
-    | userType DOT simpleUserType {$$ = alctoken();}
+    | userType DOT simpleUserType {$$ = alctoken(USERTYPE, "userType", 3, $1, $2, $3);}
     ;
 
 simpleUserType:
     IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken();}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(SIMPLEUSERTYPE, "simpleUserType", 4, $1, $2, $3, $4);}
     ;
 
 typeArgumentsList:
     typeArgument {$$ = $1;}
-    | typeArgument COMMA typeArgumentsList {$$ = alctoken();}
+    | typeArgument COMMA typeArgumentsList {$$ = alctoken(TYPEARGUMENTSLIST, "typeArgumentsList", 3, $1, $2, $3);}
     ;
 
 typeArgument:
@@ -295,17 +296,17 @@ reciverType:
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken();}
-    | functionTypeParameters ARROW type {$$ = alctoken();}
+    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken(FUNCTIONTYPE, "functionType", 5, $1, $2, $3, $4, $5);}
+    | functionTypeParameters ARROW type {$$ = alctoken(FUNCTIONTYPE, "functionType", 3, $1, $2, $3);}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN {$$ = alctoken();}
-    | LPAREN RPAREN {$$ = alctoken();}
+    LPAREN functionTypeParamList RPAREN {$$ = alctoken(FUNCTIONTYPEPARAMETERS, "functionTypeParameters", 3, $1, $2, $3);}
+    | LPAREN RPAREN {$$ = alctoken(FUNCTIONTYPEPARAMETERS, "functionTypeParameters", 2, $1, $2);}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken();}
+    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken(FUNCTIONTYPEPARAMLIST, "functionTypeParamList", 3, $1, $2, $3);}
     | functionTypeParameter {$$ = $1;}
     ;
 
@@ -315,13 +316,13 @@ functionTypeParameter:
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests {$$ = alctoken();}
-    | LPAREN type RPAREN {$$ = alctoken();}
+    LPAREN type RPAREN quests {$$ = alctoken(PARENTHESIZEDTYPE_OPT, "parenthesizedType_opt", 4, $1, $2, $3, $4);}
+    | LPAREN type RPAREN {$$ = alctoken(PARENTHESIZEDTYPE_OPT, "parenthesizedType_opt", 3, $1, $2, $3);}
     ;
 
 quests:
     quest {$$ = $1;}
-    | quests quest {$$ = alctoken();}
+    | quests quest {$$ = alctoken(QUESTS, "quests", 2, $1, $2);}
     ;
 
 quest:
@@ -331,18 +332,18 @@ quest:
 
 functionBody:
     block {$$ = $1;}
-    | ASSIGNMENT expression {$$ = alctoken();}
+    | ASSIGNMENT expression {$$ = alctoken(FUNCTIONBODY, "functionBody", 2, $1, $2);}
     ;
 
 block:
-    LCURL RCURL {$$ = alctoken();}
-    | LCURL statements RCURL {$$ = alctoken();}
+    LCURL RCURL {$$ = alctoken(BLOCK, "block", 2, $1, $2);}
+    | LCURL statements RCURL {$$ = alctoken(BLOCK, "block", 3, $1, $2, $3);}
     ;
 
 statements:
-    statement SEMICOLON {$$ = alctoken();}
-    | statement SEMICOLON {$$ = alctoken();}
-    | statements SEMICOLON statement {$$ = alctoken();}
+    statement SEMICOLON {$$ = alctoken(STATEMENTS, "block", 2, $1, $2);}
+    | statement SEMICOLON {$$ = alctoken(STATEMENTS, "block", 2, $1, $2);}
+    | statements SEMICOLON statement {$$ = alctoken(STATEMENTS, "block", 3, $1, $2, $3);}
     | SEMICOLON {$$ = $1;}
     ;
 
@@ -353,9 +354,9 @@ statement:
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression {$$ = alctoken();}
-    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken();}
-    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken();}
+    IDENTIFIER ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
     ;
 
 loopStatement:
@@ -365,16 +366,16 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken();}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(FORSTATEMENT, "forStatement", 7, $1, $2, $3, $4, $5, $6, $7);}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken();}
-    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken();}
+    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken(WHILESTATEMENT, "whileStatement", 5, $1, $2, $3, $4, $5);}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken(WHILESTATEMENT, "whileStatement", 5, $1, $2, $3, $4, $5);}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken();}
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken(DOWHILESTATEMENT, "doWhileStatement", 6, $1, $2, $3, $4, $5, $6);}
     ;
 
 variableDeclarations:
@@ -383,16 +384,16 @@ variableDeclarations:
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type {$$ = alctoken();}
+    IDENTIFIER COLON type {$$ = alctoken(VARIABLEDECLARATION, "variableDeclaration", 3, $1, $2, $3);}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN {$$ = alctoken();}
+    LPAREN variableDeclarationList RPAREN {$$ = alctoken(MULTIVARIABLEDECLARATION, "multiVariableDeclaration", 3, $1, $2, $3);}
     ;
-/* STOP HERE */
+    
 variableDeclarationList:
-    variableDeclaration
-    | variableDeclarationList COMMA variableDeclaration
+    variableDeclaration {$$ = $1}
+    | variableDeclarationList COMMA variableDeclaration {$$ = alctoken(VARIABLEDECLARATIONLIST, "variableDeclarationList", 3, $1, $2, $3)}
     ;
 
 expression:
