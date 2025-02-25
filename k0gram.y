@@ -4,6 +4,45 @@
 %}
 
 
+enum{
+    TOPLEVELOBJECT = 1000,
+    TOPLEVELOBJECTLIST.
+    PROPERTYDECLRATION,
+    VARIABLE,
+    TYPEPARAMETERS,
+    FUNCTIONDECLARATION,
+    FUNCTIONVALUEPARAMETERS,
+    FUNCTIONVALUEPARAMLIST,
+    TYPE,
+    USERTYPE,
+    SIMPLEUSERTYPE,
+    TYPEARGUMENTSLIST,
+    TYPEARGUMENT,
+    RECIVERTYPE,
+    FUNCTIONTYPE,
+    FUNCTIONTYPEPARAMETERS,
+    FUNCTIONTYPEPARAMLIST,
+    PARENTHESIZEDTYPE_OPT,
+    QUESTS,
+    QUEST,
+    FUNCTIONBODY,
+    BLOCK,
+    STATEMENTS,
+    STATEMENT,
+    ASSIGNMENT,
+    LOOPSTATEMENT,
+    FORSTATEMENT,
+    WHILESTATEMENT,
+    DOWHILESTATEMENT,
+    VARIABLEDECLARATIONS,
+    VARIABLEDECLARATION,
+    VARIABLEDECLARATION
+    MULTIVARIABLEDECLARATION,
+    VARIABLEDECLARATIONLIST
+
+
+};
+
 %union {
     struct tree *treeptr;
 }
@@ -25,6 +64,7 @@
 %type <treeptr> typeArgumentsList
 %type <treeptr> typeArgument
 %type <treeptr> reciverType
+%type <treeptr> typeParameters
 %type <treeptr> functionType
 %type <treeptr> functionTypeParameters
 %type <treeptr> functionTypeParamList
@@ -168,192 +208,192 @@
 %%
 
 program:
-    topLevelObjectList
+    topLevelObjectList {root = $$ = $1;}
     ;
 
 topLevelObjectList:
-    topLevelObject
-    | topLevelObjectList topLevelObject
+    topLevelObject {$$ = 1;}
+    | topLevelObjectList topLevelObject {$$ = alctoken(TOPLEVELOBJECT, "topLevelObject", 2, $1, $2);}
     ;
 
 topLevelObject:
-    declaration
+    declaration {$$ = $1;}
     ;
 
 declaration:
-    functionDeclaration
-    | propertyDeclaration
+    functionDeclaration {$$ = 1;}
+    | propertyDeclaration {$$ = 1;}
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
-    variable variableDeclaration SEMICOLON
-    | variable variableDeclaration assignment SEMICOLON
-    | variable reciverType variableDeclaration SEMICOLON
-    | variable reciverType variableDeclaration assignment SEMICOLON
-    | variable typeParameters variableDeclaration SEMICOLON
-    | variable typeParameters variableDeclaration assignment SEMICOLON
-    | variable typeParameters reciverType variableDeclaration SEMICOLON
-    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON
+    variable variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 3, $1, $2, $3);}
+    | variable variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable typeParameters variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration" 6, , $1, $2, $3, $4, $5, $6);}
 
 variable:
-    VAL
-    | VAR
+    VAL {$$ = $1;}
+    | VAR {$$ = $1;}
     ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE
+    LANGLE variableDeclarationList RANGLE {$$ = alctoken(TYPEPARAMETERS, "typeParameters", 3, $1, $2, $3);}
     ;
 
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody
-    | FUN IDENTIFIER functionValueParameters COLON type
-    | FUN IDENTIFIER functionValueParameters functionBody
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 6, $1, $2, $3, $4, $5, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 5, $1, $2, $3, $4, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(FUNCTIONDECLARATION, "functionDeclaration", 4, $1,$2,$3,$4);}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN
+    LPAREN functionValueParamList RPAREN {$$ = alctoken(FUNCTIONVALUEPARAMETERS, "functionValueParameters", 3, $1, $2, $3);}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList
-    | functionValueParameter
+    functionValueParameter COMMA functionValueParamList {$$ = alctoken(FUNCTIONVALUEPARAMLIST, "functionValueParamList", 3, $1, $2, $3);}
+    | functionValueParameter {$$ = $1;}
     ;
 
 functionValueParameter:
-    variableDeclaration
-    | variableDeclaration ASSIGNMENT expression
+    variableDeclaration {$$ = $1;}
+    | variableDeclaration ASSIGNMENT expression {$$ = alctoken(FUNCTIONVALUEPARAMETER, "functionValueParameter", 3, $1, $2, $3);}
     ;
 
 type:
-    functionType
-    | parenthesizedType_opt
-    | userType
+    functionType {$$ = $1;}
+    | parenthesizedType_opt {$$ = $1;}
+    | userType {$$ = $1;}
     ;
 
 userType:
-    simpleUserType
-    | userType DOT simpleUserType
+    simpleUserType {$$ = $1;}
+    | userType DOT simpleUserType {$$ = alctoken(USERTYPE, "userType", 3, $1, $2, $3);}
     ;
 
 simpleUserType:
-    IDENTIFIER
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE
+    IDENTIFIER {$$ = $1;}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(SIMPLEUSERTYPE, "simpleUserType", 4, $1, $2, $3, $4);}
     ;
 
 typeArgumentsList:
-    typeArgument
-    | typeArgument COMMA typeArgumentsList
+    typeArgument {$$ = $1;}
+    | typeArgument COMMA typeArgumentsList {$$ = alctoken(TYPEARGUMENTSLIST, "typeArgumentsList", 3, $1, $2, $3);}
     ;
 
 typeArgument:
-    type
-    | MULT
+    type {$$ = $1;}
+    | MULT {$$ = $1;}
     ;
 
 reciverType:
-    parenthesizedType_opt
+    parenthesizedType_opt {$$ = $1;}
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type
-    | functionTypeParameters ARROW type
+    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken(FUNCTIONTYPE, "functionType", 5, $1, $2, $3, $4, $5);}
+    | functionTypeParameters ARROW type {$$ = alctoken(FUNCTIONTYPE, "functionType", 3, $1, $2, $3);}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN
-    | LPAREN RPAREN
+    LPAREN functionTypeParamList RPAREN {$$ = alctoken(FUNCTIONTYPEPARAMETERS, "functionTypeParameters", 3, $1, $2, $3);}
+    | LPAREN RPAREN {$$ = alctoken(FUNCTIONTYPEPARAMETERS, "functionTypeParameters", 2, $1, $2);}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList
-    | functionTypeParameter
+    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken(FUNCTIONTYPEPARAMLIST, "functionTypeParamList", 3, $1, $2, $3);}
+    | functionTypeParameter {$$ = $1;}
     ;
 
 functionTypeParameter:
-    variableDeclaration
-    | type
+    variableDeclaration {$$ = $1;}
+    | type {$$ = $1;}
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests
-    | LPAREN type RPAREN
+    LPAREN type RPAREN quests {$$ = alctoken(PARENTHESIZEDTYPE_OPT, "parenthesizedType_opt", 4, $1, $2, $3, $4);}
+    | LPAREN type RPAREN {$$ = alctoken(PARENTHESIZEDTYPE_OPT, "parenthesizedType_opt", 3, $1, $2, $3);}
     ;
 
 quests:
-    quest
-    | quests quest
+    quest {$$ = $1;}
+    | quests quest {$$ = alctoken(QUESTS, "quests", 2, $1, $2);}
     ;
 
 quest:
-    QUEST_NO_WS
-    | QUEST_WS
+    QUEST_NO_WS {$$ = $1;}
+    | QUEST_WS {$$ = $1;}
     ;
 
 functionBody:
-    block
-    | ASSIGNMENT expression
+    block {$$ = $1;}
+    | ASSIGNMENT expression {$$ = alctoken(FUNCTIONBODY, "functionBody", 2, $1, $2);}
     ;
 
 block:
-    LCURL RCURL
-    | LCURL statements RCURL
+    LCURL RCURL {$$ = alctoken(BLOCK, "block", 2, $1, $2);}
+    | LCURL statements RCURL {$$ = alctoken(BLOCK, "block", 3, $1, $2, $3);}
     ;
 
 statements:
-    statement SEMICOLON
-    | statement SEMICOLON
-    | statements SEMICOLON statement
-    | SEMICOLON
+    statement SEMICOLON {$$ = alctoken(STATEMENTS, "block", 2, $1, $2);}
+    | statement SEMICOLON {$$ = alctoken(STATEMENTS, "block", 2, $1, $2);}
+    | statements SEMICOLON statement {$$ = alctoken(STATEMENTS, "block", 3, $1, $2, $3);}
+    | SEMICOLON {$$ = $1;}
     ;
 
 statement:
-    declaration
-    | loopStatement
-    | expression
+    declaration {$$ = $1;}
+    | loopStatement {$$ = $1;}
+    | expression {$$ = $1;}
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression
-    | IDENTIFIER ADD_ASSIGNMENT expression
-    | IDENTIFIER SUB_ASSIGNMENT expression
+    IDENTIFIER ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken(ASSIGNMENT, "assignment", 3, $1, $2, $3);}
     ;
 
 loopStatement:
-    forStatement
-    | whileStatement
-    | doWhileStatement
+    forStatement {$$ = $1;}
+    | whileStatement {$$ = $1;}
+    | doWhileStatement {$$ = $1;}
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(FORSTATEMENT, "forStatement", 7, $1, $2, $3, $4, $5, $6, $7);}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody
-    | WHILE LPAREN expression RPAREN SEMICOLON
+    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken(WHILESTATEMENT, "whileStatement", 5, $1, $2, $3, $4, $5);}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken(WHILESTATEMENT, "whileStatement", 5, $1, $2, $3, $4, $5);}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken(DOWHILESTATEMENT, "doWhileStatement", 6, $1, $2, $3, $4, $5, $6);}
     ;
 
 variableDeclarations:
-    variableDeclaration
-    | multiVariableDeclaration
+    variableDeclaration {$$ = $1;}
+    | multiVariableDeclaration {$$ = $1;}
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type
+    IDENTIFIER COLON type {$$ = alctoken(VARIABLEDECLARATION, "variableDeclaration", 3, $1, $2, $3);}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN
+    LPAREN variableDeclarationList RPAREN {$$ = alctoken(MULTIVARIABLEDECLARATION, "multiVariableDeclaration", 3, $1, $2, $3);}
     ;
-
+    
 variableDeclarationList:
-    variableDeclaration
-    | variableDeclarationList COMMA variableDeclaration
+    variableDeclaration {$$ = $1}
+    | variableDeclarationList COMMA variableDeclaration {$$ = alctoken(VARIABLEDECLARATIONLIST, "variableDeclarationList", 3, $1, $2, $3)}
     ;
 
 expression:
