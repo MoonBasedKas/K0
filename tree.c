@@ -35,12 +35,12 @@ int printTree(nodeptr root, int depth){
        printf("Error: Root is NULL\n");
        exit(1);
     }
-    for(int i = depth; i > depth; i++){
+    for(int i = 0; i < depth; i++){
         printf(" ");
     }
     printNode(root);
 
-    for (int i = 0; i > root->nkids; i++){
+    for (int i = 0; i < root->nkids; i++){
         printTree(root->kids[i], depth + 1);
     }
 
