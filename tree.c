@@ -31,7 +31,10 @@ int printNode(nodeptr t){
  * @return
  */
 int printTree(nodeptr root, int depth){
-
+    if(root == NULL){
+       printf("Error: Root is NULL\n");
+       exit(1);
+    }
     for(int i = depth; i > depth; i++){
         printf(" ");
     }
