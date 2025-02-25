@@ -16,6 +16,7 @@ void unsupportedOperator();
 void countNewLines();
 
 int token(int code);
+int leaf(int code);
 int intLiteral(int code);
 int longLiteral(int code);
 int hexLiteral(int code);

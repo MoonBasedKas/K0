@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lex.h"
+#include "tree.h"
 #include "k0gram.tab.h"
 
 //prints error for unsupported keywords
@@ -66,10 +67,27 @@ int token(int code)
     return code;
 }
 
+int leaf(int code)
+{
+    token(code);
+
+    yylval.treeptr = alctoken(code, nextToken->text, 0);
+    yylval.treeptr->leaf = nextToken;
+
+    return code;
+}
+
+void changeSymbolName(char *string)
+{
+    free(yylval.treeptr->symbolname);
+    yylval.treeptr->symbolname = strdup(string);
+}
+
 // creates a token then fills the ival field
 int intLiteral(int code)
 {
-    token(code);
+    leaf(code);
+    changeSymbolName("intLiteral");
 
     char *temp = removeUnderscores(nextToken->text);
 
@@ -86,6 +104,7 @@ int longLiteral(int code)
     int len = strlen(yytext);
     yytext[len-1] = '\0';
     intLiteral(code);
+    changeSymbolName("longLiteral");
 
     return code;
 }
@@ -93,7 +112,8 @@ int longLiteral(int code)
 // creates a token then fills the ival field
 int hexLiteral(int code)
 {
-    token(code);
+    leaf(code);
+    changeSymbolName("hexLiteral");
 
     char *temp = removeUnderscores(nextToken->text);
 
@@ -110,6 +130,7 @@ int floatLiteral(int code)
     int len = strlen(yytext);
     yytext[len-1] = '\0';
     doubleLiteral(code);
+    changeSymbolName("floatLiteral");
 
     return code;
 }
@@ -117,7 +138,8 @@ int floatLiteral(int code)
 // creates a token then fills the dval field
 int doubleLiteral(int code)
 {
-    token(code);
+    leaf(code);
+    changeSymbolName("doubleLiteral");
 
     char *temp = removeUnderscores(nextToken->text);
 
@@ -132,7 +154,8 @@ int doubleLiteral(int code)
 // removing the start and end quotes and translating escape sequences into their values
 int stringLiteral(int code)
 {
-    token(code);
+    leaf(code);
+    changeSymbolName("stringLiteral");
 
     nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
@@ -209,7 +232,8 @@ int stringLiteral(int code)
 // so just copy the rest of the string
 int multiLineString(int code)
 {
-    token(code);
+    leaf(code);
+    changeSymbolName("multilineStringLiteral");
     
     nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
