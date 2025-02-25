@@ -31,23 +31,23 @@ int printNode(nodeptr t){
  * @return
  */
 int printTree(nodeptr root, int depth){
-    if(root == NULL){
-       printf("Error: Root is NULL\n");
-       exit(1);
-    }
-    for(int i = 0; i < depth; i++){
-        printf(" ");
-    }
-    printNode(root);
+    if (root != NULL) {
+        for(int i = 0; i < depth; i++){
+            printf(" ");
+        }
+        printNode(root);
 
-    for (int i = 0; i < root->nkids; i++){
-        printTree(root->kids[i], depth + 1);
+        for (int i = 0; i < root->nkids; i++){
+            printTree(root->kids[i], depth + 1);
+        }
     }
-
+    
     return 0;
 }
 
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
+    
+
     struct tree *node = malloc(sizeof(struct tree));
     if (!node) {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
@@ -68,6 +68,7 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
         node->kids[i] = va_arg(args, struct tree *);
     }
     va_end(args);
+
 
     return node;
 }

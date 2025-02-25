@@ -8,6 +8,8 @@
     struct tree *treeptr;
 }
 
+
+
 /* Non-terminals */
 %type <treeptr> program
 %type <treeptr> topLevelObjectList
@@ -161,7 +163,7 @@
 %%
 
 program:
-    topLevelObjectList {root = $$ = $1;}
+    topLevelObjectList {root = $$ = alctoken(1999, "program", 1, $1);}
     ;
 
 topLevelObjectList:
