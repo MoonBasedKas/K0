@@ -8,7 +8,7 @@
 
 char *filename;
 char temp[100];
-
+//extern int yydebug;
 void openFile(char *name);
 
 int main(int argc, char *argv[])
@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
     //checks that the file name is legal and opens the file
     openFile(argv[1]);
 
+    //yydebug = 1;
     yyparse();
 
 }

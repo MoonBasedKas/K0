@@ -3,7 +3,7 @@
     #include "lex.h"
     #include "tree.h"
 %}
-
+//%debug
 %union {
     struct tree *treeptr;
 }
@@ -156,7 +156,6 @@
 %left ADD SUB
 %left MULT DIV MOD
 %right INCR DECR
-
 %start program
 
 %%
@@ -180,14 +179,14 @@ declaration:
     ;
 
 propertyDeclaration:
-    variable variableDeclaration SEMICOLON {$$ = alctoken(2001, "propDecEmpty", 3, $1, $2, $3);}
-    | variable variableDeclaration assignment SEMICOLON {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3, $4);}
-    | variable reciverType variableDeclaration SEMICOLON {$$ = alctoken(2003, "propDecReciver", 4, $1, $2, $3, $4);}
-    | variable reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters variableDeclaration SEMICOLON {$$ = alctoken(2005, "propDecTypeParams", 4, $1, $2, $3, $4);}
-    | variable typeParameters variableDeclaration assignment SEMICOLON {$$ = alctoken(2006, "propDecTypeParamsAssign", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters reciverType variableDeclaration SEMICOLON {$$ = alctoken(2007, "propDecTypeParamsReciver", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
+    variable variableDeclaration  {$$ = alctoken(2001, "propDecEmpty", 3, $1, $2);}
+    | variable variableDeclaration assignment  {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3);}
+    | variable reciverType variableDeclaration  {$$ = alctoken(2003, "propDecReciver", 4, $1, $2, $3);}
+    | variable reciverType variableDeclaration assignment  {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4);}
+    | variable typeParameters variableDeclaration  {$$ = alctoken(2005, "propDecTypeParams", 4, $1, $2, $3);}
+    | variable typeParameters variableDeclaration assignment  {$$ = alctoken(2006, "propDecTypeParamsAssign", 5, $1, $2, $3, $4);}
+    | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(2007, "propDecTypeParamsReciver", 5, $1, $2, $3, $4);}
+    | variable typeParameters reciverType variableDeclaration assignment  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5);}
 
 variable:
     VAL {$$ = $1;}
