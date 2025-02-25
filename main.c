@@ -9,6 +9,8 @@
 char *filename;
 char temp[100];
 //extern int yydebug;
+extern struct tree *root;
+extern int printTree(struct tree *root, int depth);
 void openFile(char *name);
 
 int main(int argc, char *argv[])
@@ -25,7 +27,10 @@ int main(int argc, char *argv[])
 
     //yydebug = 1;
     yyparse();
+    printTree(root, 0);
 
+    fclose(yyin);
+    return 0;
 }
 
 void openFile(char *name)
