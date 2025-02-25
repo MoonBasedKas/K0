@@ -37,6 +37,7 @@ enum{
 %type <treeptr> typeArgumentsList
 %type <treeptr> typeArgument
 %type <treeptr> reciverType
+%type <treeptr> typeParameters
 %type <treeptr> functionType
 %type <treeptr> functionTypeParameters
 %type <treeptr> functionTypeParamList
@@ -180,187 +181,187 @@ enum{
 %%
 
 program:
-    topLevelObjectList {$$ = $1}
+    topLevelObjectList {$$ = $1;}
     ;
 
 topLevelObjectList:
-    topLevelObject {$$ = 1}
-    | topLevelObjectList topLevelObject {$$ = alctoken(TOPLEVELOBJECT, "topLevelObject", 2, $1, $2)}
+    topLevelObject {$$ = 1;}
+    | topLevelObjectList topLevelObject {$$ = alctoken(TOPLEVELOBJECT, "topLevelObject", 2, $1, $2);}
     ;
 
 topLevelObject:
-    declaration {$$ = $1}
+    declaration {$$ = $1;}
     ;
 
 declaration:
-    functionDeclaration {$$ = 1}
-    | propertyDeclaration {$$ = 1}
+    functionDeclaration {$$ = 1;}
+    | propertyDeclaration {$$ = 1;}
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
-    variable variableDeclaration SEMICOLON {$ = $1}
-    | variable variableDeclaration assignment SEMICOLON {$ = $1}
-    | variable reciverType variableDeclaration SEMICOLON {$ = $1}
-    | variable reciverType variableDeclaration assignment SEMICOLON {$ = $1}
-    | variable typeParameters variableDeclaration SEMICOLON {$ = $1}
-    | variable typeParameters variableDeclaration assignment SEMICOLON {$ = $1}
-    | variable typeParameters reciverType variableDeclaration SEMICOLON {$ = $1}
-    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$ = $1}
+    variable variableDeclaration SEMICOLON {$$ = $1;}
+    | variable variableDeclaration assignment SEMICOLON {$$ = $1;}
+    | variable reciverType variableDeclaration SEMICOLON {$$ = $1;}
+    | variable reciverType variableDeclaration assignment SEMICOLON {$$ = $1;}
+    | variable typeParameters variableDeclaration SEMICOLON {$$ = $1;}
+    | variable typeParameters variableDeclaration assignment SEMICOLON {$$ = $1;}
+    | variable typeParameters reciverType variableDeclaration SEMICOLON {$$ = $1;}
+    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$$ = $1;}
 
 variable:
-    VAL {$ = $1}
-    | VAR {$ = $1}
+    VAL {$$ = $1;}
+    | VAR {$$ = $1;}
     ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE {$ = $1}
+    LANGLE variableDeclarationList RANGLE {$$ = $1;}
     ;
 
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody {$ = $1}
-    | FUN IDENTIFIER functionValueParameters COLON type {$ = $1}
-    | FUN IDENTIFIER functionValueParameters functionBody {$ = $1}
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = $1;}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = $1;}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = $1;}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN {$ = $1}
+    LPAREN functionValueParamList RPAREN {$$ = $1;}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList {$ = $1}
-    | functionValueParameter {$ = $1}
+    functionValueParameter COMMA functionValueParamList {$$ = $1;}
+    | functionValueParameter {$$ = $1;}
     ;
 
 functionValueParameter:
-    variableDeclaration {$ = $1}
-    | variableDeclaration ASSIGNMENT expression {$ = $1}
+    variableDeclaration {$$ = $1;}
+    | variableDeclaration ASSIGNMENT expression {$$ = $1;}
     ;
 
 type:
-    functionType {$ = $1}
-    | parenthesizedType_opt {$ = $1}
-    | userType {$ = $1}
+    functionType {$$ = $1;}
+    | parenthesizedType_opt {$$ = $1;}
+    | userType {$$ = $1;}
     ;
 
 userType:
-    simpleUserType {$ = $1}
-    | userType DOT simpleUserType {$ = $1}
+    simpleUserType {$$ = $1;}
+    | userType DOT simpleUserType {$$ = $1;}
     ;
 
 simpleUserType:
-    IDENTIFIER {$ = $1}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$ = $1}
+    IDENTIFIER {$$ = $1;}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = $1;}
     ;
 
 typeArgumentsList:
-    typeArgument {$ = $1}
-    | typeArgument COMMA typeArgumentsList {$ = $1}
+    typeArgument {$$ = $1;}
+    | typeArgument COMMA typeArgumentsList {$$ = $1;}
     ;
 
 typeArgument:
-    type {$ = $1}
-    | MULT {$ = $1}
+    type {$$ = $1;}
+    | MULT {$$ = $1;}
     ;
 
 reciverType:
-    parenthesizedType_opt {$ = $1}
+    parenthesizedType_opt {$$ = $1;}
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type {$ = $1}
-    | functionTypeParameters ARROW type {$ = $1}
+    reciverType DOT functionTypeParameters ARROW type {$$ = $1;}
+    | functionTypeParameters ARROW type {$$ = $1;}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN {$ = $1}
-    | LPAREN RPAREN {$ = $1}
+    LPAREN functionTypeParamList RPAREN {$$ = $1;}
+    | LPAREN RPAREN {$$ = $1;}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList {$ = $1}
-    | functionTypeParameter {$ = $1}
+    functionTypeParameter COMMA functionTypeParamList {$$ = $1;}
+    | functionTypeParameter {$$ = $1;}
     ;
 
 functionTypeParameter:
-    variableDeclaration {$ = $1}
-    | type {$ = $1}
+    variableDeclaration {$$ = $1;}
+    | type {$$ = $1;}
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests {$ = $1}
-    | LPAREN type RPAREN {$ = $1}
+    LPAREN type RPAREN quests {$$ = $1;}
+    | LPAREN type RPAREN {$$ = $1;}
     ;
 
 quests:
-    quest {$ = $1}
-    | quests quest {$ = $1}
+    quest {$$ = $1;}
+    | quests quest {$$ = $1;}
     ;
 
 quest:
-    QUEST_NO_WS {$ = $1}
-    | QUEST_WS {$ = $1}
+    QUEST_NO_WS {$$ = $1;}
+    | QUEST_WS {$$ = $1;}
     ;
 
 functionBody:
-    block {$ = $1}
-    | ASSIGNMENT expression {$ = $1}
+    block {$$ = $1;}
+    | ASSIGNMENT expression {$$ = $1;}
     ;
 
 block:
-    LCURL RCURL {$ = $1}
-    | LCURL statements RCURL {$ = $1}
+    LCURL RCURL {$$ = $1;}
+    | LCURL statements RCURL {$$ = $1;}
     ;
 
 statements:
-    statement SEMICOLON {$ = $1}
-    | statement SEMICOLON {$ = $1}
-    | statements SEMICOLON statement {$ = $1}
-    | SEMICOLON {$ = $1}
+    statement SEMICOLON {$$ = $1;}
+    | statement SEMICOLON {$$ = $1;}
+    | statements SEMICOLON statement {$$ = $1;}
+    | SEMICOLON {$$ = $1;}
     ;
 
 statement:
-    declaration {$ = $1}
-    | loopStatement {$ = $1}
-    | expression {$ = $1}
+    declaration {$$ = $1;}
+    | loopStatement {$$ = $1;}
+    | expression {$$ = $1;}
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression {$ = $1}
-    | IDENTIFIER ADD_ASSIGNMENT expression {$ = $1}
-    | IDENTIFIER SUB_ASSIGNMENT expression {$ = $1}
+    IDENTIFIER ASSIGNMENT expression {$$ = $1;}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = $1;}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = $1;}
     ;
 
 loopStatement:
-    forStatement {$ = $1}
-    | whileStatement {$ = $1}
-    | doWhileStatement {$ = $1}
+    forStatement {$$ = $1;}
+    | whileStatement {$$ = $1;}
+    | doWhileStatement {$$ = $1;}
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$ = $1}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = $1;}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody {$ = $1}
-    | WHILE LPAREN expression RPAREN SEMICOLON {$ = $1}
+    WHILE LPAREN expression RPAREN controlStructureBody {$$ = $1;}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = $1;}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN {$ = $1}
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = $1;}
     ;
 
 variableDeclarations:
-    variableDeclaration {$ = $1}
-    | multiVariableDeclaration {$ = $1}
+    variableDeclaration {$$ = $1;}
+    | multiVariableDeclaration {$$ = $1;}
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type {$ = $1}
+    IDENTIFIER COLON type {$$ = $1;}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN {$ = $1}
+    LPAREN variableDeclarationList RPAREN {$$ = $1;}
     ;
 /* STOP HERE */
 variableDeclarationList:
