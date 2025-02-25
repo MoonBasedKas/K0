@@ -212,7 +212,7 @@ program:
     ;
 
 topLevelObjectList:
-    topLevelObject {$$ = 1;}
+    topLevelObject {$$ = $1;}
     | topLevelObjectList topLevelObject {$$ = alctoken(TOPLEVELOBJECT, "topLevelObject", 2, $1, $2);}
     ;
 
@@ -221,8 +221,8 @@ topLevelObject:
     ;
 
 declaration:
-    functionDeclaration {$$ = 1;}
-    | propertyDeclaration {$$ = 1;}
+    functionDeclaration {$$ = $1;}
+    | propertyDeclaration {$$ = $1;}
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
