@@ -69,49 +69,49 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
 %%
 
-{new_line}										{ rows++; if (addSemi() == 1){return token(SEMICOLON);} }
+{new_line}										{ rows++; if (addSemi() == 1){return leaf(SEMICOLON);} }
 
 {white_space}									{ /* Discard white space */ }
 {line_comment}          						{ /* Discard comments */  }
 {delimited_comment}								{ countNewLines(); /* Discard comments */ }
 {shebang_line}									{ /* Discard comments */  }
 
-"="												{ return token(ASSIGNMENT); }
-"+="											{ return token(ADD_ASSIGNMENT); }
-"-="											{ return token(SUB_ASSIGNMENT); }
-"+"												{ return token(ADD); }
-"-"												{ return token(SUB); }
-"*"												{ return token(MULT); }
-"/"												{ return token(DIV); }
-"%"												{ return token(MOD); }
-"++"											{ return token(INCR); }
-"--"											{ return token(DECR); }
-"=="											{ return token(EQEQ); }
-"!="											{ return token(EXCL_EQ); }
-"<"												{ return token(LANGLE); }
-">"												{ return token(RANGLE); }
-"<="											{ return token(LE); }
-">="											{ return token(GE); }
-"==="											{ return token(EQEQEQ); }
-"!=="											{ return token(EXCL_EQEQ); }
-"||"											{ return token(DISJ); }
-"&&"											{ return token(CONJ); }
-"!"												{ return token(EXCL_NO_WS); }
-"!"hidden										{ return token(EXCL_WS); }
-"?"{hidden}										{ return token(QUEST_WS); } 
-"?"												{ return token(QUEST_NO_WS); }
-".."											{ return token(RANGE); }
-"..<"											{ return token(RANGE_UNTIL); }
-"."												{ return token(DOT); }
-","												{ return token(COMMA); }
-"("												{ return token(LPAREN); }
-")"												{ return token(RPAREN); }
-"["												{ return token(LSQUARE); }
-"]"												{ return token(RSQUARE); }
-"{"												{ return token(LCURL); }
-"}"												{ return token(RCURL); }
-":"												{ return token(COLON); }
-";"												{ return token(SEMICOLON); }
+"="												{ return leaf(ASSIGNMENT); }
+"+="											{ return leaf(ADD_ASSIGNMENT); }
+"-="											{ return leaf(SUB_ASSIGNMENT); }
+"+"												{ return leaf(ADD); }
+"-"												{ return leaf(SUB); }
+"*"												{ return leaf(MULT); }
+"/"												{ return leaf(DIV); }
+"%"												{ return leaf(MOD); }
+"++"											{ return leaf(INCR); }
+"--"											{ return leaf(DECR); }
+"=="											{ return leaf(EQEQ); }
+"!="											{ return leaf(EXCL_EQ); }
+"<"												{ return leaf(LANGLE); }
+">"												{ return leaf(RANGLE); }
+"<="											{ return leaf(LE); }
+">="											{ return leaf(GE); }
+"==="											{ return leaf(EQEQEQ); }
+"!=="											{ return leaf(EXCL_EQEQ); }
+"||"											{ return leaf(DISJ); }
+"&&"											{ return leaf(CONJ); }
+"!"												{ return leaf(EXCL_NO_WS); }
+"!"hidden										{ return leaf(EXCL_WS); }
+"?"{hidden}										{ return leaf(QUEST_WS); } 
+"?"												{ return leaf(QUEST_NO_WS); }
+".."											{ return leaf(RANGE); }
+"..<"											{ return leaf(RANGE_UNTIL); }
+"."												{ return leaf(DOT); }
+","												{ return leaf(COMMA); }
+"("												{ return leaf(LPAREN); }
+")"												{ return leaf(RPAREN); }
+"["												{ return leaf(LSQUARE); }
+"]"												{ return leaf(RSQUARE); }
+"{"												{ return leaf(LCURL); }
+"}"												{ return leaf(RCURL); }
+":"												{ return leaf(COLON); }
+";"												{ return leaf(SEMICOLON); }
 
 "*="											{ unsupportedOperator(); }
 "/="											{ unsupportedOperator(); }
@@ -131,33 +131,33 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "$"												{ unsupportedOperator(); }
 \\				    							{ unsupportedOperator(); }
 
-"..." 											{ return token(RESERVED); }
-"->"											{ return token(ARROW); }
-"=>"											{ return token(DOUBLE_ARROW); }
-"::"											{ return token(COLONCOLON); }
-";;"											{ return token(DOUBLE_SEMICOLON); }
-"'"												{ return token(SINGLE_QUOTE); }
+"..." 											{ return leaf(RESERVED); }
+"->"											{ return leaf(ARROW); }
+"=>"											{ return leaf(DOUBLE_ARROW); }
+"::"											{ return leaf(COLONCOLON); }
+";;"											{ return leaf(DOUBLE_SEMICOLON); }
+"'"												{ return leaf(SINGLE_QUOTE); }
 
-"break"											{ return token(BREAK); }
-"continue"										{ return token(CONTINUE); }
-"do"											{ return token(DO); }
-"else"											{ return token(ELSE); }
-"false"                                         { return token(FALSE); }
-"for"											{ return token(FOR); }
-"fun"											{ return token(FUN); }
-"if"											{ return token(IF); }
-"in"											{ return token(IN); }
-"null"                                          { return token(NULL_K); }
-"return"										{ return token(RETURN); }
-"true"                                          { return token(TRUE); }
-"val"											{ return token(VAL); }
-"var"											{ return token(VAR); }
-"when"											{ return token(WHEN); }
-"while"											{ return token(WHILE);}
+"break"											{ return leaf(BREAK); }
+"continue"										{ return leaf(CONTINUE); }
+"do"											{ return leaf(DO); }
+"else"											{ return leaf(ELSE); }
+"false"                                         { return leaf(FALSE); }
+"for"											{ return leaf(FOR); }
+"fun"											{ return leaf(FUN); }
+"if"											{ return leaf(IF); }
+"in"											{ return leaf(IN); }
+"null"                                          { return leaf(NULL_K); }
+"return"										{ return leaf(RETURN); }
+"true"                                          { return leaf(TRUE); }
+"val"											{ return leaf(VAL); }
+"var"											{ return leaf(VAR); }
+"when"											{ return leaf(WHEN); }
+"while"											{ return leaf(WHILE);}
 
-"import"										{ return token(IMPORT); }
+"import"										{ return leaf(IMPORT); }
 
-"const"											{ return token(CONST); }
+"const"											{ return leaf(CONST); }
 
 "as"											{ unsupportedKeyword(); }
 "as?"											{ unsupportedKeyword(); }
@@ -219,16 +219,16 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "tailrec"										{ unsupportedKeyword(); }
 "vararg"										{ unsupportedKeyword(); }
 
-"interface"										{ return token(INTERFACE); }
-"override"										{ return token(OVERRIDE); }
+"interface"										{ return leaf(INTERFACE); }
+"override"										{ return leaf(OVERRIDE); }
 
 {integer_literal}								{ return intLiteral(INTEGER_LITERAL); }
 {long_literal}									{ return longLiteral(INTEGER_LITERAL); }
 {hex_literal}									{ return hexLiteral(HEX_LITERAL); }
 {float_literal}									{ return floatLiteral(REAL_LITERAL); }
 {double_literal}								{ return doubleLiteral(REAL_LITERAL); }
-{character_literal}								{ return token(CHARACTER_LITERAL); }
-{identifier}									{ return token(IDENTIFIER); }
+{character_literal}								{ return leaf(CHARACTER_LITERAL); }
+{identifier}									{ return leaf(IDENTIFIER); }
 {line_string}									{ return stringLiteral(LINE_STRING); }
 {multi_line_string}                             { countNewLines(); return multiLineString(MULTILINE_STRING); }
 
