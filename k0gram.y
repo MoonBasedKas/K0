@@ -13,7 +13,33 @@ enum{
     FUNCTIONDECLARATION,
     FUNCTIONVALUEPARAMETERS,
     FUNCTIONVALUEPARAMLIST,
-    TYPE
+    TYPE,
+    USERTYPE,
+    SIMPLEUSERTYPE,
+    TYPEARGUMENTSLIST,
+    TYPEARGUMENT,
+    RECIVERTYPE,
+    FUNCTIONTYPE,
+    FUNCTIONTYPEPARAMETERS,
+    FUNCTIONTYPEPARAMLIST,
+    PARENTHESIZEDTYPE_OPT,
+    QUESTS,
+    QUEST,
+    FUNCTIONBODY,
+    BLOCK,
+    STATEMENTS,
+    STATEMENT,
+    ASSIGNMENT,
+    LOOPSTATEMENT,
+    FORSTATEMENT,
+    WHILESTATEMENT,
+    DOWHILESTATEMENT,
+    VARIABLEDECLARATIONS,
+    VARIABLEDECLARATION,
+    VARIABLEDECLARATION
+    MULTIVARIABLEDECLARATION
+
+
 };
 
 %union {
@@ -199,14 +225,14 @@ declaration:
     ;
 
 propertyDeclaration: // Do we need modifiers here? (modifier->propertyModifier->const)
-    variable variableDeclaration SEMICOLON {$$ = $1;}
-    | variable variableDeclaration assignment SEMICOLON {$$ = $1;}
-    | variable reciverType variableDeclaration SEMICOLON {$$ = $1;}
-    | variable reciverType variableDeclaration assignment SEMICOLON {$$ = $1;}
-    | variable typeParameters variableDeclaration SEMICOLON {$$ = $1;}
-    | variable typeParameters variableDeclaration assignment SEMICOLON {$$ = $1;}
-    | variable typeParameters reciverType variableDeclaration SEMICOLON {$$ = $1;}
-    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$$ = $1;}
+    variable variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 3, $1, $2, $3);}
+    | variable variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 4, $1, $2, $3, $4);}
+    | variable typeParameters variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration assignment SEMICOLON {$$ = alctoken(PROPERTYDECLARATION, "propertyDeclaration" 6, , $1, $2, $3, $4, $5, $6);}
 
 variable:
     VAL {$$ = $1;}
@@ -214,28 +240,28 @@ variable:
     ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE {$$ = $1;}
+    LANGLE variableDeclarationList RANGLE {$$ = alctoken(TYPEPARAMETERS, "typeParameters", 3, $1, $2, $3);}
     ;
 
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = $1;}
-    | FUN IDENTIFIER functionValueParameters COLON type {$$ = $1;}
-    | FUN IDENTIFIER functionValueParameters functionBody {$$ = $1;}
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken();}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken();}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken();}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN {$$ = $1;}
+    LPAREN functionValueParamList RPAREN {$$ = alctoken();}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList {$$ = $1;}
+    functionValueParameter COMMA functionValueParamList {$$ = alctoken();}
     | functionValueParameter {$$ = $1;}
     ;
 
 functionValueParameter:
     variableDeclaration {$$ = $1;}
-    | variableDeclaration ASSIGNMENT expression {$$ = $1;}
+    | variableDeclaration ASSIGNMENT expression {$$ = alctoken();}
     ;
 
 type:
@@ -246,17 +272,17 @@ type:
 
 userType:
     simpleUserType {$$ = $1;}
-    | userType DOT simpleUserType {$$ = $1;}
+    | userType DOT simpleUserType {$$ = alctoken();}
     ;
 
 simpleUserType:
     IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = $1;}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken();}
     ;
 
 typeArgumentsList:
     typeArgument {$$ = $1;}
-    | typeArgument COMMA typeArgumentsList {$$ = $1;}
+    | typeArgument COMMA typeArgumentsList {$$ = alctoken();}
     ;
 
 typeArgument:
@@ -269,17 +295,17 @@ reciverType:
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type {$$ = $1;}
-    | functionTypeParameters ARROW type {$$ = $1;}
+    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken();}
+    | functionTypeParameters ARROW type {$$ = alctoken();}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN {$$ = $1;}
-    | LPAREN RPAREN {$$ = $1;}
+    LPAREN functionTypeParamList RPAREN {$$ = alctoken();}
+    | LPAREN RPAREN {$$ = alctoken();}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList {$$ = $1;}
+    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken();}
     | functionTypeParameter {$$ = $1;}
     ;
 
@@ -289,13 +315,13 @@ functionTypeParameter:
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests {$$ = $1;}
-    | LPAREN type RPAREN {$$ = $1;}
+    LPAREN type RPAREN quests {$$ = alctoken();}
+    | LPAREN type RPAREN {$$ = alctoken();}
     ;
 
 quests:
     quest {$$ = $1;}
-    | quests quest {$$ = $1;}
+    | quests quest {$$ = alctoken();}
     ;
 
 quest:
@@ -305,18 +331,18 @@ quest:
 
 functionBody:
     block {$$ = $1;}
-    | ASSIGNMENT expression {$$ = $1;}
+    | ASSIGNMENT expression {$$ = alctoken();}
     ;
 
 block:
-    LCURL RCURL {$$ = $1;}
-    | LCURL statements RCURL {$$ = $1;}
+    LCURL RCURL {$$ = alctoken();}
+    | LCURL statements RCURL {$$ = alctoken();}
     ;
 
 statements:
-    statement SEMICOLON {$$ = $1;}
-    | statement SEMICOLON {$$ = $1;}
-    | statements SEMICOLON statement {$$ = $1;}
+    statement SEMICOLON {$$ = alctoken();}
+    | statement SEMICOLON {$$ = alctoken();}
+    | statements SEMICOLON statement {$$ = alctoken();}
     | SEMICOLON {$$ = $1;}
     ;
 
@@ -327,9 +353,9 @@ statement:
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression {$$ = $1;}
-    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = $1;}
-    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = $1;}
+    IDENTIFIER ASSIGNMENT expression {$$ = alctoken();}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken();}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken();}
     ;
 
 loopStatement:
@@ -339,16 +365,16 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = $1;}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken();}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody {$$ = $1;}
-    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = $1;}
+    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken();}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken();}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = $1;}
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken();}
     ;
 
 variableDeclarations:
@@ -357,11 +383,11 @@ variableDeclarations:
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type {$$ = $1;}
+    IDENTIFIER COLON type {$$ = alctoken();}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN {$$ = $1;}
+    LPAREN variableDeclarationList RPAREN {$$ = alctoken();}
     ;
 /* STOP HERE */
 variableDeclarationList:
