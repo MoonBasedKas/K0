@@ -199,11 +199,13 @@ typeParameters:
     LANGLE variableDeclarationList RANGLE {$$ = alctoken(2009, "typeParameters", 3, $1, $2, $3);}
     ;
 
-
 functionDeclaration:
     FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken(2010, "funcDecAll", 6, $1, $2, $3, $4, $5, $6);}
-    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(2011, "funcDecType", 5, $1, $2, $3, $4, $5);}
-    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(2012, "funcDecBody", 4, $1,$2,$3,$4);}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(2011, "funcDecParamType", 5, $1, $2, $3, $4, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(2012, "funcDecParamBody", 4, $1,$2,$3,$4);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody {$$ = alctoken(3001, "funcDecTypeBody", 4, $1, $2, $6, $7);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type {$$ = alctoken(3002, "funcDecType", 3, $1, $2, $6);}
+    | FUN IDENTIFIER LPAREN RPAREN functionBody {$$ = alctoken(3003, "funcDecBody", 3, $1, $2, $5);}
     ;
 
 functionValueParameters:
