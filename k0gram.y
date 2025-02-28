@@ -78,6 +78,8 @@
 %type <treeptr> quest
 %type <treeptr> constantVal
 %type <treeptr> identifierDot
+%type <treeptr> funCall
+%type <treeptr> funOrIdentifier
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -474,15 +476,25 @@ primaryExpression:
     | ifExpression                              {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
-    | IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
-    | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
+    | funCall                                   {$$ = $1;}
     ;
 
+funCall:
+    IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
+    | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
+
 identifierDot:
-    IDENTIFIER DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
-    | IDENTIFIER DOT IDENTIFIER {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
+    funOrIdentifier DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
+    | funOrIdentifier DOT funOrIdentifier {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
     | IDENTIFIER QUEST_NO_WS DOT identifierDot {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
-    | IDENTIFIER QUEST_NO_WS DOT IDENTIFIER {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    | IDENTIFIER QUEST_NO_WS DOT funOrIdentifier {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    ;
+
+funOrIdentifier:
+    funCall {$$ = $1;}
+    | IDENTIFIER {$$ = $1;}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
     ;
 
 expressionList:
