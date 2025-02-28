@@ -88,11 +88,10 @@ int intLiteral(int code)
 {
     leaf(code);
     changeSymbolName("intLiteral");
-
+    
     char *temp = removeUnderscores(nextToken->text);
 
     nextToken->ival = atoi(temp);
-
     free(temp);
 
     return code;
@@ -144,7 +143,7 @@ int doubleLiteral(int code)
     char *temp = removeUnderscores(nextToken->text);
 
     sscanf(temp, "%lf", &(nextToken->dval));
-
+    
     free(temp);
 
     return code;
@@ -265,21 +264,19 @@ char * removeUnderscores()
 {
     char *nextCharLex = nextToken->text;
     char *nextCharLit = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
-
-    while(*nextCharLex != '\0')
+    int i = 0;
+    for(int j = 0; nextCharLex[i] != '\0'; i++)
     {
         if(*nextCharLex == '_')
-        {
-            nextCharLex++;
+        {   
+            j++;
         }   
         else
         {
-            *nextCharLit = *nextCharLex;
+            nextCharLit[i] = nextCharLex[j+i];
         }
-        nextCharLex++;
-        nextCharLit++;
     }
-    *nextCharLit = '\0';
+    nextCharLit[i] = '\0';
     return nextCharLit;
 }
 

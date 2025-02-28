@@ -1,3 +1,3 @@
    fun main(args : Array<String>) {
-      println("Hello,\tWorld!")
+      println(0x1__1)
    }
