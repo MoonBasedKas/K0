@@ -334,6 +334,7 @@ loopStatement:
 
 forStatement:
     FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
+    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
     ;
 
 whileStatement:
