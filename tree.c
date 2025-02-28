@@ -7,47 +7,46 @@
 
 struct tree *root = NULL;
 
-/**
- * @brief Prints out information about a singular node in the tree.
- *
- * @param t
- * @return int
- */
-int printNode(nodeptr t){
-    if (t->nkids > 0) {
-        printf("node (%s, %d): %d\n", t->symbolname, t->prodrule, t->nkids);
-    } else {
-        printf("token (%s, %d): %s %d\n", t->leaf->filename, t->leaf->lineno,
-                t->leaf->text, t->leaf->category);
+int printTree(nodeptr root, int depth) {
+    static int last[256];
+    if (root == NULL)
+        return 0;
+    if (depth == 0) {
+        memset(last, 0, sizeof(last));
+    }
+
+    char prefix[1024] = "";
+    for (int i = 0; i < depth - 1; i++) {
+        if (last[i])
+            strcat(prefix, "    ");
+        else
+            strcat(prefix, "│   ");
+    }
+
+    if (depth > 0) {
+        if (last[depth - 1])
+            strcat(prefix, "└── ");
+        else
+            strcat(prefix, "├── ");
+    }
+
+    if (root->nkids > 0)
+        printf("%snode (%s, %d): %d children\n", prefix, root->symbolname, root->prodrule, root->nkids);
+    else
+        printf("%stoken (File: %s, Line: %d):  %s  Integer Code: %d\n", prefix, root->leaf->filename, root->leaf->lineno,
+               root->leaf->text, root->leaf->category);
+
+    // recurse for each child: update the "last" array.
+    for (int i = 0; i < root->nkids; i++) {
+        last[depth] = (i == root->nkids - 1);
+        printTree(root->kids[i], depth + 1);
     }
     return 0;
 }
 
-/**
- * @brief prints out the entire tree recursively.
- *
- * @param root root node
- * @param depth depth initially should be 0.
- * @return
- */
-int printTree(nodeptr root, int depth){
-    if (root != NULL) {
-        for(int i = 0; i < depth; i++){
-            printf(" ");
-        }
-        printNode(root);
-
-        for (int i = 0; i < root->nkids; i++){
-            printTree(root->kids[i], depth + 1);
-        }
-    }
-    
-    return 0;
-}
 
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     
-
     struct tree *node = malloc(sizeof(struct tree));
     if (!node) {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
@@ -68,8 +67,6 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
         node->kids[i] = va_arg(args, struct tree *);
     }
     va_end(args);
-
-
     return node;
 }
 
