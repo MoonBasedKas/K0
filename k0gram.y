@@ -76,6 +76,12 @@
 %type <treeptr> excl
 %type <treeptr> prefixUnaryOperator
 %type <treeptr> quest
+%type <treeptr> constantVal
+%type <treeptr> identifierDot
+%type <treeptr> funCall
+%type <treeptr> funOrIdentifier
+%type <treeptr> importList
+%type <treeptr> importIdentifier
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -175,6 +181,18 @@ topLevelObjectList:
 
 topLevelObject:
     declaration {$$ = $1;}
+    | importList {$$ = $1;}
+    ;
+
+importList:
+    IMPORT importIdentifier {$$ = alctoken(4000, "collapsedImport", 2, $1, $2);}
+    | IMPORT importIdentifier importList {$$ = alctoken(4001, "expandingImprt", 3, $1, $2, $3);}
+    ;
+
+importIdentifier:
+    IDENTIFIER DOT importIdentifier {$$ = alctoken(4002, "expandingImportID", 3, $1, $2, $3);}
+    | IDENTIFIER {$$ = $1;}
+    | MULT {$$ = $1;}
     ;
 
 declaration:
@@ -195,9 +213,13 @@ propertyDeclaration:
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
 
 variable:
-    VAL {$$ = $1;}
+    constantVal {$$ = $1;}
+    | VAL {$$ = $1;}
     | VAR {$$ = $1;}
     ;
+
+constantVal:
+    CONST VAL {$$ = alctoken(2900, "constantVal", 2, $1, $2);};
 
 typeParameters:
     LANGLE variableDeclarationList RANGLE {$$ = alctoken(2009, "typeParameters", 3, $1, $2, $3);}
@@ -283,7 +305,7 @@ parenthesizedType_opt:
 
 quests:
     quest {$$ = $1;}
-    | quests quest {$$ = alctoken(2026, "quests", 2, $1, $2);}
+    | quest quests {$$ = alctoken(2026, "quests", 2, $1, $2);}
     ;
 
 quest:
@@ -328,6 +350,7 @@ loopStatement:
 
 forStatement:
     FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
+    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
     ;
 
 whileStatement:
@@ -346,6 +369,7 @@ variableDeclarations:
 
 variableDeclaration:
     IDENTIFIER COLON type {$$ = alctoken(2039, "varDec", 3, $1, $2, $3);}
+    | IDENTIFIER COLON type quests {$$ = alctoken(2039, "varDec", 4, $1, $2, $3, $4);}
     ;
 
 multiVariableDeclaration:
@@ -453,6 +477,7 @@ excl:
 primaryExpression:
     parenthesizedExpression                     {$$ = $1;}
     | IDENTIFIER                                {$$ = $1;}
+    | identifierDot                             {$$ = $1;}
     | INTEGER_LITERAL                           {$$ = $1;}
     | HEX_LITERAL                               {$$ = $1;}
     | CHARACTER_LITERAL                         {$$ = $1;}
@@ -465,8 +490,25 @@ primaryExpression:
     | ifExpression                              {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
-    | IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
+    | funCall                                   {$$ = $1;}
+    ;
+
+funCall:
+    IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
     | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
+
+identifierDot:
+    funOrIdentifier DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
+    | funOrIdentifier DOT funOrIdentifier {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
+    | IDENTIFIER QUEST_NO_WS DOT identifierDot {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    | IDENTIFIER QUEST_NO_WS DOT funOrIdentifier {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    ;
+
+funOrIdentifier:
+    funCall {$$ = $1;}
+    | IDENTIFIER {$$ = $1;}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
     ;
 
 expressionList:
