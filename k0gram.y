@@ -185,6 +185,7 @@ declaration:
 
 propertyDeclaration:
     variable variableDeclaration  {$$ = alctoken(2001, "propDecEmpty", 3, $1, $2);}
+    | variable IDENTIFIER ASSIGNMENT expression {$$ = alctoken(2201, "propDecTypeless", 2, $2, $4);}
     | variable variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3, $4);}
     | variable reciverType variableDeclaration  {$$ = alctoken(2003, "propDecReciver", 4, $1, $2, $3);}
     | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
