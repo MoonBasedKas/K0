@@ -168,7 +168,9 @@ program:
 
 topLevelObjectList:
     topLevelObject {$$ = $1;}
+    | topLevelObject SEMICOLON {$$ = $1;}
     | topLevelObjectList topLevelObject {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
+    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
     ;
 
 topLevelObject:
