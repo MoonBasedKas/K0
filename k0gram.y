@@ -76,6 +76,7 @@
 %type <treeptr> excl
 %type <treeptr> prefixUnaryOperator
 %type <treeptr> quest
+%type <treeptr> constantVal
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -195,9 +196,13 @@ propertyDeclaration:
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
 
 variable:
-    VAL {$$ = $1;}
+    constantVal {$$ = $1;}
+    | VAL {$$ = $1;}
     | VAR {$$ = $1;}
     ;
+
+constantVal:
+    CONST VAL {$$ = alctoken(2900, "constantVal", 2, $1, $2);};
 
 typeParameters:
     LANGLE variableDeclarationList RANGLE {$$ = alctoken(2009, "typeParameters", 3, $1, $2, $3);}
