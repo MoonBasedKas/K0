@@ -289,7 +289,7 @@ parenthesizedType_opt:
 
 quests:
     quest {$$ = $1;}
-    | quests quest {$$ = alctoken(2026, "quests", 2, $1, $2);}
+    | quest quests {$$ = alctoken(2026, "quests", 2, $1, $2);}
     ;
 
 quest:
@@ -352,6 +352,7 @@ variableDeclarations:
 
 variableDeclaration:
     IDENTIFIER COLON type {$$ = alctoken(2039, "varDec", 3, $1, $2, $3);}
+    | IDENTIFIER COLON type quests {$$ = alctoken(2039, "varDec", 4, $1, $2, $3, $4);}
     ;
 
 multiVariableDeclaration:
