@@ -80,6 +80,8 @@
 %type <treeptr> identifierDot
 %type <treeptr> funCall
 %type <treeptr> funOrIdentifier
+%type <treeptr> importList
+%type <treeptr> importIdentifier
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -179,6 +181,18 @@ topLevelObjectList:
 
 topLevelObject:
     declaration {$$ = $1;}
+    | importList {$$ = $1;}
+    ;
+
+importList:
+    IMPORT importIdentifier {$$ = alctoken(4000, "collapsedImport", 2, $1, $2);}
+    | IMPORT importIdentifier importList {$$ = alctoken(4001, "expandingImprt", 3, $1, $2, $3);}
+    ;
+
+importIdentifier:
+    IDENTIFIER DOT importIdentifier {$$ = alctoken(4002, "expandingImportID", 3, $1, $2, $3);}
+    | IDENTIFIER {$$ = $1;}
+    | MULT {$$ = $1;}
     ;
 
 declaration:
