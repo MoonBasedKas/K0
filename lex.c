@@ -286,7 +286,7 @@ void yyerror (char const *s) {
 }
 
 int addSemi(){
-
+    if (!nextToken) return 0; // Null 
     switch(nextToken->category){
         case INTEGER_LITERAL:
         case HEX_LITERAL:
