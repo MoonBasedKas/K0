@@ -168,7 +168,9 @@ program:
 
 topLevelObjectList:
     topLevelObject {$$ = $1;}
+    | topLevelObject SEMICOLON {$$ = $1;}
     | topLevelObjectList topLevelObject {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
+    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
     ;
 
 topLevelObject:
@@ -178,17 +180,19 @@ topLevelObject:
 declaration:
     functionDeclaration {$$ = $1;}
     | propertyDeclaration {$$ = $1;}
+    | assignment {$$ = $1;}
     ;
 
 propertyDeclaration:
     variable variableDeclaration  {$$ = alctoken(2001, "propDecEmpty", 3, $1, $2);}
-    | variable variableDeclaration assignment  {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3);}
+    | variable IDENTIFIER ASSIGNMENT expression {$$ = alctoken(2201, "propDecTypeless", 2, $2, $4);}
+    | variable variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3, $4);}
     | variable reciverType variableDeclaration  {$$ = alctoken(2003, "propDecReciver", 4, $1, $2, $3);}
-    | variable reciverType variableDeclaration assignment  {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
     | variable typeParameters variableDeclaration  {$$ = alctoken(2005, "propDecTypeParams", 4, $1, $2, $3);}
-    | variable typeParameters variableDeclaration assignment  {$$ = alctoken(2006, "propDecTypeParamsAssign", 5, $1, $2, $3, $4);}
+    | variable typeParameters variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2006, "propDecTypeParamsAssign", 5, $1, $2, $3, $4, $5);}
     | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(2007, "propDecTypeParamsReciver", 5, $1, $2, $3, $4);}
-    | variable typeParameters reciverType variableDeclaration assignment  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
 
 variable:
     VAL {$$ = $1;}
@@ -299,7 +303,7 @@ block:
 
 statements:
     statement SEMICOLON {$$ = alctoken(2030, "statement", 2, $1, $2);}
-    | statements SEMICOLON statement {$$ = alctoken(2031, "statements", 3, $1, $2, $3);}
+    | statement SEMICOLON statements {$$ = alctoken(2031, "statements", 3, $1, $2, $3);}
     | SEMICOLON {$$ = $1;}
     ;
 
@@ -314,6 +318,7 @@ assignment:
     | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken(2033, "assignAdd", 3, $1, $2, $3);}
     | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken(2034, "assignSub", 3, $1, $2, $3);}
     ;
+
 
 loopStatement:
     forStatement {$$ = $1;}
@@ -465,7 +470,7 @@ primaryExpression:
     ;
 
 expressionList:
-    expression COMMA expression                 {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
+    expression COMMA expressionList             {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
     | expression                                {$$ = $1;}
     ;
 
