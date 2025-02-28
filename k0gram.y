@@ -77,6 +77,7 @@
 %type <treeptr> prefixUnaryOperator
 %type <treeptr> quest
 %type <treeptr> constantVal
+%type <treeptr> identifierDot
 
 /* Terminals */
 %token <treeptr> ASSIGNMENT
@@ -458,6 +459,7 @@ excl:
 primaryExpression:
     parenthesizedExpression                     {$$ = $1;}
     | IDENTIFIER                                {$$ = $1;}
+    | identifierDot                             {$$ = $1;}
     | INTEGER_LITERAL                           {$$ = $1;}
     | HEX_LITERAL                               {$$ = $1;}
     | CHARACTER_LITERAL                         {$$ = $1;}
@@ -473,6 +475,10 @@ primaryExpression:
     | IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
     | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
     ;
+
+identifierDot:
+    IDENTIFIER DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
+    | IDENTIFIER DOT IDENTIFIER {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
 
 expressionList:
     expression COMMA expressionList             {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
