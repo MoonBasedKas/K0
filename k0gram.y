@@ -481,6 +481,9 @@ primaryExpression:
 identifierDot:
     IDENTIFIER DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
     | IDENTIFIER DOT IDENTIFIER {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
+    | IDENTIFIER QUEST_NO_WS DOT identifierDot {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    | IDENTIFIER QUEST_NO_WS DOT IDENTIFIER {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
+    ;
 
 expressionList:
     expression COMMA expressionList             {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
