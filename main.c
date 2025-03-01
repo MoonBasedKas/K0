@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
 
     if(filename == NULL) // Zero files
     {
-        printf("K0 has been provided zero files to parse.");
+        printf("Usage: ./k0 [-dot] {filename1} {filename2} ...\n");
         exit(1);
     }
 
