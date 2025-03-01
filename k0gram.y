@@ -427,8 +427,8 @@ infixFunctionCall:
     ;
 
 rangeExpression:
-    rangeExpression RANGE additiveExpression                {$$ = alctoken(1013, "range", 3, $1, $2, $3);}
-    | rangeExpression RANGE_UNTIL additiveExpression        {$$ = alctoken(1014, "rangeUntil", 3, $1, $2, $3);}
+    additiveExpression RANGE rangeExpression                {$$ = alctoken(1013, "range", 3, $1, $2, $3);}
+    | additiveExpression RANGE_UNTIL rangeExpression        {$$ = alctoken(1014, "rangeUntil", 3, $1, $2, $3);}
     | additiveExpression                                    {$$ = $1;}
     ;
 
@@ -539,7 +539,7 @@ whenSubject:
     ;
 
 whenEntries:
-    whenEntries whenEntry                                                               {$$ = alctoken(1035, "whenEntries", 2, $1, $2);}
+    whenEntry whenEntries                                                              {$$ = alctoken(1035, "whenEntries", 2, $1, $2);}
     | whenEntry                                                                         {$$ = $1;}
     ;
 
@@ -549,7 +549,7 @@ whenEntry:
     ;
 
 whenConditionList:
-    whenConditionList COMMA whenCondition                                               {$$ = alctoken(1038, "whenConds", 2, $1, $3);}
+    whenCondition COMMA whenConditionList                                        {$$ = alctoken(1038, "whenConds", 2, $1, $3);}
     | whenCondition                                                                     {$$ = $1;}
     ;
 
