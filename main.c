@@ -21,20 +21,16 @@ void openFile(char *name);
 int main(int argc, char *argv[])
 {   
     int dot = 0; // False
-    int files = 0; // Keeps tracks of the current max # of files.
-    char **filesToRead = malloc(sizeof(char *) * argc); // Allocates an array to hold all the file names
-
     // TODO: Figure out weird behavior with ./*
     for (int i = 1; i < argc; i++){
         if (!strcmp(argv[i], "-dot")){
             dot = 1; // True!
         } else{
-            *(filesToRead + files) = argv[i];
-            files++;
+            filename = argv[i];
         }
     }
 
-    if(!files) // Zero files
+    if(filename == NULL) // Zero files
     {
         printf("K0 has been provided zero files to parse.");
         exit(1);
@@ -42,7 +38,7 @@ int main(int argc, char *argv[])
 
 
     //checks that the file name is legal and opens the file
-    openFile(*(filesToRead));
+    openFile(filename);
 
     //yydebug = 1;
     yyparse();
@@ -59,7 +55,6 @@ int main(int argc, char *argv[])
     freeTree(root);
     
     yylex_destroy();
-    free(filesToRead);
     return 0;
 }
 
