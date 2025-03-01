@@ -11,6 +11,8 @@ char temp[100];
 //extern int yydebug;
 extern struct tree *root;
 extern int printTree(struct tree *root, int depth);
+extern void freeTree(struct tree *node);
+extern int yylex_destroy(void);
 void openFile(char *name);
 
 int main(int argc, char *argv[])
@@ -30,6 +32,8 @@ int main(int argc, char *argv[])
     printTree(root, 0);
 
     fclose(yyin);
+    freeTree(root);
+    yylex_destroy();
     return 0;
 }
 

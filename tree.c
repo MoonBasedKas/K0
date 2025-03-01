@@ -70,3 +70,23 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     return node;
 }
 
+// Kill kids
+void freeTree(nodeptr node) {
+    if (node == NULL)
+        return;
+
+    for (int i = 0; i < node->nkids; i++) {
+        freeTree(node->kids[i]);
+    }
+
+    free(node->symbolname);
+    if (node->leaf) {
+        free(node->leaf->text);
+        free(node->leaf->filename);
+        if (node->leaf->sval) {
+            free(node->leaf->sval);
+        }
+        free(node->leaf);
+    }
+    free(node);
+}
