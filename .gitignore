@@ -7,3 +7,5 @@ k0
 *.h.gch
 testFiles/*
 test.kt
+dotfile.dot
+dotfile.png

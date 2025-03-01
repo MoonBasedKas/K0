@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
+int serial = 1;
 struct tree *root = NULL;
 
 int printTree(nodeptr root, int depth) {
@@ -60,6 +61,7 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
         node->kids[i] = NULL;
     }
     node->leaf = NULL;
+    node->id = serial++;
 
     va_list args;
     va_start(args, nkids);

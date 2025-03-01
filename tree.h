@@ -3,6 +3,7 @@
 
 struct tree
 {
+    int id; // id for dot.
     int prodrule;
     char *symbolname;
     int nkids;
@@ -16,5 +17,6 @@ nodeptr new_tree_node(int prodrule, int nkids, ...);
 int printNode(nodeptr t);
 int printTree(nodeptr root, int depth);
 struct tree *alctoken(int prodrule, char *symbolname, int nkids, ...);
+extern int serial;
 
 #endif
