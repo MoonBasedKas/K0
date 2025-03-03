@@ -5,6 +5,9 @@
 #include <stdbool.h>
 #include "k0gram.tab.h"
 #include "lex.h"
+#include "dot.h"
+#include "tree.h"
+
 
 char *filename;
 char temp[100];
@@ -17,22 +20,40 @@ void openFile(char *name);
 
 int main(int argc, char *argv[])
 {
-    //checks for the correct number of command line arguments
-    if(argc < 2)
+    int dot = 0; // False
+    // TODO: Figure out weird behavior with ./*
+    for (int i = 1; i < argc; i++){
+        if (!strcmp(argv[i], "-dot")){
+            dot = 1; // True!
+        } else{
+            filename = argv[i];
+        }
+    }
+
+    if(filename == NULL) // Zero files
     {
-        printf("Usage: ./k0 {filename1} {filename2} ...\n");
+        printf("Usage: ./k0 [-dot] {filename1} {filename2} ...\n");
         exit(1);
     }
 
+
     //checks that the file name is legal and opens the file
-    openFile(argv[1]);
+    openFile(filename);
 
     //yydebug = 1;
     yyparse();
-    printTree(root, 0);
+    if(dot){ // Dotting away.
+        FILE *out = fopen("dotfile.dot", "w");
+        print_graph(out, root);
+        fclose(out);
+        return 0;
+    } else {
+        printTree(root, 0);
+    }
 
     fclose(yyin);
     freeTree(root);
+
     yylex_destroy();
     return 0;
 }
@@ -51,7 +72,7 @@ void openFile(char *name)
         strcat(temp, ".kt");
         filename = temp;
     }
-    else 
+    else
     {
         //if different extension rejects file
         if(strcmp(dot, ".kt") != 0)

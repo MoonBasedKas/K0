@@ -88,7 +88,7 @@ int intLiteral(int code)
 {
     leaf(code);
     changeSymbolName("intLiteral");
-    
+
     char *temp = removeUnderscores(nextToken->text);
 
     nextToken->ival = atoi(temp);
@@ -143,7 +143,7 @@ int doubleLiteral(int code)
     char *temp = removeUnderscores(nextToken->text);
 
     sscanf(temp, "%lf", &(nextToken->dval));
-    
+
     free(temp);
 
     return code;
@@ -181,7 +181,7 @@ int stringLiteral(int code)
         else
         {
             nextCharLex++;
-            switch (*nextCharLex) 
+            switch (*nextCharLex)
             {
             case 'n':
                 *nextCharLit = '\n';
@@ -219,7 +219,7 @@ int stringLiteral(int code)
         nextCharLex++;
         nextCharLit++;
     }
-    
+
     //don't forget the null character
     *nextCharLit = '\0';
 
@@ -233,7 +233,7 @@ int multiLineString(int code)
 {
     leaf(code);
     changeSymbolName("multilineStringLiteral");
-    
+
     nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
     if(nextToken->sval == NULL)
@@ -255,7 +255,7 @@ int multiLineString(int code)
     }
     //don't forget to close the string
     *nextCharLit = '\0';
-    
+
 
     return code;
 }
@@ -268,9 +268,9 @@ char * removeUnderscores()
     for(int j = 0; nextCharLex[i] != '\0'; i++)
     {
         if(*nextCharLex == '_')
-        {   
+        {
             j++;
-        }   
+        }
         else
         {
             nextCharLit[i] = nextCharLex[j+i];
@@ -286,7 +286,7 @@ void yyerror (char const *s) {
 }
 
 int addSemi(){
-    if (!nextToken) return 0; // Null 
+    if (!nextToken) return 0; // Null
     switch(nextToken->category){
         case INTEGER_LITERAL:
         case HEX_LITERAL:
@@ -302,10 +302,10 @@ int addSemi(){
         case DECR:
         case RSQUARE:
         case RPAREN:
-        case RCURL: 
+        case RCURL:
             yytext = ";";
             return 1; // True
-        default: 
+        default:
             return 0; // False
     }
 }
