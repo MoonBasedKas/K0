@@ -3,7 +3,7 @@
     #include "lex.h"
     #include "tree.h"
 %}
-//%debug
+//%debug - deprecated
 %union {
     struct tree *treeptr;
 }
@@ -59,7 +59,6 @@
 %type <treeptr> additiveExpression
 %type <treeptr> multiplicativeExpression
 %type <treeptr> prefixUnaryExpression
-%type <treeptr> postfixUnaryExpression
 %type <treeptr> primaryExpression
 %type <treeptr> expressionList
 %type <treeptr> parenthesizedExpression
@@ -72,17 +71,13 @@
 %type <treeptr> whenCondition
 %type <treeptr> controlStructureBody
 %type <treeptr> jumpExpression
-%type <treeptr> postfixUnaryOperator
 %type <treeptr> excl
 %type <treeptr> prefixUnaryOperator
 %type <treeptr> quest
 %type <treeptr> constantVal
-%type <treeptr> identifierDot
-%type <treeptr> funCall
-%type <treeptr> funOrIdentifier
 %type <treeptr> importList
 %type <treeptr> importIdentifier
-
+%type <treeptr> postfixExpression
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -153,7 +148,6 @@
 %token <treeptr> IDENTIFIER
 %token <treeptr> LINE_STRING
 %token <treeptr> MULTILINE_STRING
-%token <treeptr> EOF_K
 
 
 %right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
@@ -163,20 +157,20 @@
 %nonassoc LANGLE RANGLE LE GE
 %left ADD SUB
 %left MULT DIV MOD
-%right INCR DECR
+
 %start program
 
 %%
 
 program:
-    topLevelObjectList {root = $$ = alctoken(1999, "program", 1, $1);}
+    topLevelObjectList {root = $$ = alctoken(1000, "program", 1, $1);}
     ;
 
 topLevelObjectList:
     topLevelObject {$$ = $1;}
     | topLevelObject SEMICOLON {$$ = $1;}
-    | topLevelObjectList topLevelObject {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
-    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(2000, "topLevelObject", 2, $1, $2);}
+    | topLevelObjectList topLevelObject {$$ = alctoken(1001, "topLevelObject", 2, $1, $2);}
+    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(1002, "topLevelObject", 2, $1, $2);}
     ;
 
 topLevelObject:
@@ -185,12 +179,12 @@ topLevelObject:
     ;
 
 importList:
-    IMPORT importIdentifier {$$ = alctoken(4000, "collapsedImport", 2, $1, $2);}
-    | IMPORT importIdentifier importList {$$ = alctoken(4001, "expandingImprt", 3, $1, $2, $3);}
+    IMPORT importIdentifier {$$ = alctoken(1003, "collapsedImport", 2, $1, $2);}
+    | IMPORT importIdentifier importList {$$ = alctoken(1004, "expandingImprt", 3, $1, $2, $3);}
     ;
 
 importIdentifier:
-    IDENTIFIER DOT importIdentifier {$$ = alctoken(4002, "expandingImportID", 3, $1, $2, $3);}
+    IDENTIFIER DOT importIdentifier {$$ = alctoken(1005, "expandingImportID", 3, $1, $2, $3);}
     | IDENTIFIER {$$ = $1;}
     | MULT {$$ = $1;}
     ;
@@ -202,15 +196,15 @@ declaration:
     ;
 
 propertyDeclaration:
-    variable variableDeclaration  {$$ = alctoken(2001, "propDecEmpty", 3, $1, $2);}
-    | variable IDENTIFIER ASSIGNMENT expression {$$ = alctoken(2201, "propDecTypeless", 2, $2, $4);}
-    | variable variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2002, "propDecAssign", 4, $1, $2, $3, $4);}
-    | variable reciverType variableDeclaration  {$$ = alctoken(2003, "propDecReciver", 4, $1, $2, $3);}
-    | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2004, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters variableDeclaration  {$$ = alctoken(2005, "propDecTypeParams", 4, $1, $2, $3);}
-    | variable typeParameters variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2006, "propDecTypeParamsAssign", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(2007, "propDecTypeParamsReciver", 5, $1, $2, $3, $4);}
-    | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(2008, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
+    variable variableDeclaration  {$$ = alctoken(1006, "propDecEmpty", 2, $1, $2);}
+    | variable IDENTIFIER ASSIGNMENT expression {$$ = alctoken(1007, "propDecTypeless", 2, $2, $4);}
+    | variable variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1008, "propDecAssign", 4, $1, $2, $3, $4);}
+    | variable reciverType variableDeclaration  {$$ = alctoken(1009, "propDecReciver", 4, $1, $2, $3);}
+    | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1010, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters variableDeclaration  {$$ = alctoken(1011, "propDecTypeParams", 4, $1, $2, $3);}
+    | variable typeParameters variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1012, "propDecTypeParamsAssign", 5, $1, $2, $3, $4, $5);}
+    | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(1013, "propDecTypeParamsReciver", 5, $1, $2, $3, $4);}
+    | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1014, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
 
 variable:
     constantVal {$$ = $1;}
@@ -219,54 +213,54 @@ variable:
     ;
 
 constantVal:
-    CONST VAL {$$ = alctoken(2900, "constantVal", 2, $1, $2);};
+    CONST VAL {$$ = alctoken(1015, "constantVal", 2, $1, $2);}
+    ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE {$$ = alctoken(2009, "typeParameters", 3, $1, $2, $3);}
+    LANGLE variableDeclarationList RANGLE {$$ = alctoken(1016, "typeParameters", 3, $1, $2, $3);}
     ;
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken(2010, "funcDecAll", 6, $1, $2, $3, $4, $5, $6);}
-    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(2011, "funcDecParamType", 5, $1, $2, $3, $4, $5);}
-    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(2012, "funcDecParamBody", 4, $1,$2,$3,$4);}
-    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody {$$ = alctoken(3001, "funcDecTypeBody", 4, $1, $2, $6, $7);}
-    | FUN IDENTIFIER LPAREN RPAREN COLON type {$$ = alctoken(3002, "funcDecType", 3, $1, $2, $6);}
-    | FUN IDENTIFIER LPAREN RPAREN functionBody {$$ = alctoken(3003, "funcDecBody", 3, $1, $2, $5);}
+    FUN IDENTIFIER functionValueParameters COLON type functionBody {$$ = alctoken(1017, "funcDecAll", 6, $1, $2, $3, $4, $5, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type {$$ = alctoken(1018, "funcDecParamType", 5, $1, $2, $3, $4, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody {$$ = alctoken(1019, "funcDecParamBody", 4, $1,$2,$3,$4);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody {$$ = alctoken(1020, "funcDecTypeBody", 4, $1, $2, $6, $7);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type {$$ = alctoken(1021, "funcDecType", 3, $1, $2, $6);}
+    | FUN IDENTIFIER LPAREN RPAREN functionBody {$$ = alctoken(1022, "funcDecBody", 3, $1, $2, $5);}
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN {$$ = alctoken(2013, "funcValParams", 3, $1, $2, $3);}
+    LPAREN functionValueParamList RPAREN {$$ = alctoken(1023, "funcValParams", 3, $1, $2, $3);}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList {$$ = alctoken(2014, "funcValParamList", 3, $1, $2, $3);}
+    functionValueParameter COMMA functionValueParamList {$$ = alctoken(1024, "funcValParamList", 3, $1, $2, $3);}
     | functionValueParameter {$$ = $1;}
     ;
 
 functionValueParameter:
     variableDeclaration {$$ = $1;}
-    | variableDeclaration ASSIGNMENT expression {$$ = alctoken(2015, "funcValParamAssign", 3, $1, $2, $3);}
+    | variableDeclaration ASSIGNMENT expression {$$ = alctoken(1025, "funcValParamAssign", 3, $1, $2, $3);}
     ;
 
 type:
     functionType {$$ = $1;}
-    | parenthesizedType_opt {$$ = $1;}
     | userType {$$ = $1;}
     ;
 
 userType:
     simpleUserType {$$ = $1;}
-    | userType DOT simpleUserType {$$ = alctoken(2016, "userType", 3, $1, $2, $3);}
+    | userType DOT simpleUserType {$$ = alctoken(1026, "userType", 3, $1, $2, $3);}
     ;
 
 simpleUserType:
     IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(2017, "simpleUserType", 4, $1, $2, $3, $4);}
+    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(1027, "simpleUserType", 4, $1, $2, $3, $4);}
     ;
 
 typeArgumentsList:
     typeArgument {$$ = $1;}
-    | typeArgument COMMA typeArgumentsList {$$ = alctoken(2018, "typeArgumentsList", 3, $1, $2, $3);}
+    | typeArgument COMMA typeArgumentsList {$$ = alctoken(1028, "typeArgumentsList", 3, $1, $2, $3);}
     ;
 
 typeArgument:
@@ -279,17 +273,17 @@ reciverType:
     ;
 
 functionType:
-    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken(2019, "functionType", 5, $1, $2, $3, $4, $5);}
-    | functionTypeParameters ARROW type {$$ = alctoken(2020, "functionType", 3, $1, $2, $3);}
+    reciverType DOT functionTypeParameters ARROW type {$$ = alctoken(1029, "functionTypeDot", 5, $1, $2, $3, $4, $5);}
+    | functionTypeParameters ARROW type {$$ = alctoken(1030, "functionType", 3, $1, $2, $3);}
     ;
 
 functionTypeParameters:
-    LPAREN functionTypeParamList RPAREN {$$ = alctoken(2021, "functionTypeParameters", 3, $1, $2, $3);}
-    | LPAREN RPAREN {$$ = alctoken(2022, "functionTypeParameters", 2, $1, $2);}
+    LPAREN functionTypeParamList RPAREN {$$ = alctoken(1031, "functionTypeParameters", 3, $1, $2, $3);}
+    | LPAREN RPAREN {$$ = alctoken(1032, "functionTypeParamsEmpty", 2, $1, $2);}
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken(2023, "functionTypeParamList", 3, $1, $2, $3);}
+    functionTypeParameter COMMA functionTypeParamList {$$ = alctoken(1033, "functionTypeParamList", 3, $1, $2, $3);}
     | functionTypeParameter {$$ = $1;}
     ;
 
@@ -299,13 +293,13 @@ functionTypeParameter:
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests {$$ = alctoken(2024, "parenthesizedType_opt", 4, $1, $2, $3, $4);}
-    | LPAREN type RPAREN {$$ = alctoken(2025, "parenthesizedType_opt", 3, $1, $2, $3);}
+    LPAREN type RPAREN quests {$$ = alctoken(1034, "parenTypeQuests", 4, $1, $2, $3, $4);}
+    | LPAREN type RPAREN {$$ = alctoken(1035, "parenType", 3, $1, $2, $3);}
     ;
 
 quests:
     quest {$$ = $1;}
-    | quest quests {$$ = alctoken(2026, "quests", 2, $1, $2);}
+    | quest quests {$$ = alctoken(1036, "quests", 2, $1, $2);}
     ;
 
 quest:
@@ -315,17 +309,17 @@ quest:
 
 functionBody:
     block {$$ = $1;}
-    | ASSIGNMENT expression {$$ = alctoken(2027, "functionBody", 2, $1, $2);}
+    | ASSIGNMENT expression {$$ = alctoken(1037, "funcBody", 2, $1, $2);}
     ;
 
 block:
-    LCURL RCURL {$$ = alctoken(2028, "block", 2, $1, $2);}
-    | LCURL statements RCURL {$$ = alctoken(2029, "block", 3, $1, $2, $3);}
+    LCURL RCURL {$$ = alctoken(1038, "blockEmpty", 2, $1, $2);}
+    | LCURL statements RCURL {$$ = alctoken(1039, "blockStmnts", 3, $1, $2, $3);}
     ;
 
 statements:
-    statement SEMICOLON {$$ = alctoken(2030, "statement", 2, $1, $2);}
-    | statement SEMICOLON statements {$$ = alctoken(2031, "statements", 3, $1, $2, $3);}
+    statement SEMICOLON {$$ = alctoken(1040, "statement", 2, $1, $2);}
+    | statement SEMICOLON statements {$$ = alctoken(1041, "statementsMultiple", 3, $1, $2, $3);}
     | SEMICOLON {$$ = $1;}
     ;
 
@@ -336,9 +330,9 @@ statement:
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression {$$ = alctoken(2032, "assignment", 3, $1, $2, $3);}
-    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken(2033, "assignAdd", 3, $1, $2, $3);}
-    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken(2034, "assignSub", 3, $1, $2, $3);}
+    IDENTIFIER ASSIGNMENT expression {$$ = alctoken(1042, "assignment", 3, $1, $2, $3);}
+    | IDENTIFIER ADD_ASSIGNMENT expression {$$ = alctoken(1043, "assignAdd", 3, $1, $2, $3);}
+    | IDENTIFIER SUB_ASSIGNMENT expression {$$ = alctoken(1044, "assignSub", 3, $1, $2, $3);}
     ;
 
 
@@ -349,17 +343,17 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
-    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody {$$ = alctoken(2035, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody {$$ = alctoken(1045, "forStmntWithVars", 7, $1, $2, $3, $4, $5, $6, $7);}
+    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody {$$ = alctoken(1046, "forStmnt", 7, $1, $2, $3, $4, $5, $6, $7);}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken(2036, "whileStmntCtrlBody", 5, $1, $2, $3, $4, $5);}
-    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken(2037, "whileStmnt", 5, $1, $2, $3, $4, $5);}
+    WHILE LPAREN expression RPAREN controlStructureBody {$$ = alctoken(1047, "whileStmntCtrlBody", 5, $1, $2, $3, $4, $5);}
+    | WHILE LPAREN expression RPAREN SEMICOLON {$$ = alctoken(1048, "whileStmnt", 5, $1, $2, $3, $4, $5);}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken(2038, "doWhileStmnt", 6, $1, $2, $3, $4, $5, $6);}
+    DO controlStructureBody WHILE LPAREN expression RPAREN {$$ = alctoken(1049, "doWhileStmnt", 6, $1, $2, $3, $4, $5, $6);}
     ;
 
 variableDeclarations:
@@ -368,17 +362,17 @@ variableDeclarations:
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type {$$ = alctoken(2039, "varDec", 3, $1, $2, $3);}
-    | IDENTIFIER COLON type quests {$$ = alctoken(2039, "varDec", 4, $1, $2, $3, $4);}
+    IDENTIFIER COLON type {$$ = alctoken(1050, "varDec", 3, $1, $2, $3);}
+    | IDENTIFIER COLON type quests {$$ = alctoken(1051, "varDecQuests", 4, $1, $2, $3, $4);}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN {$$ = alctoken(2040, "multiVarDec", 3, $1, $2, $3);}
+    LPAREN variableDeclarationList RPAREN {$$ = alctoken(1052, "multiVarDec", 3, $1, $2, $3);}
     ;
 
 variableDeclarationList:
     variableDeclaration {$$ = $1;}
-    | variableDeclarationList COMMA variableDeclaration {$$ = alctoken(2041, "varDecList", 3, $1, $2, $3);}
+    | variableDeclarationList COMMA variableDeclaration {$$ = alctoken(1053, "varDecList", 3, $1, $2, $3);}
     ;
 
 expression:
@@ -386,68 +380,68 @@ expression:
     ;
 
 disjunction:
-    disjunction DISJ conjunction        {$$ = alctoken(1000, "disj", 3, $1, $2, $3);}
+    disjunction DISJ conjunction        {$$ = alctoken(1054, "disj", 3, $1, $2, $3);}
     | conjunction                       {$$ = $1;}
     ;
 
 conjunction:
-    conjunction CONJ equality           {$$ = alctoken(1001, "conj", 3, $1, $2, $3);}
+    conjunction CONJ equality           {$$ = alctoken(1055, "conj", 3, $1, $2, $3);}
     | equality                          {$$ = $1;}
     ;
 
 equality:
-    equality EQEQ comparison            {$$ = alctoken(1002, "equal", 3, $1, $2, $3);}
-    | equality EXCL_EQ comparison       {$$ = alctoken(1003, "notEqual", 3, $1, $2, $3);}
-    | equality EQEQEQ comparison        {$$ = alctoken(1004, "eqeqeq", 3, $1, $2, $3);}
-    | equality EXCL_EQEQ comparison     {$$ = alctoken(1005, "not-eqeqeq", 3, $1, $2, $3);}
+    equality EQEQ comparison            {$$ = alctoken(1056, "equal", 3, $1, $2, $3);}
+    | equality EXCL_EQ comparison       {$$ = alctoken(1057, "notEqual", 3, $1, $2, $3);}
+    | equality EQEQEQ comparison        {$$ = alctoken(1058, "eqeqeq", 3, $1, $2, $3);}
+    | equality EXCL_EQEQ comparison     {$$ = alctoken(1059, "not-eqeqeq", 3, $1, $2, $3);}
     | comparison                        {$$ = $1;}
     ;
 
 comparison:
-    comparison LANGLE infixOperation    {$$ = alctoken(1006, "less", 3, $1, $2, $3);}
-    | comparison RANGLE infixOperation   {$$ = alctoken(1007, "greater", 3, $1, $2, $3);}
-    | comparison GE infixOperation      {$$ = alctoken(1008, "lessEqual", 3, $1, $2, $3);}
-    | comparison LE infixOperation      {$$ = alctoken(1009, "greaterEqual", 3, $1, $2, $3);}
+    comparison LANGLE infixOperation    {$$ = alctoken(1060, "less", 3, $1, $2, $3);}
+    | comparison RANGLE infixOperation   {$$ = alctoken(1061, "greater", 3, $1, $2, $3);}
+    | comparison GE infixOperation      {$$ = alctoken(1062, "lessEqual", 3, $1, $2, $3);}
+    | comparison LE infixOperation      {$$ = alctoken(1063, "greaterEqual", 3, $1, $2, $3);}
     | infixOperation                    {$$ = $1;}
     ;
 
 infixOperation:
-    infixOperation IN elvisExpression   {$$ = alctoken(1010, "in", 3, $1, $2, $3);}
+    infixOperation IN elvisExpression   {$$ = alctoken(1064, "in", 3, $1, $2, $3);}
     | elvisExpression                   {$$ = $1;}
     ;
 
 elvisExpression:
-    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(1011, "elvis", 3, $1, $2, $3);}
+    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(1065, "elvis", 3, $1, $2, $4);}
     | infixFunctionCall                                     {$$ = $1;}
     ;
 
 infixFunctionCall:
-    infixFunctionCall IDENTIFIER rangeExpression            {$$ = alctoken(1012, "infixFunction", 3, $1, $2, $3);}
+    infixFunctionCall IDENTIFIER rangeExpression            {$$ = alctoken(1066, "infixFunction", 3, $1, $2, $3);}
     | rangeExpression                                       {$$ = $1;}
     ;
 
 rangeExpression:
-    additiveExpression RANGE rangeExpression                {$$ = alctoken(1013, "range", 3, $1, $2, $3);}
-    | additiveExpression RANGE_UNTIL rangeExpression        {$$ = alctoken(1014, "rangeUntil", 3, $1, $2, $3);}
+    additiveExpression RANGE rangeExpression                {$$ = alctoken(1067, "range", 3, $1, $2, $3);}
+    | additiveExpression RANGE_UNTIL rangeExpression        {$$ = alctoken(1068, "rangeUntil", 3, $1, $2, $3);}
     | additiveExpression                                    {$$ = $1;}
     ;
 
 additiveExpression:
-    additiveExpression ADD multiplicativeExpression         {$$ = alctoken(1015, "add", 3, $1, $2, $3);}
-    | additiveExpression SUB multiplicativeExpression       {$$ = alctoken(1016, "sub", 3, $1, $2, $3);}
+    additiveExpression ADD multiplicativeExpression         {$$ = alctoken(1069, "add", 3, $1, $2, $3);}
+    | additiveExpression SUB multiplicativeExpression       {$$ = alctoken(1070, "sub", 3, $1, $2, $3);}
     | multiplicativeExpression                              {$$ = $1;}
     ;
 
 multiplicativeExpression:
-    multiplicativeExpression MULT prefixUnaryExpression     {$$ = alctoken(1017, "mult", 3, $1, $2, $3);}
-    | multiplicativeExpression DIV prefixUnaryExpression    {$$ = alctoken(1018, "div", 3, $1, $2, $3);}
-    | multiplicativeExpression MOD prefixUnaryExpression    {$$ = alctoken(1019, "mod", 3, $1, $2, $3);}
+    multiplicativeExpression MULT prefixUnaryExpression     {$$ = alctoken(1071, "mult", 3, $1, $2, $3);}
+    | multiplicativeExpression DIV prefixUnaryExpression    {$$ = alctoken(1072, "div", 3, $1, $2, $3);}
+    | multiplicativeExpression MOD prefixUnaryExpression    {$$ = alctoken(1073, "mod", 3, $1, $2, $3);}
     | prefixUnaryExpression                                 {$$ = $1;}
     ;
 
 prefixUnaryExpression:
-    postfixUnaryExpression                                  {$$ = $1;}
-    | prefixUnaryOperator postfixUnaryExpression            {$$ = alctoken(1020, "prefix", 2, $1, $2);}
+    prefixUnaryOperator prefixUnaryExpression            {$$ = alctoken(1074, "prefix", 2, $1, $2);}
+    | postfixExpression                                   {$$ = $1;}
     ;
 
 prefixUnaryOperator:
@@ -458,17 +452,6 @@ prefixUnaryOperator:
     | excl              {$$ = $1;}
     ;
 
-postfixUnaryExpression:
-    primaryExpression postfixUnaryOperator      {$$ = alctoken(1021, "postfix", 2, $1, $2);}
-    | primaryExpression                         {$$ = $1;}
-    ;
-
-postfixUnaryOperator:
-    INCR                                        {$$ = $1;}
-    | DECR                                      {$$ = $1;}
-    | EXCL_NO_WS excl                           {$$ = $1;}
-    ;
-
 excl:
     EXCL_NO_WS                                  {$$ = $1;}
     | EXCL_WS                                   {$$ = $1;}
@@ -477,7 +460,6 @@ excl:
 primaryExpression:
     parenthesizedExpression                     {$$ = $1;}
     | IDENTIFIER                                {$$ = $1;}
-    | identifierDot                             {$$ = $1;}
     | INTEGER_LITERAL                           {$$ = $1;}
     | HEX_LITERAL                               {$$ = $1;}
     | CHARACTER_LITERAL                         {$$ = $1;}
@@ -490,72 +472,69 @@ primaryExpression:
     | ifExpression                              {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
-    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
-    | funCall                                   {$$ = $1;}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(1075, "arrayAccess", 2, $1, $3);}
     ;
 
-funCall:
-    IDENTIFIER LPAREN expressionList RPAREN   {$$ = alctoken(1022, "funCallParams", 2, $1, $3);}
-    | IDENTIFIER LPAREN RPAREN                  {$$ = alctoken(1023, "funCallNoParams", 1, $1);}
-
-identifierDot:
-    funOrIdentifier DOT identifierDot {$$ = alctoken(2950, "expandingDot", 3, $1, $2 ,$3);}
-    | funOrIdentifier DOT funOrIdentifier {$$ = alctoken(2951, "collapsedDot", 3, $1, $2 ,$3);}
-    | IDENTIFIER QUEST_NO_WS DOT identifierDot {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
-    | IDENTIFIER QUEST_NO_WS DOT funOrIdentifier {$$ = alctoken(2952, "expandingNullableDot", 4, $1, $2 ,$3, $4);}
-    ;
-
-funOrIdentifier:
-    funCall {$$ = $1;}
-    | IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(3022, "arrayAccess", 2, $1, $3);}
+postfixExpression:
+    primaryExpression {$$ = $1;}
+    | postfixExpression LPAREN expressionList RPAREN {$$ = alctoken(1076, "postfixExpr", 2, $1, $3);}
+    | postfixExpression LPAREN RPAREN {$$ = alctoken(1077, "postfixNoExpr", 1, $1);}
+    | postfixExpression DOT IDENTIFIER {$$ = alctoken(1078, "postfixDotID", 3, $1, $2, $3);}
+    | postfixExpression DOT IDENTIFIER LPAREN expressionList RPAREN {$$ = alctoken(1079, "postfixDotIDExpr", 4, $1, $2, $3, $5);}
+    | postfixExpression DOT IDENTIFIER LPAREN RPAREN {$$ = alctoken(1080, "postfixDotIDNoExpr", 3, $1, $2, $3);}
+    | postfixExpression QUEST_NO_WS DOT IDENTIFIER {$$ = alctoken(1081, "postfixSafeDotID", 4, $1, $2, $3, $4);}
+    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN expressionList RPAREN {$$ = alctoken(1082, "postfixSafeDotIDExpr", 5, $1, $2, $3, $4, $6);}
+    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN RPAREN {$$ = alctoken(1083, "postfixSafeDotIDNoExpr", 4, $1, $2, $3, $4);}
+    | postfixExpression LSQUARE expression RSQUARE {$$ = alctoken(1084, "postfixArrayAccess", 2, $1, $3);}
+    | postfixExpression INCR {$$ = alctoken(1085, "postfixIncr", 1, $1);}
+    | postfixExpression DECR {$$ = alctoken(1086, "postfixDecr", 1, $1);}
     ;
 
 expressionList:
-    expression COMMA expressionList             {$$ = alctoken(1024, "expressionList", 2, $1, $3);}
+    expression COMMA expressionList             {$$ = alctoken(1087, "expressionList", 2, $1, $3);}
     | expression                                {$$ = $1;}
     ;
 
 parenthesizedExpression:
-    LPAREN expression RPAREN                    {$$ = alctoken(1025, "parenthesizedExpression", 1, $2);}
+    LPAREN expression RPAREN                    {$$ = alctoken(1088, "parenthesizedExpression", 1, $2);}
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1026, "emptyIf", 2, $1, $3);}
-    | IF LPAREN expression RPAREN controlStructureBody                                  {$$ = alctoken(1027, "if", 3, $1, $3, $5);}
-    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody        {$$ = alctoken(1028, "ifElse", 5, $1, $3, $5, $6, $7);}
+    IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1089, "emptyIf", 2, $1, $3);}
+    | IF LPAREN expression RPAREN controlStructureBody                                  {$$ = alctoken(1090, "if", 3, $1, $3, $5);}
+    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody        {$$ = alctoken(1091, "ifElse", 5, $1, $3, $5, $6, $7);}
     ;
 
 whenExpression:
-    WHEN LCURL RCURL                                                                    {$$ = alctoken(1029, "whenNoSubNoEnt", 1, $1);}
-    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(1030, "whenEnt", 2, $1, $3);}
-    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(1031, "whenSub", 1, $1, $2);}
-    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(1032, "whenSubEnt", 3, $1, $2, $3);}
+    WHEN LCURL RCURL                                                                    {$$ = alctoken(1092, "whenNoSubNoEnt", 1, $1);}
+    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(1093, "whenEnt", 2, $1, $3);}
+    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(1094, "whenSub", 1, $1, $2);}
+    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(1095, "whenSubEnt", 3, $1, $2, $3);}
     ;
 
 whenSubject:
-    LPAREN expression RPAREN                                                            {$$ = alctoken(1033, "whenSubExp", 1, $2);}
-    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN                       {$$ = alctoken(1034, "whenSubVar", 4, $2, $3, $4, $5);}
+    LPAREN expression RPAREN                                                            {$$ = alctoken(1096, "whenSubExp", 1, $2);}
+    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN                       {$$ = alctoken(1097, "whenSubVar", 4, $2, $3, $4, $5);}
     ;
 
 whenEntries:
-    whenEntry whenEntries                                                              {$$ = alctoken(1035, "whenEntries", 2, $1, $2);}
+    whenEntry whenEntries                                                              {$$ = alctoken(1098, "whenEntries", 2, $1, $2);}
     | whenEntry                                                                         {$$ = $1;}
     ;
 
 whenEntry:
-    whenConditionList ARROW controlStructureBody SEMICOLON                              {$$ = alctoken(1036, "whenEntryConds", 3, $1, $2, $3);}
-    | ELSE ARROW controlStructureBody SEMICOLON                                         {$$ = alctoken(1037, "whenEntryElse", 3, $1, $2, $3);}
+    whenConditionList ARROW controlStructureBody SEMICOLON                              {$$ = alctoken(1099, "whenEntryConds", 3, $1, $2, $3);}
+    | ELSE ARROW controlStructureBody SEMICOLON                                         {$$ = alctoken(1100, "whenEntryElse", 3, $1, $2, $3);}
     ;
 
 whenConditionList:
-    whenCondition COMMA whenConditionList                                        {$$ = alctoken(1038, "whenConds", 2, $1, $3);}
+    whenCondition COMMA whenConditionList                                        {$$ = alctoken(1101, "whenConds", 2, $1, $3);}
     | whenCondition                                                                     {$$ = $1;}
     ;
 
 whenCondition:
     expression                                                                          {$$ = $1;}
-    | IN expression                                                                     {$$ = alctoken(1039, "whenCondsIn", 2, $1, $2);}
+    | IN expression                                                                     {$$ = alctoken(1102, "whenCondsIn", 2, $1, $2);}
     ;
 
 controlStructureBody:
@@ -565,7 +544,7 @@ controlStructureBody:
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?
     RETURN SEMICOLON                                                                    {$$ = $1;}
-    | RETURN expression                                                                 {$$ = alctoken(1038, "returnVal", 2, $1, $2);}
+    | RETURN expression                                                                 {$$ = alctoken(1103, "returnVal", 2, $1, $2);}
     | CONTINUE                                                                          {$$ = $1;}
     | BREAK                                                                             {$$ = $1;}
     ;
