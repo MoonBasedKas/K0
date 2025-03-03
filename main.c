@@ -19,7 +19,7 @@ extern int yylex_destroy(void);
 void openFile(char *name);
 
 int main(int argc, char *argv[])
-{   
+{
     int dot = 0; // False
     // TODO: Figure out weird behavior with ./*
     for (int i = 1; i < argc; i++){
@@ -46,14 +46,14 @@ int main(int argc, char *argv[])
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
         fclose(out);
-        return 0; 
+        return 0;
     } else {
         printTree(root, 0);
     }
 
     fclose(yyin);
     freeTree(root);
-    
+
     yylex_destroy();
     return 0;
 }
@@ -72,7 +72,7 @@ void openFile(char *name)
         strcat(temp, ".kt");
         filename = temp;
     }
-    else 
+    else
     {
         //if different extension rejects file
         if(strcmp(dot, ".kt") != 0)

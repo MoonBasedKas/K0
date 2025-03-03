@@ -1,6 +1,9 @@
 #include "tree.h"
 #include "lex.h"
 #include "dot.h"
+#include "k0gram.tab.h"
+
+extern const char *yyname(int sym);
 char *escape(const char *s);
 // TODO: add in yyname(int)
 
@@ -22,16 +25,23 @@ int print_graph(FILE *f, struct tree *r){
 
 
 /**
- * @brief Writes a leaf's information.
+ * @brief Writes a leaf's information. Change label for leaf name
  *
  * @param f
  * @param root
+ * @param label
  * @return int
  */
 int writeLeaf(FILE *f, struct tree *root){
     char *escapedText = escape(root->leaf->text);
-    fprintf(f, "N%d[shape=box style=dotted label=\"%s\\n text=%s\\n lineno=%d\"];\n", 
-            root->id, "UpdateMe", escapedText, root->leaf->lineno);
+
+    const char *tokenName = yyname(root->leaf->category);
+
+    fprintf(f, "N%d[shape=box style=dotted label=\"%s\\n text=%s\\n lineno=%d\"];\n",
+            root->id,
+            tokenName,
+            escapedText,
+            root->leaf->lineno);
     free(escapedText);
     return 0;
 }

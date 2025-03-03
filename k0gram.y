@@ -2,6 +2,8 @@
     #include <stdio.h>
     #include "lex.h"
     #include "tree.h"
+
+    #define YYDEBUG 1
 %}
 //%debug - deprecated
 %union {
@@ -548,3 +550,9 @@ jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semanti
     | CONTINUE                                                                          {$$ = $1;}
     | BREAK                                                                             {$$ = $1;}
     ;
+
+%%
+const char *yyname(int sym)
+{
+   return yytname[sym - YYerror + 1];
+}
