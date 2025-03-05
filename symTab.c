@@ -1,5 +1,8 @@
 #include "symTab.h"
 
+
+struct symTab *rootScope;
+
 /**
  * @brief Inserts an element into a symbol table.
  * 
@@ -11,20 +14,24 @@
 int addSymTab(struct symTab *table, char *elem, int type){
     int bucket = hash(elem);
     struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
+
     
     if(!temp){
+        
         *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
         return 0;
     }
 
+
     for(;temp->next != NULL; temp = temp->next);
     temp->next = createEntry(table, elem, type);
+    
 
     return 0;
 }
 
 
-struct symEntry *createEntry(struct symTable *table, char *elem, int type){
+struct symEntry *createEntry(struct symTab *table, char *elem, int type){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
     temp->type = type;
     temp->scope = NULL;
@@ -47,12 +54,13 @@ struct symEntry *createEntry(struct symTable *table, char *elem, int type){
 struct symEntry *contains(char *elem, struct symTab *table){
 
     int bucket = hash(elem);
+    
     struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
-
+    
     if (!temp) return NULL; // Bucket does not exist
-
     for(; temp != NULL; temp = temp->next){
-        if(!strcmp(elem, temp->name)) return 0; // HIT
+
+        if(!strcmp(elem, temp->name)) return temp; // HIT
     }
 
     return NULL; //No...
@@ -65,11 +73,12 @@ struct symEntry *contains(char *elem, struct symTab *table){
  * @return int 
  */
 int hash(char *e){
-    int val;
+    int val = 0;
     for(int i = 0; i < strlen(e); i++){
         val += *(e + i);
     }
     val *= 37; // Straight outta crypto.
+    if(val < 0) val = -(val);
     return val % SYMBUCKETS;
 }
 
@@ -80,28 +89,10 @@ int hash(char *e){
  */
 struct symTab *createTable(struct symTab *parent){
     struct symTab *table = malloc(sizeof(struct symTab));
-    table->buckets = allocateBuckets(table);
+    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry));
 
     return table;
 }
 
 
-/**
- * @brief Allocates buckets due to lack of callocing trust.
- * 
- * @param table 
- * @return int; is it successful
- */
-int allocateBuckets(struct symTab *table){
 
-    for(int i = 0; i < SYMBUCKETS; i++){
-
-        *(table->buckets + i) = malloc(sizeof(struct symEntry *));
-
-        if(!*(table->buckets + i)) return 1; // bucket failed.
-
-        *(table->buckets + i) = NULL;
-    }
-
-    return 0;   
-}

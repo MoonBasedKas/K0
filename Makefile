@@ -5,7 +5,7 @@ FLEX=flex
 BISON=bison
 HFLAG=-d
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h
@@ -33,6 +33,9 @@ tree.o: tree.c tree.h
 	$(CC) $(OBJFLAGS) $<
 
 dot.o: dot.c dot.h
+	$(CC) $(OBJFLAGS) $<
+
+symTab.o: symTab.c symTab.h
 	$(CC) $(OBJFLAGS) $<
 
 dotify:

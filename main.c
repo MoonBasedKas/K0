@@ -7,6 +7,7 @@
 #include "lex.h"
 #include "dot.h"
 #include "tree.h"
+#include "symTab.h"
 
 
 char *filename;
@@ -20,6 +21,9 @@ void openFile(char *name);
 
 int main(int argc, char *argv[])
 {
+    rootScope = createTable(NULL); // Create inital symbol table
+
+
     int dot = 0; // False
     // TODO: Figure out weird behavior with ./*
     for (int i = 1; i < argc; i++){
