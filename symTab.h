@@ -1,4 +1,5 @@
-
+#include <stdlib.h>
+#include <stdio.h>
 
 struct symTab{
     char *s; // uhhh nice?
@@ -10,14 +11,16 @@ struct symEntry{
     char *name;
     void *type;
     struct symTab *parent;  
+    struct symEntry *next;
 };
 
+#define SYMBUCKETS 251
+#define SYMTSIZE sizeof(sturct SymEntry *) * SYMBUCKETS
 
-struct symTab *root;
+struct symTab *rootScope;
 
-int add(char *elem, void *type);
-struct symEntry *contains(char *elem);
+int add(struct symTable *table, char *elem, void *type);
 
-struct symTab *createTable(); // call calloc 
+struct symTab *createTable(struct symTab *parent);
 int hash(char *elem);
-int check(char *elem);
+struct symEntry *contains(char *elem, struct symTab *table);
