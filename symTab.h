@@ -19,7 +19,7 @@ struct symEntry{
 
 struct symTab *rootScope;
 
-int add(struct symTable *table, char *elem, void *type);
+int addSymTab(struct symTable *table, char *elem, void *type);
 
 struct symTab *createTable(struct symTab *parent);
 int hash(char *elem);
