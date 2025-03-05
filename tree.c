@@ -1,12 +1,18 @@
 #include "tree.h"
 #include "lex.h"
+#include "k0gram.tab.h"
+#include "symTab.h"
+#include "symNonTerminals.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 int serial = 1;
 struct tree *root = NULL;
+
+struct symTab *currentScope;
 
 int printTree(nodeptr root, int depth) {
     static int last[256];
@@ -44,7 +50,6 @@ int printTree(nodeptr root, int depth) {
     }
     return 0;
 }
-
 
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     
@@ -91,4 +96,70 @@ void freeTree(nodeptr node) {
         free(node->leaf);
     }
     free(node);
+}
+
+void buildSymTabs(struct tree *node)
+{
+    if(node->nkids == 0)
+    {
+        if(node->leaf->category == IDENTIFIER)
+        {
+            struct symTab *scope = currentScope;
+            bool declared = false;
+            while(scope != NULL)
+            {
+                if(contains(scope, node->leaf->text) != NULL)
+                {
+                    declared = true;
+                    break;
+                }
+                scope = scope->parent;
+            }
+            if(!declared)
+            {
+                //need better error message
+                printf("ERROR undeclared var buildSymTabs\n");
+                exit(1);
+            }
+        }
+    }
+    else
+    {
+        switch (node->prodrule)
+        {
+            //global
+            case program:
+                rootScope = createTable(NULL);
+                currentScope = rootScope;
+                break;
+            //functin declarations
+            case funcDecAll:
+            case funcDecParamType:
+            case funcDecParamBody:
+            case funcDecTypeBody:
+            case funcDecType:
+            case funcDecBody:
+                addSymTab(currentScope, node->kids[1], function);
+                currentScope = createTable(currentScope);
+                for(int i = 2; i < node->nkids; i++)
+                {
+                    buildSymTabs(node->kids[i]);
+                }
+                currentScope = currentScope->parent;
+                break;
+            //variable decalarations
+            case varDec:
+                addSymTab(currentScope, node->kids[0], -1); //need to get type
+                break;
+            case varDecQuests:
+                addSymTab(currentScope, node->kids[0], -1); //need to get type, need nullable part of symTab
+                break;
+            default:
+                for(int i = 2; i < node->nkids; i++)
+                {
+                    buildSymTabs(node->kids[i]);
+                }
+                break;
+        }
+    }
 }

@@ -92,7 +92,7 @@ typedef enum {
     expressionList,
     parenthesizedExpression,
     emptyIf,
-    if,
+    if_k,
     ifElse,
     whenNoSubNoEnt,
     whenEnt,
@@ -107,5 +107,9 @@ typedef enum {
     whenCondsIn,
     returnVal
 } symNonTerminal;
+
+typedef enum {
+    function = 2000
+} types;
 
 #endif
