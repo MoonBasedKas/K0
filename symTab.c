@@ -1,8 +1,16 @@
 #include "symTab.h"
 
-int add(struct symTable *table, char *elem, void *type){
+/**
+ * @brief Inserts an element into a symbol table.
+ * 
+ * @param table 
+ * @param elem 
+ * @param type 
+ * @return int 
+ */
+int add(struct symTab *table, char *elem, void *type){
     int bucket = hash(elem);
-    struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
+    struct symEntry **temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
     
 
 
@@ -55,7 +63,7 @@ int hash(char *e){
  * 
  * @return struct symTab* 
  */
-struct symTab *createTable(){
+struct symTab *createTable(struct symTab *parent){
     struct symTab *table = malloc(sizeof(struct symTab));
     table->buckets = allocateBuckets(table);
 

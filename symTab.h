@@ -21,6 +21,6 @@ struct symTab *rootScope;
 
 int add(struct symTable *table, char *elem, void *type);
 
-struct symTab *createTable(); // call calloc 
+struct symTab *createTable(struct symTab *parent);
 int hash(char *elem);
-int contains(char *elem, struct symTab table);
+struct symEntry *contains(char *elem, struct symTab *table);
