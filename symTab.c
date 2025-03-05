@@ -3,15 +3,16 @@
 
 struct symTab *rootScope;
 
+
 /**
  * @brief Inserts an element into a symbol table.
- * 
+ * TODO: Make it return the scope.
  * @param table 
  * @param elem 
  * @param type 
  * @return int 
  */
-int addSymTab(struct symTab *table, char *elem, int type){
+struct symTab *addSymTab(struct symTab *table, char *elem, int type){
     int bucket = hash(elem);
     struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
 
@@ -19,18 +20,33 @@ int addSymTab(struct symTab *table, char *elem, int type){
     if(!temp){
         
         *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
-        return 0;
+        temp = *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
+        if(type == FUNCTION){
+            return temp->scope;
+        }
+        return NULL;
     }
 
 
     for(;temp->next != NULL; temp = temp->next);
     temp->next = createEntry(table, elem, type);
+    if (type == FUNCTION){
+        return temp->next->scope;
+    }
     
 
-    return 0;
+    return NULL;
 }
 
 
+/**
+ * @brief Create a Entry object
+ * 
+ * @param table 
+ * @param elem 
+ * @param type 
+ * @return struct symEntry* 
+ */
 struct symEntry *createEntry(struct symTab *table, char *elem, int type){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
     temp->type = type;
@@ -43,6 +59,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, int type){
 
     return temp;
 }
+
 
 /**
  * @brief Checks if an element exists within the symbol table.
@@ -66,6 +83,7 @@ struct symEntry *contains(struct symTab *table, char *elem){
     return NULL; //No...
 }
 
+
 /**
  * @brief Computes a quick hash for our function.
  * 
@@ -82,6 +100,7 @@ int hash(char *e){
     return val % SYMBUCKETS;
 }
 
+
 /**
  * @brief Create a Table object
  * 
@@ -89,11 +108,25 @@ int hash(char *e){
  */
 struct symTab *createTable(struct symTab *parent){
     struct symTab *table = malloc(sizeof(struct symTab));
-    
+
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry));
 
     return table;
 }
 
 
+/**
+ * @brief Frees the table
+ * 
+ * @param table 
+ * @return int 
+ */
+int freeTable(struct symTab *table){
+    struct symEntry *t = 0;
 
+    for(int i = 0; i < SYMBUCKETS; i++){
+
+    }
+
+    return 0;
+}
