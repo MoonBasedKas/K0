@@ -139,8 +139,7 @@ void buildSymTabs(struct tree *node)
             case funcDecTypeBody:
             case funcDecType:
             case funcDecBody:
-                addSymTab(currentScope, node->kids[1], function);
-                currentScope = createTable(currentScope);
+                currentScope = addSymTab(currentScope, node->kids[1], function);
                 for(int i = 2; i < node->nkids; i++)
                 {
                     buildSymTabs(node->kids[i]);
