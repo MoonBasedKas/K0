@@ -51,7 +51,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, int type){
  * @param table 
  * @return struct symEntry* 
  */
-struct symEntry *contains(char *elem, struct symTab *table){
+struct symEntry *contains(struct symTab *table, char *elem){
 
     int bucket = hash(elem);
     
@@ -89,6 +89,7 @@ int hash(char *e){
  */
 struct symTab *createTable(struct symTab *parent){
     struct symTab *table = malloc(sizeof(struct symTab));
+    
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry));
 
     return table;
