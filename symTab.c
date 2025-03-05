@@ -8,11 +8,13 @@
  * @param type 
  * @return int 
  */
-int add(struct symTab *table, char *elem, void *type){
+int addSymTab(struct symTab *table, char *elem, void *type){
     int bucket = hash(elem);
-    struct symEntry **temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
+    struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
     
-
+    if(!temp){
+        temp = malloc(sizeof(struct symEntry));
+    }
 
 
 
