@@ -172,7 +172,7 @@ topLevelObjectList:
     topLevelObject {$$ = $1;}
     | topLevelObject SEMICOLON {$$ = $1;}
     | topLevelObjectList topLevelObject {$$ = alctoken(1001, "topLevelObject", 2, $1, $2);}
-    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(1002, "topLevelObject", 2, $1, $2);}
+    | topLevelObjectList topLevelObject SEMICOLON {$$ = alctoken(1002, "topLevelObjectSemi", 2, $1, $2);}
     ;
 
 topLevelObject:
@@ -201,11 +201,11 @@ propertyDeclaration:
     variable variableDeclaration  {$$ = alctoken(1006, "propDecEmpty", 2, $1, $2);}
     | variable IDENTIFIER ASSIGNMENT expression {$$ = alctoken(1007, "propDecTypeless", 2, $2, $4);}
     | variable variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1008, "propDecAssign", 4, $1, $2, $3, $4);}
-    | variable reciverType variableDeclaration  {$$ = alctoken(1009, "propDecReciver", 4, $1, $2, $3);}
-    | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1010, "propDecReciverAssign", 5, $1, $2, $3, $4, $5);}
+    | variable reciverType variableDeclaration  {$$ = alctoken(1009, "propDecReceiver", 4, $1, $2, $3);}
+    | variable reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1010, "propDecReceiverAssign", 5, $1, $2, $3, $4, $5);}
     | variable typeParameters variableDeclaration  {$$ = alctoken(1011, "propDecTypeParams", 4, $1, $2, $3);}
     | variable typeParameters variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1012, "propDecTypeParamsAssign", 5, $1, $2, $3, $4, $5);}
-    | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(1013, "propDecTypeParamsReciver", 5, $1, $2, $3, $4);}
+    | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(1013, "propDecTypeParamsReceiver", 5, $1, $2, $3, $4);}
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1014, "propDecAll", 6, $1, $2, $3, $4, $5, $6);}
 
 variable:
@@ -395,7 +395,7 @@ equality:
     equality EQEQ comparison            {$$ = alctoken(1056, "equal", 3, $1, $2, $3);}
     | equality EXCL_EQ comparison       {$$ = alctoken(1057, "notEqual", 3, $1, $2, $3);}
     | equality EQEQEQ comparison        {$$ = alctoken(1058, "eqeqeq", 3, $1, $2, $3);}
-    | equality EXCL_EQEQ comparison     {$$ = alctoken(1059, "not-eqeqeq", 3, $1, $2, $3);}
+    | equality EXCL_EQEQ comparison     {$$ = alctoken(1059, "notEqeqeq", 3, $1, $2, $3);}
     | comparison                        {$$ = $1;}
     ;
 
