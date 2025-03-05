@@ -8,21 +8,34 @@
  * @param type 
  * @return int 
  */
-int addSymTab(struct symTab *table, char *elem, void *type){
+int addSymTab(struct symTab *table, char *elem, int type){
     int bucket = hash(elem);
     struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
     
     if(!temp){
-        temp = malloc(sizeof(struct symEntry));
+        *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
+        return 0;
     }
 
-
-
-    
+    for(;temp->next != NULL; temp = temp->next);
+    temp->next = createEntry(table, elem, type);
 
     return 0;
 }
 
+
+struct symEntry *createEntry(struct symTable *table, char *elem, int type){
+    struct symEntry *temp = malloc(sizeof(struct symEntry));
+    temp->type = type;
+    temp->scope = NULL;
+    temp->name = elem;
+    if(type == FUNCTION){
+        temp->scope = createTable(table);
+    }
+    temp->next = NULL;
+
+    return temp;
+}
 
 /**
  * @brief Checks if an element exists within the symbol table.
@@ -84,8 +97,6 @@ int allocateBuckets(struct symTab *table){
     for(int i = 0; i < SYMBUCKETS; i++){
 
         *(table->buckets + i) = malloc(sizeof(struct symEntry *));
-
-
 
         if(!*(table->buckets + i)) return 1; // bucket failed.
 
