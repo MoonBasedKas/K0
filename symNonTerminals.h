@@ -74,7 +74,7 @@ typedef enum {
     add,
     sub,
     mult,
-    div,
+    div_k,
     mod,
     prefix,
     arrayAccess,
@@ -107,9 +107,5 @@ typedef enum {
     whenCondsIn,
     returnVal
 } symNonTerminal;
-
-typedef enum {
-    function = 2000
-} types;
 
 #endif

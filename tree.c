@@ -108,7 +108,7 @@ void buildSymTabs(struct tree *node)
             bool declared = false;
             while(scope != NULL)
             {
-                if(contains(scope, node->leaf->text) != NULL)
+                if(contains(node->leaf->text, scope) != NULL)
                 {
                     declared = true;
                     break;
@@ -139,7 +139,7 @@ void buildSymTabs(struct tree *node)
             case funcDecTypeBody:
             case funcDecType:
             case funcDecBody:
-                currentScope = addSymTab(currentScope, node->kids[1], function);
+                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
                 {
                     buildSymTabs(node->kids[i]);
@@ -148,10 +148,10 @@ void buildSymTabs(struct tree *node)
                 break;
             //variable decalarations
             case varDec:
-                addSymTab(currentScope, node->kids[0], -1); //need to get type
+                addSymTab(currentScope, node->kids[0]->leaf->text, -1); //need to get type
                 break;
             case varDecQuests:
-                addSymTab(currentScope, node->kids[0], -1); //need to get type, need nullable part of symTab
+                addSymTab(currentScope, node->kids[0]->leaf->text, -1); //need to get type, need nullable part of symTab
                 break;
             default:
                 for(int i = 2; i < node->nkids; i++)
