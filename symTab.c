@@ -52,6 +52,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
     temp->type = type;
     temp->scope = NULL;
     temp->name = elem;
+    temp->func = func;
     if(func == FUNCTION){
         temp->scope = createTable(table, temp->name);
     }
@@ -108,8 +109,7 @@ int hash(char *e){
 struct symTab *createTable(struct symTab *parent, char *name){
     struct symTab *table = malloc(sizeof(struct symTab));
 
-    // TODO: fix this, array accessing is sus.
-    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry)); 
+    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
     table->name = name; 
     return table;
 }
@@ -126,6 +126,7 @@ int freeTable(struct symTab *table){
         freeEntry(table->buckets[i]);
         free(table->buckets[i]);
     }
+    free(table->buckets);
     free(table);
 
     return 0;
@@ -140,13 +141,15 @@ int freeTable(struct symTab *table){
  */
 int freeEntry(struct symEntry *e){
     struct symEntry *temp = e;
-    while(e){
+    while(e != NULL){
         temp = e;
-        if(temp->func){
+        if(temp->func == FUNCTION){
+            printf("REMOVING\n");
             freeTable(e->scope);
         }
         e = e->next;
-        free(e);
+        // TODO: Figure out what in here is causing the problem.
+        // free(temp);
     }
     return 0;
 }
@@ -160,19 +163,22 @@ int freeEntry(struct symEntry *e){
 int printTable(struct symTab *table){
     struct symEntry *temp;
     // TODO: fix name bug
-    printf("-- symbol table for %s --\n", "Temp name tables are sus with names");
+    printf("-- symbol table for %s --\n", table->name);
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
         if (temp != NULL){
-            for(; temp != NULL; temp = temp->next){
+            for(; temp != NULL;){
                 printf("%s\n", temp->name);
+                temp = temp->next;
             }
         }
     }
-
+    
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
-        if (temp != NULL && temp->func){
+        // printf("%p %d\n", temp); 
+        if (temp != NULL && temp->func == FUNCTION){
+            
             printTable(temp->scope);
         }
     }
