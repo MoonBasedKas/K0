@@ -10,18 +10,19 @@ struct symTab *rootScope;
  * @param table 
  * @param elem 
  * @param type 
+ * @param func
  * @return int 
  */
-struct symTab *addSymTab(struct symTab *table, char *elem, int type){
+struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func){
     int bucket = hash(elem);
     struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
 
     
     if(!temp){
         
-        *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
-        temp = *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type);
-        if(type == FUNCTION){
+        *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type, func);
+        temp = *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type, func);
+        if(func == FUNCTION){
             return temp->scope;
         }
         return NULL;
@@ -29,8 +30,8 @@ struct symTab *addSymTab(struct symTab *table, char *elem, int type){
 
 
     for(;temp->next != NULL; temp = temp->next);
-    temp->next = createEntry(table, elem, type);
-    if (type == FUNCTION){
+    temp->next = createEntry(table, elem, type, func);
+    if (func == FUNCTION){
         return temp->next->scope;
     }
     
@@ -47,12 +48,12 @@ struct symTab *addSymTab(struct symTab *table, char *elem, int type){
  * @param type 
  * @return struct symEntry* 
  */
-struct symEntry *createEntry(struct symTab *table, char *elem, int type){
+struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
     temp->type = type;
     temp->scope = NULL;
     temp->name = elem;
-    if(type == FUNCTION){
+    if(func == FUNCTION){
         temp->scope = createTable(table);
     }
     temp->next = NULL;

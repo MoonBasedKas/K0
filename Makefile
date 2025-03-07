@@ -8,7 +8,7 @@ HFLAG=-d
 k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-main.o: main.c lex.h k0gram.tab.h
+main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
 	$(CC) $(OBJFLAGS) $<
 
 lex.o: lex.c lex.h
@@ -29,7 +29,7 @@ k0gram.tab.c: k0gram.y
 k0gram.tab.h: k0gram.y
 	$(BISON) $(HFLAG) $^
 
-tree.o: tree.c tree.h
+tree.o: tree.c tree.h lex.h k0gram.tab.h symTab.h symNonTerminals.h
 	$(CC) $(OBJFLAGS) $<
 
 dot.o: dot.c dot.h

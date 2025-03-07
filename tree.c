@@ -108,7 +108,7 @@ void buildSymTabs(struct tree *node)
             bool declared = false;
             while(scope != NULL)
             {
-                if(contains(node->leaf->text, scope) != NULL)
+                if(contains(scope, node->leaf->text) != NULL)
                 {
                     declared = true;
                     break;
@@ -135,11 +135,25 @@ void buildSymTabs(struct tree *node)
             //functin declarations
             case funcDecAll:
             case funcDecParamType:
-            case funcDecParamBody:
-            case funcDecTypeBody:
+                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
+                for(int i = 2; i < node->nkids; i++)
+                {
+                    buildSymTabs(node->kids[i]);
+                }
+                currentScope = currentScope->parent;
+                break;
+            case funcDecTypeBody:    
             case funcDecType:
+                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
+                for(int i = 2; i < node->nkids; i++)
+                {
+                    buildSymTabs(node->kids[i]);
+                }
+                currentScope = currentScope->parent;
+                break;
+            case funcDecParamBody:
             case funcDecBody:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, FUNCTION);
+                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, NULL, FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
                 {
                     buildSymTabs(node->kids[i]);
@@ -148,10 +162,10 @@ void buildSymTabs(struct tree *node)
                 break;
             //variable decalarations
             case varDec:
-                addSymTab(currentScope, node->kids[0]->leaf->text, -1); //need to get type
+                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE);
                 break;
             case varDecQuests:
-                addSymTab(currentScope, node->kids[0]->leaf->text, -1); //need to get type, need nullable part of symTab
+                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
                 break;
             default:
                 for(int i = 2; i < node->nkids; i++)
