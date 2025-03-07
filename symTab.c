@@ -144,7 +144,6 @@ int freeEntry(struct symEntry *e){
     while(e != NULL){
         temp = e;
         if(temp->func == FUNCTION){
-            printf("REMOVING\n");
             freeTable(e->scope);
         }
         e = e->next;
