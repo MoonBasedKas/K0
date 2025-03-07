@@ -21,8 +21,6 @@ void openFile(char *name);
 
 int main(int argc, char *argv[])
 {
-    rootScope = createTable(NULL); // Create inital symbol table
-
 
     int dot = 0; // False
     // TODO: Figure out weird behavior with ./*
@@ -54,7 +52,8 @@ int main(int argc, char *argv[])
     } else {
         printTree(root, 0);
     }
-
+    printTable(rootScope);
+    freeTable(rootScope); 
     fclose(yyin);
     freeTree(root);
 

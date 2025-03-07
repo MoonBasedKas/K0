@@ -129,7 +129,7 @@ void buildSymTabs(struct tree *node)
         {
             //global
             case program:
-                rootScope = createTable(NULL);
+                rootScope = createTable(NULL, "global");
                 currentScope = rootScope;
                 break;
             //functin declarations

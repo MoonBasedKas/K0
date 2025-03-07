@@ -6,7 +6,6 @@ struct symTab *rootScope;
 
 /**
  * @brief Inserts an element into a symbol table.
- * TODO: Make it return the scope.
  * @param table 
  * @param elem 
  * @param type 
@@ -15,13 +14,13 @@ struct symTab *rootScope;
  */
 struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func){
     int bucket = hash(elem);
-    struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
+    struct symEntry *temp = table->buckets[bucket];
 
     
     if(!temp){
         
-        *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type, func);
-        temp = *(table->buckets + sizeof(struct symEntry *) * bucket) = createEntry(table, elem, type, func);
+        table->buckets[bucket] = createEntry(table, elem, type, func);
+        temp = table->buckets[bucket] = createEntry(table, elem, type, func);
         if(func == FUNCTION){
             return temp->scope;
         }
@@ -54,7 +53,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
     temp->scope = NULL;
     temp->name = elem;
     if(func == FUNCTION){
-        temp->scope = createTable(table);
+        temp->scope = createTable(table, temp->name);
     }
     temp->next = NULL;
 
@@ -72,8 +71,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
 struct symEntry *contains(struct symTab *table, char *elem){
 
     int bucket = hash(elem);
-    
-    struct symEntry *temp = *(table->buckets + sizeof(struct symEntry *) * bucket);
+    struct symEntry *temp = table->buckets[bucket];
     
     if (!temp) return NULL; // Bucket does not exist
     for(; temp != NULL; temp = temp->next){
@@ -107,14 +105,14 @@ int hash(char *e){
  * 
  * @return struct symTab* 
  */
-struct symTab *createTable(struct symTab *parent){
+struct symTab *createTable(struct symTab *parent, char *name){
     struct symTab *table = malloc(sizeof(struct symTab));
 
-    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry));
-
+    // TODO: fix this, array accessing is sus.
+    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry)); 
+    table->name = name; 
     return table;
 }
-
 
 /**
  * @brief Frees the table
@@ -123,11 +121,62 @@ struct symTab *createTable(struct symTab *parent){
  * @return int 
  */
 int freeTable(struct symTab *table){
-    struct symEntry *t = 0;
 
     for(int i = 0; i < SYMBUCKETS; i++){
+        freeEntry(table->buckets[i]);
+        free(table->buckets[i]);
+    }
+    free(table);
 
+    return 0;
+}
+
+
+/**
+ * @brief Frees each table entry.
+ * 
+ * @param e 
+ * @return int 
+ */
+int freeEntry(struct symEntry *e){
+    struct symEntry *temp = e;
+    while(e){
+        temp = e;
+        if(temp->func){
+            freeTable(e->scope);
+        }
+        e = e->next;
+        free(e);
+    }
+    return 0;
+}
+
+/**
+ * @brief Prints out the entire symbol table reachable from a singular table.
+ * 
+ * @param table 
+ * @return int 
+ */
+int printTable(struct symTab *table){
+    struct symEntry *temp;
+    // TODO: fix name bug
+    printf("-- symbol table for %s --\n", "Temp name tables are sus with names");
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        if (temp != NULL){
+            for(; temp != NULL; temp = temp->next){
+                printf("%s\n", temp->name);
+            }
+        }
+    }
+
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        if (temp != NULL && temp->func){
+            printTable(temp->scope);
+        }
     }
 
     return 0;
 }
+
