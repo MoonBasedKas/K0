@@ -44,5 +44,5 @@ dotify:
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
 
-zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/*.kt dotOutputs/*.png
+zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/*.kt dotOutputs/*.png symTab.c symTab.h
 	zip -r lab5.zip $^
