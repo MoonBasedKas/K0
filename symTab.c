@@ -16,12 +16,18 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     int bucket = hash(elem);
     struct symEntry *temp = table->buckets[bucket];
 
-    
+    // Debugging
+    fprintf(stderr, "addSymTab: Inserting symbol '%s' in bucket %d of table '%s'\n", 
+            elem, bucket, table->name);
+
     if(!temp){
         
         table->buckets[bucket] = createEntry(table, elem, type, func);
-        temp = table->buckets[bucket] = createEntry(table, elem, type, func);
+        temp = table->buckets[bucket];
+        fprintf(stderr, "addSymTab: Created new entry for '%s' in bucket %d\n", 
+                elem, bucket);
         if(func == FUNCTION){
+            fprintf(stderr, "addSymTab: Returning scope for function '%s'\n", elem);
             return temp->scope;
         }
         return NULL;
@@ -30,7 +36,9 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
 
     for(;temp->next != NULL; temp = temp->next);
     temp->next = createEntry(table, elem, type, func);
+    fprintf(stderr, "addSymTab: Appended entry for '%s' in bucket %d\n", elem, bucket);
     if (func == FUNCTION){
+        fprintf(stderr, "addSymTab: '%s' is a function; returning its nested scope\n", elem);
         return temp->next->scope;
     }
     
@@ -110,7 +118,8 @@ struct symTab *createTable(struct symTab *parent, char *name){
     struct symTab *table = malloc(sizeof(struct symTab));
 
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
-    table->name = name; 
+    table->name = name;
+    fprintf(stderr, "createTable: Created table '%s'\n", name);
     return table;
 }
 

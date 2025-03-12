@@ -1,6 +1,6 @@
-Lab5 : Lily, Kassidy, Erik
+Lab6 : Lily, Kassidy, Erik
 
 Lily = 2
 Kassidy = 2
 
-./dotOutputs has .png files for the 6 included test cases. The foo.kt/foo.png from Lab5 instructions is included with those.
+Recursion or population issue passed global scope + 1. Fundamental structure should be sufficient. Two-ish hours of bug hunting + work done on current state of implementation. It turns out Erik is not awesome at GDB.

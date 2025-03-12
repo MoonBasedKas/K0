@@ -131,6 +131,9 @@ void buildSymTabs(struct tree *node)
             case program:
                 rootScope = createTable(NULL, "global");
                 currentScope = rootScope;
+                for (int i = 0; i < node->nkids; i++) {
+                buildSymTabs(node->kids[i]);
+                }
                 break;
             //functin declarations
             case funcDecAll:
@@ -158,7 +161,14 @@ void buildSymTabs(struct tree *node)
                 {
                     buildSymTabs(node->kids[i]);
                 }
+                fprintf(stderr, "buildSymTabs: Popping scope for function '%s'\n", node->kids[1]->leaf->text);
                 currentScope = currentScope->parent;
+                
+                if (currentScope != NULL)
+                    fprintf(stderr, "New current scope: '%s'\n", currentScope->name);
+                else
+                    fprintf(stderr, "Current scope is now NULL (global level reached)\n");
+
                 break;
             //variable decalarations
             case varDec:
@@ -168,7 +178,7 @@ void buildSymTabs(struct tree *node)
                 addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
                 break;
             default:
-                for(int i = 2; i < node->nkids; i++)
+                for(int i = 0; i < node->nkids; i++)
                 {
                     buildSymTabs(node->kids[i]);
                 }
