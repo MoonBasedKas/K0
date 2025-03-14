@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     //yydebug = 1;
     yyparse();
-    buildSymTabs(root);
+    //buildSymTabs(root);
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
 
         printTree(root, 0);
     }
-    printTable(rootScope);
-    freeTable(rootScope);
+    //printTable(rootScope);
+    //freeTable(rootScope);
     fclose(yyin);
     freeTree(root);
 

@@ -80,6 +80,8 @@
 %type <treeptr> importList
 %type <treeptr> importIdentifier
 %type <treeptr> postfixExpression
+%type <treeptr> elseIfSequence
+%type <treeptr> elseIfStmt
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -471,7 +473,7 @@ primaryExpression:
     | NULL_K                                    {$$ = $1;}
     | LINE_STRING                               {$$ = $1;}
     | MULTILINE_STRING                          {$$ = $1;}
-    | ifExpression                              {$$ = $1;}
+    | ifExpression                                {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
     | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(1075, "arrayAccess", 2, $1, $3);}
@@ -502,11 +504,27 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1089, "emptyIf", 2, $1, $3);}
-    | IF LPAREN expression RPAREN controlStructureBody                                  {$$ = alctoken(1090, "if", 3, $1, $3, $5);}
-    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody        {$$ = alctoken(1091, "ifElse", 5, $1, $3, $5, $6, $7);}
+      IF LPAREN expression RPAREN controlStructureBody
+         { $$ = alctoken(2010, "IfThenStmt", 2, $3, $5); }
+    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody
+         { $$ = alctoken(2020, "IfThenElseStmt", 3, $3, $5, $7); }
+    | IF LPAREN expression RPAREN controlStructureBody ELSE elseIfSequence
+         { $$ = alctoken(2030, "IfThenElseIfStmt", 3, $3, $5, $6); }
+    | IF LPAREN expression RPAREN controlStructureBody elseIfSequence ELSE controlStructureBody
+         { $$ = alctoken(2040, "IfThenElseIfStmt", 4, $3, $5, $6, $8); }
     ;
 
+/* The else-if chain is handled by ElseIfSequence and ElseIfStmt */
+elseIfSequence:
+      elseIfStmt
+    | elseIfSequence elseIfStmt
+         { $$ = alctoken(2050, "ElseIfSequence", 2, $1, $2); }
+    ;
+
+elseIfStmt:
+      ELSE ifExpression
+         { $$ = alctoken(2060, "ElseIfStmt", 2, $2); }
+    ;
 whenExpression:
     WHEN LCURL RCURL                                                                    {$$ = alctoken(1092, "whenNoSubNoEnt", 1, $1);}
     | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(1093, "whenEnt", 2, $1, $3);}
