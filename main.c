@@ -25,91 +25,109 @@ extern int symError;
 
 int main(int argc, char *argv[])
 {
-    
-    rootScope = createTable(NULL, "global");
-    populateTypes();
-    populateStdlib();
-    
+
+
+
 
     int dot = 0; // False
     int tree = 0;
     int symtab = 0;
-    // TODO: Figure out weird behavior with ./*
+    int fileCount = 0;
+
+    char **fileNames = malloc(sizeof(char *) * argc);
+    if(fileNames == NULL) {
+        fprintf(stderr, "Memory allocation error.\n");
+        exit(1);
+    }
+
+    // Modified: Process command-line arguments.
     for (int i = 1; i < argc; i++){
         if (!strcmp(argv[i], "-dot")){
-            dot = 1; // True!
+            dot = 1;
         } else if (!strcmp(argv[i], "-tree")){
             tree = 1;
         } else if (!strcmp(argv[i], "-symtab")){
             symtab = 1;
         } else {
-            filename = argv[i];
+            // Treat non-flag arguments as file names.
+            fileNames[fileCount++] = argv[i];
         }
     }
 
-    if(filename == NULL) // Zero files
-    {
-        printf("Usage: ./k0 [-dot] {filename1} {filename2} ...\n");
+    if(fileCount == 0){
+        printf("Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
+        free(fileNames);
         exit(1);
     }
 
+    for(int i = 0; i < fileCount; i++){
 
-    //checks that the file name is legal and opens the file
-    openFile(filename);
+        root = NULL;
+        rootScope = createTable(NULL, "global");
+        populateTypes();
+        populateStdlib();
 
-    yydebug = 1;
-    yyparse();
-    buildSymTabs(root, rootScope);
-    verifyDeclared(root, rootScope);
+        //checks that the file name is legal and opens the file
+        openFile(fileNames[i]);
 
-    if(dot){ // Dotting away.
-        FILE *out = fopen("dotfile.dot", "w");
-        print_graph(out, root);
-        fclose(out);
-        return 0;
-    } 
-    if (tree) {
-        printTree(root, 0);
+        //yydebug = 1;
+        yyparse();
+        buildSymTabs(root, rootScope);
+        verifyDeclared(root, rootScope);
+
+        if(dot){
+            char dotFilename[120];
+            snprintf(dotFilename, sizeof(dotFilename), "dotfile_%d.dot", i);
+            FILE *out = fopen(dotFilename, "w");
+            if(out){
+                print_graph(out, root);
+                fclose(out);
+                printf("Dot file written: %s\n", dotFilename);
+            } else {
+                printf("Error writing dot file for %s\n", fileNames[i]);
+            }
+        }
+        if (tree) {
+            printTree(root, 0);
+        }
+
+        if(symtab){
+            printTable(rootScope);
+        }
+
+        freeTable(rootScope);
+        fclose(yyin);
+        freeTree(root);
+        yylex_destroy();
     }
 
-    if(symtab){
-        printTable(rootScope);
-    }
-    freeTable(rootScope);
-    fclose(yyin);
-    freeTree(root);
-
-    yylex_destroy();
-    return symError; 
+    free(fileNames);
+    return symError;
 }
 
 void openFile(char *name)
 {
-    //saves the file name for storing in tokens
+    // Save the file name for storing in tokens.
     filename = name;
+    char *slash = strrchr(filename, '/');
+    char *base = (slash == NULL) ? filename : slash + 1;
 
-    //checks for .kt extension
-    char *dot = strrchr(filename, '.');
-    if(dot == NULL)
+    // Check if an extension exists.
+    char *dot = strrchr(base, '.');
+    if(dot != NULL)
     {
-        //if no extension adds .kt
-        strcpy(temp, filename);
-        strcat(temp, ".kt");
-        filename = temp;
-    }
-    else
-    {
-        //if different extension rejects file
+        // If an extension exists, allow only .kt.
         if(strcmp(dot, ".kt") != 0)
         {
             printf("Input file must be of type .kt\n");
             exit(1);
         }
     }
+    // If no extension exists, simply open the file as provided.
 
     yyin = fopen(filename, "r");
 
-    //checks that file opened sucesfully
+    // Check that file opened successfully.
     if(yyin == NULL)
     {
         printf("File %s cannot be opened.\n", filename);
@@ -119,7 +137,7 @@ void openFile(char *name)
 
 /**
  * @brief Preloads the standard library.
- * 
+ *
  */
 void populateTypes(){
     // Types
@@ -150,7 +168,7 @@ void populateStdlib(){
 
 /**
  * @brief Pre adds all libraries in k0
- * 
+ *
  */
 void populateLibraries(){
     //Predefined libraries

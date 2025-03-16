@@ -9,8 +9,6 @@
     struct tree *treeptr;
 }
 
-
-
 /* Non-terminals */
 %type <treeptr> program
 %type <treeptr> topLevelObjectList
@@ -79,8 +77,6 @@
 %type <treeptr> importList
 %type <treeptr> importIdentifier
 %type <treeptr> postfixExpression
-%type <treeptr> elseIfSequence
-%type <treeptr> else_opt
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -152,7 +148,7 @@
 %token <treeptr> LINE_STRING
 %token <treeptr> MULTILINE_STRING
 
-%nonassoc ELSE
+
 %right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
 %left DISJ
 %left CONJ
@@ -258,8 +254,8 @@ userType:
     ;
 
 simpleUserType:
-    IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(1027, "simpleUserType", 2, $1, $3);}
+    IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(1027, "simpleUserType", 2, $1, $3);}
+    | IDENTIFIER {$$ = $1;}
     ;
 
 typeArgumentsList:
@@ -504,18 +500,9 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN controlStructureBody elseIfSequence else_opt {$$ = alctoken(2010, "IfThenStmt", 5, $1, $3, $4, $5, $6);}
-    ;
-
-elseIfSequence:
-    {}
-    | ELSE IF LPAREN expression RPAREN controlStructureBody elseIfSequence
-         { $$ = alctoken(2050, "ElseIfSequence", 5, $1, $2, $4, $6, $7); }
-    ;
-
-else_opt:
-    {}
-    | ELSE controlStructureBody {$$ = alctoken(2060, "elseStmt", 2, $1, $2);}
+    IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1089, "emptyIf", 2, $1, $3);}
+    | IF LPAREN expression RPAREN block                                 {$$ = alctoken(1090, "if", 3, $1, $3, $5);}
+    | IF LPAREN expression RPAREN block ELSE block        {$$ = alctoken(1091, "ifElse", 5, $1, $3, $5, $6, $7);}
     ;
 
 whenExpression:
@@ -551,8 +538,8 @@ whenCondition:
     ;
 
 controlStructureBody:
-    block                                                                               {$$ = $1;}
-    | statement                                                                         {$$ = $1;}
+    block {$$ = $1;}
+    | statement SEMICOLON {$$ = alctoken(1104, "controlStmnt", 1, $1);}
     ;
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?
