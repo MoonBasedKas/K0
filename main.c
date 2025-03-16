@@ -28,11 +28,17 @@ int main(int argc, char *argv[])
     
 
     int dot = 0; // False
+    int tree = 0;
+    int symtab = 0;
     // TODO: Figure out weird behavior with ./*
     for (int i = 1; i < argc; i++){
         if (!strcmp(argv[i], "-dot")){
             dot = 1; // True!
-        } else{
+        } else if (!strcmp(argv[i], "-tree")){
+            tree = 1;
+        } else if (!strcmp(argv[i], "-symtab")){
+            symtab = 1;
+        } else {
             filename = argv[i];
         }
     }
@@ -50,16 +56,19 @@ int main(int argc, char *argv[])
     //yydebug = 1;
     yyparse();
     buildSymTabs(root, rootScope);
+    verifyDeclared(root, rootScope);
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
         fclose(out);
         return 0;
-    } else {
-
+    } 
+    if (tree) {
         printTree(root, 0);
     }
-    printTable(rootScope);
+    if(symtab){
+        printTable(rootScope);
+    }
     freeTable(rootScope);
     fclose(yyin);
     freeTree(root);
@@ -102,7 +111,10 @@ void openFile(char *name)
     }
 }
 
-
+/**
+ * @brief Preloads the standard library.
+ * 
+ */
 void populateTypes(){
     addSymTab(rootScope, "Int", NULL, VARIABLE);
     addSymTab(rootScope, "String", NULL, VARIABLE);
