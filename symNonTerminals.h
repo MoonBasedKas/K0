@@ -105,6 +105,7 @@ typedef enum {
     whenEntryElse,
     whenConds,
     whenCondsIn,
+    controlStmnt,
     returnVal
 } symNonTerminal;
 
