@@ -1,5 +1,7 @@
 #include "symTab.h"
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 struct symTab *rootScope;
 
@@ -20,20 +22,24 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     fprintf(stderr, "addSymTab: Inserting symbol '%s' in bucket %d of table '%s'\n", 
             elem, bucket, table->name);
 
-    if(!temp){
+    // No entry insert it!
+    if(temp == NULL){
         
         table->buckets[bucket] = createEntry(table, elem, type, func);
         temp = table->buckets[bucket];
         fprintf(stderr, "addSymTab: Created new entry for '%s' in bucket %d\n", 
                 elem, bucket);
+
         if(func == FUNCTION){
             fprintf(stderr, "addSymTab: Returning scope for function '%s'\n", elem);
             return temp->scope;
         }
+        // Perhaps this is the danger?
         return NULL;
     }
 
 
+    // Find the first invalid next entry and insert it there.
     for(;temp->next != NULL; temp = temp->next);
     temp->next = createEntry(table, elem, type, func);
     fprintf(stderr, "addSymTab: Appended entry for '%s' in bucket %d\n", elem, bucket);
@@ -85,7 +91,9 @@ struct symEntry *contains(struct symTab *table, char *elem){
     if (!temp) return NULL; // Bucket does not exist
     for(; temp != NULL; temp = temp->next){
 
-        if(!strcmp(elem, temp->name)) return temp; // HIT
+        if(strcmp(elem, temp->name) == 0) {
+            return temp; // HIT
+        }
     }
 
     return NULL; //No...
@@ -119,6 +127,8 @@ struct symTab *createTable(struct symTab *parent, char *name){
 
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
     table->name = name;
+    table->parent = parent;
+
     fprintf(stderr, "createTable: Created table '%s'\n", name);
     return table;
 }

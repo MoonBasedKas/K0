@@ -18,9 +18,14 @@ extern int printTree(struct tree *root, int depth);
 extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
 void openFile(char *name);
+void populateTypes();
 
 int main(int argc, char *argv[])
 {
+
+    rootScope = createTable(NULL, "global");
+    populateTypes();
+    
 
     int dot = 0; // False
     // TODO: Figure out weird behavior with ./*
@@ -44,7 +49,7 @@ int main(int argc, char *argv[])
 
     //yydebug = 1;
     yyparse();
-    buildSymTabs(root);
+    buildSymTabs(root, rootScope);
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
@@ -95,4 +100,16 @@ void openFile(char *name)
         printf("File %s cannot be opened.\n", filename);
         exit(1);
     }
+}
+
+
+void populateTypes(){
+    addSymTab(rootScope, "Int", NULL, VARIABLE);
+    addSymTab(rootScope, "String", NULL, VARIABLE);
+    addSymTab(rootScope, "Byte", NULL, VARIABLE);
+    addSymTab(rootScope, "Short", NULL, VARIABLE);
+    addSymTab(rootScope, "Long", NULL, VARIABLE);
+    addSymTab(rootScope, "Float", NULL, VARIABLE);
+    addSymTab(rootScope, "Boolean", NULL, VARIABLE);
+    addSymTab(rootScope, "Double", NULL, VARIABLE);
 }
