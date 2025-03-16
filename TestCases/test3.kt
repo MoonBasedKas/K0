@@ -4,18 +4,30 @@ fun f() : Int {
 }
 
 fun g() : Int {
+   var z : Int = 23
    return 2*2
 }
 
 fun y() : Int {
+   var qq : Int = 23
    return 2*2
 }
 
 fun q() : Int {
+
+   var adsf : Int = 23
+
+   var zasd: Int = 23
+   var zd : Int = 23
+   var zf : Int = 23
    return 2*2
 }
 
 fun w() : Int {
+    fun q(): Int{
+        var x : String = 2
+        var e : Double = 2.6
+    }
    return 2*2
 }
 
