@@ -22,5 +22,6 @@ int printTree(nodeptr root, int depth);
 struct tree *alctoken(int prodrule, char *symbolname, int nkids, ...);
 extern int serial;
 void buildSymTabs(struct tree *node, struct symTab *scope);
-int handleLeaves(struct tree *node, struct symTab *scope);
+int checkExistance(struct tree *node, struct symTab *scope);
+int verifyDeclared(struct tree *node, struct symTab *scope);
 #endif
