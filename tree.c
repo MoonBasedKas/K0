@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 int serial = 1;
+int symError = 0;
 struct tree *root = NULL;
 
 struct symTab *currentScope;
@@ -258,7 +259,7 @@ int checkExistance(struct tree *node, struct symTab *scope){
         if(!declared)
         {
             fprintf(stderr, "ERROR undeclared variable: %s\n", node->leaf->text);
-            // exit(1);
+            symError = 3;
         }
     }
 

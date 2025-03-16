@@ -21,10 +21,11 @@ void openFile(char *name);
 void populateTypes();
 void populateStdlib();
 void populateLibraries();
+extern int symError;
 
 int main(int argc, char *argv[])
 {
-
+    
     rootScope = createTable(NULL, "global");
     populateTypes();
     populateStdlib();
@@ -60,6 +61,7 @@ int main(int argc, char *argv[])
     yyparse();
     buildSymTabs(root, rootScope);
     verifyDeclared(root, rootScope);
+
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
@@ -77,7 +79,7 @@ int main(int argc, char *argv[])
     freeTree(root);
 
     yylex_destroy();
-    return 0;
+    return symError; 
 }
 
 void openFile(char *name)

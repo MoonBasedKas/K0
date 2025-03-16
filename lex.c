@@ -283,6 +283,7 @@ char * removeUnderscores()
 void yyerror (char const *s) {
 
     fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
+    exit(2);
 }
 
 int addSemi(){
