@@ -5,7 +5,6 @@
 
     #define YYDEBUG 1
 %}
-//%debug - deprecated
 %union {
     struct tree *treeptr;
 }
@@ -81,7 +80,7 @@
 %type <treeptr> importIdentifier
 %type <treeptr> postfixExpression
 %type <treeptr> elseIfSequence
-%type <treeptr> elseIfStmt
+%type <treeptr> else_opt
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -153,7 +152,7 @@
 %token <treeptr> LINE_STRING
 %token <treeptr> MULTILINE_STRING
 
-
+%nonassoc ELSE
 %right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
 %left DISJ
 %left CONJ
@@ -473,7 +472,7 @@ primaryExpression:
     | NULL_K                                    {$$ = $1;}
     | LINE_STRING                               {$$ = $1;}
     | MULTILINE_STRING                          {$$ = $1;}
-    | ifExpression                                {$$ = $1;}
+    | ifExpression                              {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
     | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(1075, "arrayAccess", 2, $1, $3);}
@@ -504,27 +503,20 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-      IF LPAREN expression RPAREN controlStructureBody
-         { $$ = alctoken(2010, "IfThenStmt", 2, $3, $5); }
-    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody
-         { $$ = alctoken(2020, "IfThenElseStmt", 3, $3, $5, $7); }
-    | IF LPAREN expression RPAREN controlStructureBody ELSE elseIfSequence
-         { $$ = alctoken(2030, "IfThenElseIfStmt", 3, $3, $5, $6); }
-    | IF LPAREN expression RPAREN controlStructureBody elseIfSequence ELSE controlStructureBody
-         { $$ = alctoken(2040, "IfThenElseIfStmt", 4, $3, $5, $6, $8); }
+    IF LPAREN expression RPAREN controlStructureBody elseIfSequence else_opt {$$ = alctoken(2010, "IfThenStmt", 5, $1, $3, $4, $5, $6);}
     ;
 
-/* The else-if chain is handled by ElseIfSequence and ElseIfStmt */
 elseIfSequence:
-      elseIfStmt
-    | elseIfSequence elseIfStmt
-         { $$ = alctoken(2050, "ElseIfSequence", 2, $1, $2); }
+    {}
+    | ELSE IF LPAREN expression RPAREN controlStructureBody elseIfSequence
+         { $$ = alctoken(2050, "ElseIfSequence", 5, $1, $2, $4, $6, $7); }
     ;
 
-elseIfStmt:
-      ELSE ifExpression
-         { $$ = alctoken(2060, "ElseIfStmt", 2, $2); }
+else_opt:
+    {}
+    | ELSE controlStructureBody {$$ = alctoken(2060, "elseStmt", 2, $1, $2);}
     ;
+
 whenExpression:
     WHEN LCURL RCURL                                                                    {$$ = alctoken(1092, "whenNoSubNoEnt", 1, $1);}
     | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(1093, "whenEnt", 2, $1, $3);}

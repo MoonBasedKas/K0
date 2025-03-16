@@ -12,7 +12,7 @@
 
 char *filename;
 char temp[100];
-//extern int yydebug;
+extern int yydebug;
 extern struct tree *root;
 extern int printTree(struct tree *root, int depth);
 extern void freeTree(struct tree *node);
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
     //checks that the file name is legal and opens the file
     openFile(filename);
 
-    //yydebug = 1;
+    yydebug = 1;
     yyparse();
     //buildSymTabs(root);
     if(dot){ // Dotting away.

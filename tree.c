@@ -137,6 +137,13 @@ void buildSymTabs(struct tree *node)
                 break;
             //functin declarations
             case funcDecAll:
+                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[4], FUNCTION);
+                for(int i = 2; i < node->nkids; i++)
+                {
+                    buildSymTabs(node->kids[i]);
+                }
+                currentScope = currentScope->parent;
+                break;
             case funcDecParamType:
                 currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
@@ -178,6 +185,7 @@ void buildSymTabs(struct tree *node)
                 addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
                 break;
             default:
+
                 for(int i = 0; i < node->nkids; i++)
                 {
                     buildSymTabs(node->kids[i]);
