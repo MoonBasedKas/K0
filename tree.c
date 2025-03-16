@@ -204,9 +204,14 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 }
 
 
-
+/**
+ * @brief Checks if leave nodes are already declared
+ * 
+ * @param node 
+ * @param scope 
+ * @return int 
+ */
 int handleLeaves(struct tree *node, struct symTab *scope){
-    struct symTab *temp = scope;
     if(node->leaf->category == IDENTIFIER)
     {
         bool declared = false;
