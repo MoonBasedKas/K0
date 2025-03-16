@@ -137,6 +137,33 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
             break;
 
+        // Import chains
+        case expandingImportID:
+            addSymTab(scope, node->kids[0]->leaf->text, NULL, VARIABLE);
+            if (node->kids[2]->nkids != 0) {
+                buildSymTabs(node->kids[2], scope);
+            } else {
+                if (strcmp(node->kids[2]->leaf->text, "*")) 
+                    addSymTab(scope, node->kids[2]->leaf->text, NULL, VARIABLE);
+            }
+            
+            // Check if next is valid.
+            break;
+
+        // Singular imports.
+        case collapsedImport:
+            if(node->kids[1]->nkids == 0){
+                if (strcmp(node->kids[1]->leaf->text, "*")){ 
+                    addSymTab(scope, node->kids[1]->leaf->text, NULL, VARIABLE);
+                } else {
+                    fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
+                    symError = 3;
+                }
+            } else {
+                buildSymTabs(node->kids[1], scope);
+            }
+            break;
+
         //function declarations
         case funcDecAll:
         case funcDecParamType:
