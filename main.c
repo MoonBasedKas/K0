@@ -18,16 +18,31 @@ extern int printTree(struct tree *root, int depth);
 extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
 void openFile(char *name);
+void populateTypes();
+void populateStdlib();
+void populateLibraries();
+extern int symError;
 
 int main(int argc, char *argv[])
 {
+    
+    rootScope = createTable(NULL, "global");
+    populateTypes();
+    populateStdlib();
+    
 
     int dot = 0; // False
+    int tree = 0;
+    int symtab = 0;
     // TODO: Figure out weird behavior with ./*
     for (int i = 1; i < argc; i++){
         if (!strcmp(argv[i], "-dot")){
             dot = 1; // True!
-        } else{
+        } else if (!strcmp(argv[i], "-tree")){
+            tree = 1;
+        } else if (!strcmp(argv[i], "-symtab")){
+            symtab = 1;
+        } else {
             filename = argv[i];
         }
     }
@@ -44,23 +59,28 @@ int main(int argc, char *argv[])
 
     yydebug = 1;
     yyparse();
-    //buildSymTabs(root);
+    buildSymTabs(root, rootScope);
+    verifyDeclared(root, rootScope);
+
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);
         fclose(out);
         return 0;
-    } else {
-
+    } 
+    if (tree) {
         printTree(root, 0);
     }
-    //printTable(rootScope);
-    //freeTable(rootScope);
+
+    if(symtab){
+        printTable(rootScope);
+    }
+    freeTable(rootScope);
     fclose(yyin);
     freeTree(root);
 
     yylex_destroy();
-    return 0;
+    return symError; 
 }
 
 void openFile(char *name)
@@ -95,4 +115,58 @@ void openFile(char *name)
         printf("File %s cannot be opened.\n", filename);
         exit(1);
     }
+}
+
+/**
+ * @brief Preloads the standard library.
+ * 
+ */
+void populateTypes(){
+    // Types
+    addSymTab(rootScope, "Int", NULL, VARIABLE);
+    addSymTab(rootScope, "String", NULL, VARIABLE);
+    addSymTab(rootScope, "Byte", NULL, VARIABLE);
+    addSymTab(rootScope, "Short", NULL, VARIABLE);
+    addSymTab(rootScope, "Long", NULL, VARIABLE);
+    addSymTab(rootScope, "Float", NULL, VARIABLE);
+    addSymTab(rootScope, "Boolean", NULL, VARIABLE);
+    addSymTab(rootScope, "Double", NULL, VARIABLE);
+    addSymTab(rootScope, "Array", NULL, VARIABLE);
+}
+
+void populateStdlib(){
+    // Functions
+    addSymTab(rootScope, "print", NULL, VARIABLE);
+    addSymTab(rootScope, "println", NULL, VARIABLE);
+    addSymTab(rootScope, "get", NULL, VARIABLE);
+    addSymTab(rootScope, "equals", NULL, VARIABLE);
+    addSymTab(rootScope, "length", NULL, VARIABLE);
+    addSymTab(rootScope, "toString", NULL, VARIABLE);
+    addSymTab(rootScope, "valueOf", NULL, VARIABLE);
+    addSymTab(rootScope, "substring", NULL, VARIABLE);
+    addSymTab(rootScope, "readln", NULL, VARIABLE);
+}
+
+
+/**
+ * @brief Pre adds all libraries in k0
+ * 
+ */
+void populateLibraries(){
+    //Predefined libraries
+    addSymTab(rootScope, "java", NULL, VARIABLE);
+    addSymTab(rootScope, "util", NULL, VARIABLE);
+    addSymTab(rootScope, "lang", NULL, VARIABLE);
+    addSymTab(rootScope, "math", NULL, VARIABLE);
+    addSymTab(rootScope, "Random", NULL, VARIABLE);
+
+    // Functions within predfined libraries.
+    addSymTab(rootScope, "nextInt", NULL, VARIABLE);
+    addSymTab(rootScope, "abs", NULL, VARIABLE);
+    addSymTab(rootScope, "max", NULL, VARIABLE);
+    addSymTab(rootScope, "min", NULL, VARIABLE);
+    addSymTab(rootScope, "pow", NULL, VARIABLE);
+    addSymTab(rootScope, "cos", NULL, VARIABLE);
+    addSymTab(rootScope, "sin", NULL, VARIABLE);
+    addSymTab(rootScope, "tan", NULL, VARIABLE);
 }

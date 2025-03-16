@@ -10,10 +10,18 @@
 #include <stdbool.h>
 
 int serial = 1;
+int symError = 0;
 struct tree *root = NULL;
 
 struct symTab *currentScope;
 
+/**
+ * @brief Prints the tree
+ * 
+ * @param root 
+ * @param depth 
+ * @return int 
+ */
 int printTree(nodeptr root, int depth) {
     static int last[256];
     if (root == NULL)
@@ -51,6 +59,15 @@ int printTree(nodeptr root, int depth) {
     return 0;
 }
 
+/**
+ * @brief Alocates a token.
+ * 
+ * @param prodrule 
+ * @param symbolname 
+ * @param nkids 
+ * @param ... 
+ * @return struct tree* 
+ */
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     
     struct tree *node = malloc(sizeof(struct tree));
@@ -77,7 +94,11 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     return node;
 }
 
-// Kill kids
+/**
+ * @brief Frees the whole tree...
+ * 
+ * @param node 
+ */
 void freeTree(nodeptr node) {
     if (node == NULL)
         return;
@@ -98,99 +119,150 @@ void freeTree(nodeptr node) {
     free(node);
 }
 
-void buildSymTabs(struct tree *node)
+/**
+ * @brief Runs through the tree interesting into the table.
+ * 
+ * @param node 
+ */
+void buildSymTabs(struct tree *node, struct symTab *scope)
 {
-    if(node->nkids == 0)
+    switch (node->prodrule)
     {
-        if(node->leaf->category == IDENTIFIER)
-        {
-            struct symTab *scope = currentScope;
-            bool declared = false;
-            while(scope != NULL)
-            {
-                if(contains(scope, node->leaf->text) != NULL)
-                {
-                    declared = true;
-                    break;
-                }
-                scope = scope->parent;
-            }
-            if(!declared)
-            {
-                //need better error message
-                printf("ERROR undeclared var buildSymTabs\n");
-                exit(1);
-            }
-        }
-    }
-    else
-    {
-        switch (node->prodrule)
-        {
-            //global
-            case program:
-                rootScope = createTable(NULL, "global");
-                currentScope = rootScope;
-                for (int i = 0; i < node->nkids; i++) {
-                buildSymTabs(node->kids[i]);
-                }
-                break;
-            //functin declarations
-            case funcDecAll:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[4], FUNCTION);
-                for(int i = 2; i < node->nkids; i++)
-                {
-                    buildSymTabs(node->kids[i]);
-                }
-                currentScope = currentScope->parent;
-                break;
-            case funcDecParamType:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
-                for(int i = 2; i < node->nkids; i++)
-                {
-                    buildSymTabs(node->kids[i]);
-                }
-                currentScope = currentScope->parent;
-                break;
-            case funcDecTypeBody:    
-            case funcDecType:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
-                for(int i = 2; i < node->nkids; i++)
-                {
-                    buildSymTabs(node->kids[i]);
-                }
-                currentScope = currentScope->parent;
-                break;
-            case funcDecParamBody:
-            case funcDecBody:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, NULL, FUNCTION);
-                for(int i = 2; i < node->nkids; i++)
-                {
-                    buildSymTabs(node->kids[i]);
-                }
-                fprintf(stderr, "buildSymTabs: Popping scope for function '%s'\n", node->kids[1]->leaf->text);
-                currentScope = currentScope->parent;
-                
-                if (currentScope != NULL)
-                    fprintf(stderr, "New current scope: '%s'\n", currentScope->name);
-                else
-                    fprintf(stderr, "Current scope is now NULL (global level reached)\n");
+        //global
+        case program:
 
-                break;
-            //variable decalarations
-            case varDec:
-                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE);
-                break;
-            case varDecQuests:
-                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
-                break;
-            default:
+            for (int i = 0; i < node->nkids; i++) {
+                buildSymTabs(node->kids[i], scope);
+            }
 
-                for(int i = 0; i < node->nkids; i++)
-                {
-                    buildSymTabs(node->kids[i]);
-                }
-                break;
-        }
+            break;
+
+        //function declarations
+        case funcDecAll:
+        case funcDecParamType:
+            scope = addSymTab(scope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
+            for(int i = 2; i < node->nkids; i++)
+            {
+                buildSymTabs(node->kids[i], scope);
+            }
+            if (scope->parent != NULL) scope = scope->parent;
+            break;
+
+        case funcDecTypeBody:    
+        case funcDecType:
+            scope = addSymTab(scope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
+            for(int i = 2; i < node->nkids; i++)
+            {
+                buildSymTabs(node->kids[i], scope);
+            }
+            
+            if (scope->parent != NULL) scope = scope->parent;
+            break;
+
+        case funcDecParamBody:
+        case funcDecBody:
+
+            scope = addSymTab(scope, node->kids[1]->leaf->text, NULL, FUNCTION);
+            for(int i = 2; i < node->nkids; i++)
+            {
+                buildSymTabs(node->kids[i], scope);
+            }
+
+
+            if (scope == NULL) scope = rootScope;
+
+            break;
+
+        //variable decalarations
+        case varDec:
+            addSymTab(scope, node->kids[0]->leaf->text, node->kids[2], VARIABLE);
+            break;
+
+        case varDecQuests:
+            addSymTab(scope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
+            break;
+
+        default:
+            for(int i = 0; i < node->nkids; i++)
+            {
+                buildSymTabs(node->kids[i], scope);
+            }
+            break;
     }
+    
 }
+
+/**
+ * @brief Checks if everything in a tree has been declared.
+ * 
+ * @param node 
+ * @param scope 
+ * @return int 
+ */
+int verifyDeclared(struct tree *node, struct symTab *scope){
+    if(node->nkids == 0){
+        checkExistance(node, scope);
+    } 
+    switch(node->prodrule){
+        // Entering a new scope.
+        case funcDecAll:
+        case funcDecParamType:
+        case funcDecTypeBody:    
+        case funcDecType:
+        case funcDecParamBody:
+        case funcDecBody:
+            struct symTab *temp = scope;
+            scope = contains(scope, node->kids[1]->leaf->text)->scope;
+            for(int i = 2; i < node->nkids; i++)
+            {
+                verifyDeclared(node->kids[i], scope);
+            }
+            // Restore functions declared scope.
+            scope = temp;
+            // I don't think we'll need this.
+            if (scope == NULL) scope = rootScope;
+            break;
+
+        default:
+            for(int i = 0; i < node->nkids; i++) 
+                verifyDeclared(node->kids[i], scope);
+            break;
+    }
+
+
+
+    return 0;
+}
+
+
+/**
+ * @brief Checks if something has been declared or not.
+ * 
+ * @param node 
+ * @param scope 
+ * @return int 
+ */
+int checkExistance(struct tree *node, struct symTab *scope){
+    if(node->leaf->category == IDENTIFIER)
+    {
+        bool declared = false;
+        while(scope != NULL)
+        {
+            if(contains(scope, node->leaf->text) != NULL)
+            {
+                declared = true;
+                return 0;
+            }
+            scope = scope->parent;
+        
+        }
+        if(!declared)
+        {
+            fprintf(stderr, "ERROR undeclared variable: %s\n", node->leaf->text);
+            symError = 3;
+        }
+    }
+
+    return 0;
+}
+
