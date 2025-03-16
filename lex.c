@@ -10,14 +10,14 @@
 //prints error for unsupported keywords
 void unsupportedKeyword()
 {
-	printf("File: %s Line:%d The keyword %s is not supported by k0\n", filename, rows, yytext);
+	fprintf(stderr, "File: %s Line:%d The keyword %s is not supported by k0\n", filename, rows, yytext);
     exit(1);
 }
 
 //prints error for unsupported operators
 void unsupportedOperator()
 {
-	printf("File: %s Line:%d The operator %s is not supported by k0\n", filename, rows, yytext);
+	fprintf(stderr, "File: %s Line:%d The operator %s is not supported by k0\n", filename, rows, yytext);
     exit(1);
 }
 
