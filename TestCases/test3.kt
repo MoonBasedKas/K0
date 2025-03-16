@@ -1,5 +1,6 @@
 fun f() : Int {
    val threadlocal : Int = 5
+   g()
    return threadlocal
 }
 
@@ -20,6 +21,7 @@ fun q() : Int {
    var zasd: Int = 23
    var zd : Int = 23
    var zf : Int = 23
+   zf = 2 + adsf
    return 2*2
 }
 

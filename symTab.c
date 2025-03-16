@@ -91,7 +91,9 @@ struct symEntry *contains(struct symTab *table, char *elem){
     if (!temp) return NULL; // Bucket does not exist
     for(; temp != NULL; temp = temp->next){
 
-        if(!strcmp(elem, temp->name)) return temp; // HIT
+        if(strcmp(elem, temp->name) == 0) {
+            return temp; // HIT
+        }
     }
 
     return NULL; //No...
@@ -125,6 +127,8 @@ struct symTab *createTable(struct symTab *parent, char *name){
 
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
     table->name = name;
+    table->parent = parent;
+
     fprintf(stderr, "createTable: Created table '%s'\n", name);
     return table;
 }

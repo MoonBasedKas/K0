@@ -127,7 +127,6 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 {
     if(node->nkids == 0)
     {
-        // Shouldn't hit until scope is not 0x0
         handleLeaves(node, scope);
     }
     else
@@ -136,10 +135,6 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
         {
             //global
             case program:
-                rootScope = createTable(NULL, "global");
-                scope = rootScope;
-                addSymTab(scope, "Int", NULL, VARIABLE);
-                addSymTab(scope, "String", NULL, VARIABLE);
 
                 for (int i = 0; i < node->nkids; i++) {
                     buildSymTabs(node->kids[i], scope);
@@ -211,6 +206,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
 
 int handleLeaves(struct tree *node, struct symTab *scope){
+    struct symTab *temp = scope;
     if(node->leaf->category == IDENTIFIER)
     {
         bool declared = false;
@@ -219,13 +215,16 @@ int handleLeaves(struct tree *node, struct symTab *scope){
             if(contains(scope, node->leaf->text) != NULL)
             {
                 declared = true;
-                break;
+                return 0;
             }
-           scope = scope->parent;
+            scope = scope->parent;
+        
         }
         if(!declared)
         {
-            printf("ERROR undeclared variable: %s, \n", node->leaf->text);
+
+
+            printf("ERROR undeclared variable: %s\n", node->leaf->text);
             // exit(1);
         }
     }
