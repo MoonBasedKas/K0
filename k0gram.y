@@ -5,12 +5,9 @@
 
     #define YYDEBUG 1
 %}
-//%debug - deprecated
 %union {
     struct tree *treeptr;
 }
-
-
 
 /* Non-terminals */
 %type <treeptr> program
@@ -257,8 +254,8 @@ userType:
     ;
 
 simpleUserType:
-    IDENTIFIER {$$ = $1;}
-    | IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(1027, "simpleUserType", 2, $1, $3);}
+    IDENTIFIER LANGLE typeArgumentsList RANGLE {$$ = alctoken(1027, "simpleUserType", 2, $1, $3);}
+    | IDENTIFIER {$$ = $1;}
     ;
 
 typeArgumentsList:
@@ -504,8 +501,8 @@ parenthesizedExpression:
 
 ifExpression:
     IF LPAREN expression RPAREN SEMICOLON                                               {$$ = alctoken(1089, "emptyIf", 2, $1, $3);}
-    | IF LPAREN expression RPAREN controlStructureBody                                  {$$ = alctoken(1090, "if", 3, $1, $3, $5);}
-    | IF LPAREN expression RPAREN controlStructureBody ELSE controlStructureBody        {$$ = alctoken(1091, "ifElse", 5, $1, $3, $5, $6, $7);}
+    | IF LPAREN expression RPAREN block                                 {$$ = alctoken(1090, "if", 3, $1, $3, $5);}
+    | IF LPAREN expression RPAREN block ELSE block        {$$ = alctoken(1091, "ifElse", 5, $1, $3, $5, $6, $7);}
     ;
 
 whenExpression:
@@ -541,8 +538,8 @@ whenCondition:
     ;
 
 controlStructureBody:
-    block                                                                               {$$ = $1;}
-    | statement                                                                         {$$ = $1;}
+    block {$$ = $1;}
+    | statement SEMICOLON {$$ = alctoken(1104, "controlStmnt", 1, $1);}
     ;
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?

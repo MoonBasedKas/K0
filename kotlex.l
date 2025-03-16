@@ -50,7 +50,7 @@ uni_character_literal	\\u{hex_digit}{hex_digit}{hex_digit}{hex_digit}
 character_literal		"'"(escape_seq|[^\n\t '\\])"'"
 character_error			"'"(escape_seq|[^\n\t '\\])(escape_seq|[^\n\t '\\])+"'"
 
-letter					[a-zA-Z]
+letter					[a-zA-Z_]
 identifier				{letter}({letter}|{dec_digit})*
 backtick_identifier		"`"[^\n]+"`"
 
