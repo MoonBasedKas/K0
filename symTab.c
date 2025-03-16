@@ -1,5 +1,7 @@
 #include "symTab.h"
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 struct symTab *rootScope;
 
@@ -27,7 +29,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
         temp = table->buckets[bucket];
         fprintf(stderr, "addSymTab: Created new entry for '%s' in bucket %d\n", 
                 elem, bucket);
-                
+
         if(func == FUNCTION){
             fprintf(stderr, "addSymTab: Returning scope for function '%s'\n", elem);
             return temp->scope;

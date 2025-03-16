@@ -123,11 +123,12 @@ void freeTree(nodeptr node) {
  * 
  * @param node 
  */
-void buildSymTabs(struct tree *node)
+void buildSymTabs(struct tree *node, struct symTab *scope)
 {
     if(node->nkids == 0)
     {
-        handleLeaves(node);
+        // Shouldn't hit until scope is not 0x0
+        handleLeaves(node, scope);
     }
     else
     {
@@ -136,71 +137,71 @@ void buildSymTabs(struct tree *node)
             //global
             case program:
                 rootScope = createTable(NULL, "global");
-                currentScope = rootScope;
-                addSymTab(currentScope, "Int", NULL, VARIABLE);
-                addSymTab(currentScope, "String", NULL, VARIABLE);
+                scope = rootScope;
+                addSymTab(scope, "Int", NULL, VARIABLE);
+                addSymTab(scope, "String", NULL, VARIABLE);
 
                 for (int i = 0; i < node->nkids; i++) {
-                    buildSymTabs(node->kids[i]);
+                    buildSymTabs(node->kids[i], scope);
                 }
 
                 break;
             //function declarations
             case funcDecAll:
             case funcDecParamType:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
+                scope = addSymTab(scope, node->kids[1]->leaf->text, node->kids[3], FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
                 {
-                    buildSymTabs(node->kids[i]);
+                    buildSymTabs(node->kids[i], scope);
                 }
-                if (currentScope->parent != NULL) currentScope = currentScope->parent;
+                if (scope->parent != NULL) scope = scope->parent;
                 break;
 
             case funcDecTypeBody:    
             case funcDecType:
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
+                scope = addSymTab(scope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
                 {
-                    buildSymTabs(node->kids[i]);
+                    buildSymTabs(node->kids[i], scope);
                 }
                 
-                if (currentScope->parent != NULL) currentScope = currentScope->parent;
+                if (scope->parent != NULL) scope = scope->parent;
                 break;
 
             case funcDecParamBody:
             case funcDecBody:
 
-                currentScope = addSymTab(currentScope, node->kids[1]->leaf->text, NULL, FUNCTION);
+                scope = addSymTab(scope, node->kids[1]->leaf->text, NULL, FUNCTION);
                 for(int i = 2; i < node->nkids; i++)
                 {
-                    buildSymTabs(node->kids[i]);
+                    buildSymTabs(node->kids[i], scope);
                 }
                 fprintf(stderr, "buildSymTabs: Popping scope for function '%s'\n", node->kids[1]->leaf->text);
                 
                 
-                if (currentScope != NULL)
-                    fprintf(stderr, "New current scope: '%s'\n", currentScope->name);
+                if (scope != NULL)
+                    fprintf(stderr, "New current scope: '%s'\n", scope->name);
                 else
                     fprintf(stderr, "Current scope is now NULL (global level reached)\n");
 
 
-                if (currentScope == NULL) currentScope = rootScope;
+                if (scope == NULL) scope = rootScope;
 
                 break;
 
             //variable decalarations
             case varDec:
-                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE);
+                addSymTab(scope, node->kids[0]->leaf->text, node->kids[2], VARIABLE);
                 break;
 
             case varDecQuests:
-                addSymTab(currentScope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
+                addSymTab(scope, node->kids[0]->leaf->text, node->kids[2], VARIABLE); //need nullable part of symTab
                 break;
 
             default:
                 for(int i = 0; i < node->nkids; i++)
                 {
-                    buildSymTabs(node->kids[i]);
+                    buildSymTabs(node->kids[i], scope);
                 }
                 break;
         }
@@ -209,10 +210,9 @@ void buildSymTabs(struct tree *node)
 
 
 
-int handleLeaves(struct tree *node){
+int handleLeaves(struct tree *node, struct symTab *scope){
     if(node->leaf->category == IDENTIFIER)
     {
-        struct symTab *scope = currentScope;
         bool declared = false;
         while(scope != NULL)
         {
@@ -232,5 +232,4 @@ int handleLeaves(struct tree *node){
 
     return 0;
 }
-
 

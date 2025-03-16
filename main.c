@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     //yydebug = 1;
     yyparse();
-    buildSymTabs(root);
+    buildSymTabs(root, 0x0);
     if(dot){ // Dotting away.
         FILE *out = fopen("dotfile.dot", "w");
         print_graph(out, root);

@@ -1,6 +1,6 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#ifndef symTab_H
+#define symTAB_H
+
 
 struct symTab{
     char *name; 
@@ -33,3 +33,6 @@ struct symEntry *contains(struct symTab *table, char *elem);
 int freeTable(struct symTab *table);
 int freeEntry(struct symEntry *e);
 int printTable(struct symTab *table);
+
+
+#endif
