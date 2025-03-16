@@ -207,6 +207,7 @@ propertyDeclaration:
     | variable typeParameters variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1012, "propDecTypeParamsAssign", 4, $1, $2, $3, $5);}
     | variable typeParameters reciverType variableDeclaration  {$$ = alctoken(1013, "propDecTypeParamsReceiver", 4, $1, $2, $3, $4);}
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression  {$$ = alctoken(1014, "propDecAll", 5, $1, $2, $3, $4, $6);}
+    ;
 
 variable:
     constantVal {$$ = $1;}

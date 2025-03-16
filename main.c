@@ -19,12 +19,15 @@ extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
 void openFile(char *name);
 void populateTypes();
+void populateStdlib();
+void populateLibraries();
 
 int main(int argc, char *argv[])
 {
 
     rootScope = createTable(NULL, "global");
     populateTypes();
+    populateStdlib();
     
 
     int dot = 0; // False
@@ -116,6 +119,7 @@ void openFile(char *name)
  * 
  */
 void populateTypes(){
+    // Types
     addSymTab(rootScope, "Int", NULL, VARIABLE);
     addSymTab(rootScope, "String", NULL, VARIABLE);
     addSymTab(rootScope, "Byte", NULL, VARIABLE);
@@ -124,4 +128,42 @@ void populateTypes(){
     addSymTab(rootScope, "Float", NULL, VARIABLE);
     addSymTab(rootScope, "Boolean", NULL, VARIABLE);
     addSymTab(rootScope, "Double", NULL, VARIABLE);
+    addSymTab(rootScope, "Array", NULL, VARIABLE);
+}
+
+void populateStdlib(){
+    // Functions
+    addSymTab(rootScope, "print", NULL, VARIABLE);
+    addSymTab(rootScope, "println", NULL, VARIABLE);
+    addSymTab(rootScope, "get", NULL, VARIABLE);
+    addSymTab(rootScope, "equals", NULL, VARIABLE);
+    addSymTab(rootScope, "length", NULL, VARIABLE);
+    addSymTab(rootScope, "toString", NULL, VARIABLE);
+    addSymTab(rootScope, "valueOf", NULL, VARIABLE);
+    addSymTab(rootScope, "substring", NULL, VARIABLE);
+    addSymTab(rootScope, "readln", NULL, VARIABLE);
+}
+
+
+/**
+ * @brief Pre adds all libraries in k0
+ * 
+ */
+void populateLibraries(){
+    //Predefined libraries
+    addSymTab(rootScope, "java", NULL, VARIABLE);
+    addSymTab(rootScope, "util", NULL, VARIABLE);
+    addSymTab(rootScope, "lang", NULL, VARIABLE);
+    addSymTab(rootScope, "math", NULL, VARIABLE);
+    addSymTab(rootScope, "Random", NULL, VARIABLE);
+
+    // Functions within predfined libraries.
+    addSymTab(rootScope, "nextInt", NULL, VARIABLE);
+    addSymTab(rootScope, "abs", NULL, VARIABLE);
+    addSymTab(rootScope, "max", NULL, VARIABLE);
+    addSymTab(rootScope, "min", NULL, VARIABLE);
+    addSymTab(rootScope, "pow", NULL, VARIABLE);
+    addSymTab(rootScope, "cos", NULL, VARIABLE);
+    addSymTab(rootScope, "sin", NULL, VARIABLE);
+    addSymTab(rootScope, "tan", NULL, VARIABLE);
 }
