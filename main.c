@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "k0gram.tab.h"
 #include "lex.h"
 #include "dot.h"
@@ -26,9 +27,6 @@ extern int symError;
 int main(int argc, char *argv[])
 {
 
-
-
-
     int dot = 0; // False
     int tree = 0;
     int symtab = 0;
@@ -40,7 +38,6 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // Modified: Process command-line arguments.
     for (int i = 1; i < argc; i++){
         if (!strcmp(argv[i], "-dot")){
             dot = 1;
@@ -107,27 +104,44 @@ int main(int argc, char *argv[])
 
 void openFile(char *name)
 {
-    // Save the file name for storing in tokens.
+    // Save the original file name.
     filename = name;
     char *slash = strrchr(filename, '/');
     char *base = (slash == NULL) ? filename : slash + 1;
 
-    // Check if an extension exists.
+    // Check for an extension.
     char *dot = strrchr(base, '.');
-    if(dot != NULL)
+    if(dot == NULL)
     {
-        // If an extension exists, allow only .kt.
+        // No extension: create a new filename with ".kt" appended.
+        strcpy(temp, filename);
+        strcat(temp, ".kt");
+
+        // If the original file exists, rename it to the new name.
+        if(access(filename, F_OK) == 0)
+        {
+            if(rename(filename, temp) != 0)
+            {
+                perror("Error renaming file");
+                exit(1);
+            }
+        }
+        // Use the new filename.
+        filename = temp;
+    }
+    else
+    {
+        // If an extension exists, allow only ".kt".
         if(strcmp(dot, ".kt") != 0)
         {
             printf("Input file must be of type .kt\n");
             exit(1);
         }
     }
-    // If no extension exists, simply open the file as provided.
 
     yyin = fopen(filename, "r");
 
-    // Check that file opened successfully.
+    // Check that the file opened successfully.
     if(yyin == NULL)
     {
         printf("File %s cannot be opened.\n", filename);
