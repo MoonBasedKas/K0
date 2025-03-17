@@ -45,4 +45,4 @@ clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
 
 zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/ dotOutputs/ symTab.c symTab.h symNonTerminals.h
-	zip -r lab6.zip $^
+	zip -r hw4.zip $^
