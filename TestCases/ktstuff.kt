@@ -11,12 +11,19 @@ fun Operators() {
    val z : Int =0;
    val q : Int =0;
    x = -1;
-   if ((x < y) && (y <= z) || (z < q) && (q != x)) {
+   if ((x < y) && (y <= z) || (z < q) && (q != x)) 
+   {
       x = y;
       y = z
-   }
-   else {
+   } 
+   else 
+   if (1 == 1) 
+   {
       w = x + y * z / q - 4
+   } 
+   else 
+   {
+      return 
    }
 
    val logicalValue : Boolean = w > 20;
@@ -24,9 +31,10 @@ fun Operators() {
 
 fun WhileStuff() {
    var x : Int = 0;
-   while (x < 20) {
+   while (x < 20) 
+   {
       x = 6;
-      return
+      return 
    }
 }
 
@@ -55,7 +63,7 @@ fun stringOps() : String {
 }
 
 fun listOps() : Array<Int> {
-        var L : Array<Int> = Array<Int>(3){ 0 }
+        var L : Array<Int> = Array<Int>(3)
         L[0] = 1; L[1] = 2; L[2] = 3;
         return L // uh oh
 }

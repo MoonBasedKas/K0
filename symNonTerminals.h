@@ -106,7 +106,19 @@ typedef enum {
     whenConds,
     whenCondsIn,
     controlStmnt,
-    returnVal
+    returnVal,
+    arraySizeInt,
+    arraySizeIdent,
+    arrayValues,
+    arrayDec,
+    arrayDecValueless,
+    arrayDecEqual,
+    arrayDecEqualValueless,
+    arrayIndex,
+    arrayAssignSub,
+    arrayAssignAdd,
+    arrayAssignment,
+    ifElseIf
 } symNonTerminal;
 
 #endif
