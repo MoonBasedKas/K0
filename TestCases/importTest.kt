@@ -1,6 +1,6 @@
 import qemu.emulator
-import java.*
-import python
+import java.hello
+import python.files
 
 fun main(){
     println("HI!!!!")
