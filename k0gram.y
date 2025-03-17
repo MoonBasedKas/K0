@@ -565,7 +565,7 @@ controlStructureBody:
     ;
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?
-    RETURN SEMICOLON                                                                    {$$ = $1;}
+    RETURN                                                                              {$$ = $1;}
     | RETURN expression                                                                 {$$ = alctoken(returnVal, "returnVal", 2, $1, $2);}
     | CONTINUE                                                                          {$$ = $1;}
     | BREAK                                                                             {$$ = $1;}
