@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     }
 
     if(fileCount == 0){
-        printf("Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
+        fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
         free(fileNames);
         exit(1);
     }
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
                 fclose(out);
                 printf("Dot file written: %s\n", dotFilename);
             } else {
-                printf("Error writing dot file for %s\n", fileNames[i]);
+                fprintf(stderr, "Error writing dot file for %s\n", fileNames[i]);
             }
         }
         if (tree) {
@@ -122,7 +122,7 @@ void openFile(char *name)
         {
             if(rename(filename, temp) != 0)
             {
-                perror("Error renaming file");
+                fprintf(stderr, "Error renaming file");
                 exit(1);
             }
         }
@@ -134,7 +134,7 @@ void openFile(char *name)
         // If an extension exists, allow only ".kt".
         if(strcmp(dot, ".kt") != 0)
         {
-            printf("Input file must be of type .kt\n");
+            fprintf(stderr, "Input file must be of type .kt\n");
             exit(1);
         }
     }
@@ -145,7 +145,7 @@ void openFile(char *name)
     // Check that the file opened successfully.
     if(yyin == NULL)
     {
-        printf("File %s cannot be opened.\n", filename);
+        fprintf(stderr, "File %s cannot be opened.\n", filename);
         exit(1);
     }
 }
