@@ -1,4 +1,5 @@
 fun main(args : Array<String>) {
-    // Print text to the console.
-    println("Hello World!")
+    while(1 == 1) {
+        println("hi")
+    }
 }

@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
     for(int i = 0; i < fileCount; i++){
 
         root = NULL;
-        rootScope = createTable(NULL, "global");
+        rootScope = createTable(NULL, "global", PACKAGE);
         populateTypes();
         populateStdlib();
 
@@ -167,6 +167,10 @@ void populateTypes(){
     addSymTab(rootScope, "Array", NULL, VARIABLE);
 }
 
+/**
+ * @brief Populates the standard library of what is there without includes.
+ * 
+ */
 void populateStdlib(){
     // Functions
     addSymTab(rootScope, "print", NULL, VARIABLE);
@@ -187,11 +191,11 @@ void populateStdlib(){
  */
 void populateLibraries(){
     //Predefined libraries
-    addSymTab(rootScope, "java", NULL, VARIABLE);
-    addSymTab(rootScope, "util", NULL, VARIABLE);
-    addSymTab(rootScope, "lang", NULL, VARIABLE);
-    addSymTab(rootScope, "math", NULL, VARIABLE);
-    addSymTab(rootScope, "Random", NULL, VARIABLE);
+    addSymTab(rootScope, "java", NULL, PACKAGE);
+    addSymTab(rootScope, "util", NULL, PACKAGE);
+    addSymTab(rootScope, "lang", NULL, PACKAGE);
+    addSymTab(rootScope, "math", NULL, PACKAGE);
+    addSymTab(rootScope, "Random", NULL, PACKAGE);
 
     // Functions within predfined libraries.
     addSymTab(rootScope, "nextInt", NULL, VARIABLE);
