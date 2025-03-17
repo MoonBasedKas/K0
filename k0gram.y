@@ -356,7 +356,7 @@ assignment:
     IDENTIFIER ASSIGNMENT expression        {$$ = alctoken(assignment, "assignment", 2, $1, $3);}
     | IDENTIFIER ADD_ASSIGNMENT expression  {$$ = alctoken(assignAdd, "assignAdd", 2, $1, $3);}
     | IDENTIFIER SUB_ASSIGNMENT expression  {$$ = alctoken(assignSub, "assignSub", 2, $1, $3);}
-    | arrayIndex ASSIGNMENT expression        {$$ = alctoken(arrayAssignment, "arrayAssignment", 2, $1, $3);}
+    | arrayIndex ASSIGNMENT expression      {$$ = alctoken(arrayAssignment, "arrayAssignment", 2, $1, $3);}
     | arrayIndex ADD_ASSIGNMENT expression  {$$ = alctoken(arrayAssignAdd, "arrayAssignAdd", 2, $1, $3);}
     | arrayIndex SUB_ASSIGNMENT expression  {$$ = alctoken(arrayAssignSub, "arrayAssignSub", 2, $1, $3);}
     ;

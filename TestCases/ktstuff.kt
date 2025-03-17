@@ -16,10 +16,12 @@ fun Operators() {
       x = y;
       y = z
    } 
-   else if (1 == 1) 
+   else 
+   if (1 == 1) 
    {
       w = x + y * z / q - 4
-   } else 
+   } 
+   else 
    {
       return 
    }
