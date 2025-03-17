@@ -110,7 +110,8 @@ typedef enum {
     arraySizeInt,
     arraySizeIdent,
     arrayValues,
-    arrayDec
+    arrayDec,
+    arrayDecValueless
 } symNonTerminal;
 
 #endif

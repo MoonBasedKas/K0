@@ -207,7 +207,8 @@ propertyDeclaration:
     | variable typeParameters variableDeclaration ASSIGNMENT expression                 {$$ = alctoken(propDecTypeParamsAssign, "propDecTypeParamsAssign", 4, $1, $2, $3, $5);}
     | variable typeParameters reciverType variableDeclaration                           {$$ = alctoken(propDecTypeParamsReceiver, "propDecTypeParamsReceiver", 4, $1, $2, $3, $4);}
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression     {$$ = alctoken(propDecAll, "propDecAll", 5, $1, $2, $3, $4, $6);}
-    | variable variableDeclaration arraySize arrayValues                                {$$ = alctoken(arrayDec, "propDecAll", 4, $1, $2, $3, $4);}
+    | variable variableDeclaration arraySize arrayValues                                {$$ = alctoken(arrayDec, "arrayDec", 4, $1, $2, $3, $4);}
+    | variable variableDeclaration arraySize                                            {$$ = alctoken(arrayDecValueless, "arrayDecValueless", 3, $1, $2, $3);}
     ;
 
 arraySize:

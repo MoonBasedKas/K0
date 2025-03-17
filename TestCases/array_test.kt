@@ -1,3 +1,3 @@
 fun main(){
-    var num : Array<Int> (100) { 0 }
+    var num : Array<Int> (100)
 }
