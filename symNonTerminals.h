@@ -117,7 +117,8 @@ typedef enum {
     arrayIndex,
     arrayAssignSub,
     arrayAssignAdd,
-    arrayAssignment
+    arrayAssignment,
+    ifElseIf
 } symNonTerminal;
 
 #endif
