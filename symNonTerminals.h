@@ -113,7 +113,11 @@ typedef enum {
     arrayDec,
     arrayDecValueless,
     arrayDecEqual,
-    arrayDecEqualValueless
+    arrayDecEqualValueless,
+    arrayIndex,
+    arrayAssignSub,
+    arrayAssignAdd,
+    arrayAssignment
 } symNonTerminal;
 
 #endif

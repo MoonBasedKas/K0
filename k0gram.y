@@ -81,6 +81,7 @@
 %type <treeptr> arraySize
 %type <treeptr> arrayValues
 %type <treeptr> arrayDeclaration
+%type <treeptr> arrayIndex
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -355,6 +356,13 @@ assignment:
     IDENTIFIER ASSIGNMENT expression        {$$ = alctoken(assignment, "assignment", 2, $1, $3);}
     | IDENTIFIER ADD_ASSIGNMENT expression  {$$ = alctoken(assignAdd, "assignAdd", 2, $1, $3);}
     | IDENTIFIER SUB_ASSIGNMENT expression  {$$ = alctoken(assignSub, "assignSub", 2, $1, $3);}
+    | arrayIndex ASSIGNMENT expression        {$$ = alctoken(arrayAssignment, "arrayAssignment", 2, $1, $3);}
+    | arrayIndex ADD_ASSIGNMENT expression  {$$ = alctoken(arrayAssignAdd, "arrayAssignAdd", 2, $1, $3);}
+    | arrayIndex SUB_ASSIGNMENT expression  {$$ = alctoken(arrayAssignSub, "arrayAssignSub", 2, $1, $3);}
+    ;
+
+arrayIndex:
+    IDENTIFIER LSQUARE INTEGER_LITERAL RSQUARE {$$ = alctoken(arrayIndex, "arrayIndex", 2, $1, $3);}
     ;
 
 
