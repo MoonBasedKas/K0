@@ -243,6 +243,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 {character_error}								{ fprintf(stderr, "File: %s Line:%d Character Literals cannot have more than one character:\t%s\n", filename, rows, yytext); exit(1); }
 .												{ fprintf(stderr, "File: %s Line:%d Unknown error\n", filename, rows); exit(1); }
 
+
 <<EOF>>     									{ return 0; }
 
 %%

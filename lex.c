@@ -42,7 +42,7 @@ int token(int code)
 
     if(nextToken == NULL)
     {
-        printf("Malloc failed\n");
+        fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
 
@@ -50,7 +50,7 @@ int token(int code)
     nextToken->text = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
     if(nextToken->text == NULL)
     {
-        printf("Malloc failed\n");
+        fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
     strcpy(nextToken->text, yytext);
@@ -58,7 +58,7 @@ int token(int code)
     nextToken->filename = (char*) malloc(sizeof(char) * (strlen(filename) + 1));
     if(nextToken->filename == NULL)
     {
-        printf("Malloc failed\n");
+        fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
     strcpy(nextToken->filename, filename);
@@ -160,7 +160,7 @@ int stringLiteral(int code)
 
     if(nextToken->sval == NULL)
     {
-        printf("Malloc failed\n");
+        fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
 
@@ -211,7 +211,7 @@ int stringLiteral(int code)
                 *nextCharLit = '$';
                 break;
             default:
-                printf("File: %s Line:%d The escape sequence \\%c is not supported by k0\n", nextToken->filename, nextToken->lineno, *nextCharLex);
+                fprintf(stderr, "File: %s Line:%d The escape sequence \\%c is not supported by k0\n", nextToken->filename, nextToken->lineno, *nextCharLex);
                 exit(1);
                 break;
             }
@@ -238,7 +238,7 @@ int multiLineString(int code)
 
     if(nextToken->sval == NULL)
     {
-        printf("Malloc failed\n");
+        fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
 
