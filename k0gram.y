@@ -78,6 +78,8 @@
 %type <treeptr> importList
 %type <treeptr> importIdentifier
 %type <treeptr> postfixExpression
+%type <treeptr> arraySize
+%type <treeptr> arrayValues
 /* Terminals */
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
@@ -205,7 +207,19 @@ propertyDeclaration:
     | variable typeParameters variableDeclaration ASSIGNMENT expression                 {$$ = alctoken(propDecTypeParamsAssign, "propDecTypeParamsAssign", 4, $1, $2, $3, $5);}
     | variable typeParameters reciverType variableDeclaration                           {$$ = alctoken(propDecTypeParamsReceiver, "propDecTypeParamsReceiver", 4, $1, $2, $3, $4);}
     | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression     {$$ = alctoken(propDecAll, "propDecAll", 5, $1, $2, $3, $4, $6);}
+    | variable variableDeclaration arraySize arrayValues                                {$$ = alctoken(arrayDec, "propDecAll", 4, $1, $2, $3, $4);}
     ;
+
+arraySize:
+    LPAREN INTEGER_LITERAL RPAREN   {$$ = alctoken(arraySizeInt, "arraySizeInt", 3, $1, $2, $3);}
+    | LPAREN IDENTIFIER RPAREN      {$$ = alctoken(arraySizeIdent, "arraySizeIdent", 3, $1, $2, $3);}
+    ;
+
+
+arrayValues:
+    LCURL expressionList RCURL      {$$ = alctoken(arrayValues, "arrayValues", 3, $1, $2, $3);}
+    ;
+
 
 variable:
     constantVal {$$ = $1;}
