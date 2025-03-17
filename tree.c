@@ -139,13 +139,19 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
         // Import chains
         case expandingImportID:
-            scope = addSymTab(scope, node->kids[0]->leaf->text, NULL, PACKAGE);
+            scope = addSymTab(rootScope, node->kids[0]->leaf->text, NULL, PACKAGE);
+
+            // So we need to check if the next leaf is a *...
+
             if (node->kids[2]->nkids != 0) {
                 buildSymTabs(node->kids[2], scope);
             } else {
-                if (strcmp(node->kids[2]->leaf->text, "*")) 
-                    scope = addSymTab(scope, node->kids[2]->leaf->text, NULL, PACKAGE);
-            }
+                if (strcmp(node->kids[2]->leaf->text, "*")) {
+                    scope = addSymTab(rootScope, node->kids[2]->leaf->text, NULL, PACKAGE);
+                } else {
+                    if (contains(rootScope, "Math")) addMathModule();
+                }
+            } 
             
             // Check if next is valid.
             break;
@@ -278,7 +284,7 @@ int checkExistance(struct tree *node, struct symTab *scope){
             if(contains(scope, node->leaf->text) != NULL)
             {
                 declared = true;
-                return 0;
+                return declared;
             }
             scope = scope->parent;
         
@@ -293,3 +299,22 @@ int checkExistance(struct tree *node, struct symTab *scope){
     return 0;
 }
 
+/**
+ * @brief If the math module is called add its functions to global.
+ * This is done because I don't want scope looking to have a time 
+ * complexity of O(n).
+ * 
+ * @return int 
+ */
+int addMathModule(){
+
+    addSymTab(rootScope, "abs", NULL, FUNCTION);
+    addSymTab(rootScope, "max", NULL, FUNCTION);
+    addSymTab(rootScope, "min", NULL, FUNCTION);
+    addSymTab(rootScope, "pow", NULL, FUNCTION);
+    addSymTab(rootScope, "cos", NULL, FUNCTION);
+    addSymTab(rootScope, "sin", NULL, FUNCTION);
+    addSymTab(rootScope, "tan", NULL, FUNCTION);
+
+    return 0;
+}

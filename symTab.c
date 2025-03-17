@@ -72,7 +72,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
  * 
  * @param elem 
  * @param table 
- * @return struct symEntry* 
+ * @return struct symEntry* NULL if not there.
  */
 struct symEntry *contains(struct symTab *table, char *elem){
 
@@ -169,7 +169,6 @@ int freeEntry(struct symEntry *e){
  */
 int printTable(struct symTab *table){
     struct symEntry *temp;
-    // TODO: fix name bug
     printf("--- symbol table for %s: %s ---\n", getTableType(table->tableType), table->name);
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
