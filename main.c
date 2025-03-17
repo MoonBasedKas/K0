@@ -90,6 +90,9 @@ int main(int argc, char *argv[])
 
         if(symtab){
             printTable(rootScope);
+        } else if(symError == 0)
+        {
+             printf("No errors in file: %s\n\n", fileNames[i]);
         }
 
         freeTable(rootScope);

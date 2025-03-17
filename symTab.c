@@ -129,14 +129,13 @@ struct symTab *createTable(struct symTab *parent, char *name, int type){
  * @return int 
  */
 int freeTable(struct symTab *table){
-
     for(int i = 0; i < SYMBUCKETS; i++){
-        freeEntry(table->buckets[i]);
-        free(table->buckets[i]);
+        if(table->buckets[i] != NULL){
+            freeEntry(table->buckets[i]);
+        }
     }
     free(table->buckets);
     free(table);
-
     return 0;
 }
 
@@ -148,15 +147,15 @@ int freeTable(struct symTab *table){
  * @return int 
  */
 int freeEntry(struct symEntry *e){
-    struct symEntry *temp = e;
+    struct symEntry *temp;
     while(e != NULL){
         temp = e;
         if(temp->func == FUNCTION || temp->func == PACKAGE){
-            freeTable(e->scope);
+            freeTable(temp->scope);
         }
         e = e->next;
         // TODO: Figure out what in here is causing the problem.
-        // free(temp);
+        free(temp);
     }
     return 0;
 }

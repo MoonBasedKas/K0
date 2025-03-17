@@ -241,6 +241,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 {backtick_identifier}							{ fprintf(stderr, "File: %s Line:%d Backtick identifiers not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {uni_character_literal}							{ fprintf(stderr, "File: %s Line:%d Unicode characters not supported by k0\n", filename, rows); exit(1); }
 {character_error}								{ fprintf(stderr, "File: %s Line:%d Character Literals cannot have more than one character:\t%s\n", filename, rows, yytext); exit(1); }
+\"[^\"\n]*                                      { fprintf(stderr, "File: %s Line:%d Unclosed string literal\n", filename, rows); exit(1);}
 .												{ fprintf(stderr, "File: %s Line:%d Unknown error\n", filename, rows); exit(1); }
 
 
