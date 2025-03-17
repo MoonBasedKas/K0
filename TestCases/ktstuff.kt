@@ -11,11 +11,10 @@ fun Operators() {
    val z : Int =0;
    val q : Int =0;
    x = -1;
-   if ((x < y) && (y <= z) || (z < q) && (q != x)) 
-   {
+   if ((x < y) && (y <= z) || (z < q) && (q != x)) {
       x = y;
       y = z
-   }
+   } 
    else {
       w = x + y * z / q - 4
    }
