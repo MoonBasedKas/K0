@@ -139,6 +139,8 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
         // Import chains
         case expandingImportID:
+            // Is it there?
+            if(contains(rootScope, node->kids[0]->leaf->text) == NULL)
             scope = addSymTab(rootScope, node->kids[0]->leaf->text, NULL, PACKAGE);
 
             // So we need to check if the next leaf is a *...
