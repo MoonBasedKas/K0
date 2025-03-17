@@ -139,12 +139,12 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
         // Import chains
         case expandingImportID:
-            addSymTab(scope, node->kids[0]->leaf->text, NULL, VARIABLE);
+            scope = addSymTab(scope, node->kids[0]->leaf->text, NULL, PACKAGE);
             if (node->kids[2]->nkids != 0) {
                 buildSymTabs(node->kids[2], scope);
             } else {
                 if (strcmp(node->kids[2]->leaf->text, "*")) 
-                    addSymTab(scope, node->kids[2]->leaf->text, NULL, VARIABLE);
+                    scope = addSymTab(scope, node->kids[2]->leaf->text, NULL, PACKAGE);
             }
             
             // Check if next is valid.

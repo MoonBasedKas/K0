@@ -1,3 +1,7 @@
+import qemu.emulator
+import java.*
+import python
+
 fun f() : Int {
    val threadlocal : Int = 5
    g()

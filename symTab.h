@@ -6,6 +6,7 @@ struct symTab{
     char *name; 
     struct symTab *parent;
     struct symEntry **buckets;
+    int tableType;
 };
 
 struct symEntry{
@@ -18,6 +19,7 @@ struct symEntry{
 
 enum types{
     FUNCTION = 1,
+    PACKAGE,
     VARIABLE = 0
 };
 
@@ -27,12 +29,12 @@ extern struct symTab *rootScope;
 
 struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func);
 struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func);
-struct symTab *createTable(struct symTab *parent, char *name);
+struct symTab *createTable(struct symTab *parent, char *name, int type);
 int hash(char *elem);
 struct symEntry *contains(struct symTab *table, char *elem);
 int freeTable(struct symTab *table);
 int freeEntry(struct symEntry *e);
 int printTable(struct symTab *table);
-
+char *getTableType(int type);
 
 #endif

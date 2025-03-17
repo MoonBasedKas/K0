@@ -24,7 +24,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
         table->buckets[bucket] = createEntry(table, elem, type, func);
         temp = table->buckets[bucket];
 
-        if(func == FUNCTION){
+        if(func == FUNCTION || func == PACKAGE){
             return temp->scope;
         }
         // Perhaps this is the danger?
@@ -58,8 +58,8 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
     temp->scope = NULL;
     temp->name = elem;
     temp->func = func;
-    if(func == FUNCTION){
-        temp->scope = createTable(table, temp->name);
+    if(func == FUNCTION || func == PACKAGE){
+        temp->scope = createTable(table, temp->name, func);
     }
     temp->next = NULL;
 
@@ -113,9 +113,9 @@ int hash(char *e){
  * 
  * @return struct symTab* 
  */
-struct symTab *createTable(struct symTab *parent, char *name){
+struct symTab *createTable(struct symTab *parent, char *name, int type){
     struct symTab *table = malloc(sizeof(struct symTab));
-
+    table->tableType = type;
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
     table->name = name;
     table->parent = parent;
@@ -151,7 +151,7 @@ int freeEntry(struct symEntry *e){
     struct symEntry *temp = e;
     while(e != NULL){
         temp = e;
-        if(temp->func == FUNCTION){
+        if(temp->func == FUNCTION || temp->func == PACKAGE){
             freeTable(e->scope);
         }
         e = e->next;
@@ -170,7 +170,7 @@ int freeEntry(struct symEntry *e){
 int printTable(struct symTab *table){
     struct symEntry *temp;
     // TODO: fix name bug
-    printf("-- symbol table for %s --\n", table->name);
+    printf("--- symbol table for %s: %s ---\n", getTableType(table->tableType), table->name);
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
         if (temp != NULL){
@@ -180,11 +180,12 @@ int printTable(struct symTab *table){
             }
         }
     }
+    printf("---\n");
     
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
         // printf("%p %d\n", temp); 
-        if (temp != NULL && temp->func == FUNCTION){
+        if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
             
             printTable(temp->scope);
         }
@@ -193,3 +194,19 @@ int printTable(struct symTab *table){
     return 0;
 }
 
+/**
+ * @brief Gets the string of a given table type.
+ * 
+ * @param type 
+ * @return char* 
+ */
+char *getTableType(int type){
+    switch(type){
+        case FUNCTION:
+            return "Function";
+        case PACKAGE:
+            return "Package";
+        default:
+            return "UNKNOWN";
+    }
+}
