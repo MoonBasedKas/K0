@@ -138,7 +138,8 @@ void openFile(char *name)
             exit(1);
         }
     }
-
+    // Write out the name of the file to standard out.
+    printf("Opening file: %s\n", filename);
     yyin = fopen(filename, "r");
 
     // Check that the file opened successfully.

@@ -237,7 +237,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 {nested_comment}								{ printf("File: %s Line:%d Nested Comments not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {bin_literal}									{ printf("File: %s Line:%d Binary Literals not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {unsigned_literal}								{ printf("File: %s Line:%d Unsigned Integers not supported by k0:\t%s\n", filename, rows, yytext); exit(1);; }
-(exponent_literal)                              { printf("File: %s Line:%d Exponential Notation not supported by k0:\t%s\n", filename, rows, yytext); exit(1);}
+{exponent_literal}                              { printf("File: %s Line:%d Exponential Notation not supported by k0:\t%s\n", filename, rows, yytext); exit(1);}
 {backtick_identifier}							{ printf("File: %s Line:%d Backtick identifiers not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {uni_character_literal}							{ printf("File: %s Line:%d Unicode characters not supported by k0\n", filename, rows); exit(1); }
 {character_error}								{ printf("File: %s Line:%d Character Literals cannot have more than one character:\t%s\n", filename, rows, yytext); exit(1); }
