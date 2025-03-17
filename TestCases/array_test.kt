@@ -1,3 +1,3 @@
 fun main(){
-    var num : Array<Int> (100)
+    var L : Array<Int> = Array<Int>(3){ 0 }
 }

@@ -111,7 +111,9 @@ typedef enum {
     arraySizeIdent,
     arrayValues,
     arrayDec,
-    arrayDecValueless
+    arrayDecValueless,
+    arrayDecEqual,
+    arrayDecEqualValueless
 } symNonTerminal;
 
 #endif
