@@ -19,7 +19,8 @@ Note that short, long, and float are aliases in Kotlin so.... ?
 
 */
 typedef enum {
-    NONE_TYPE = 1000000,
+    FIRST_TYPE = 1000000,
+    NULL_TYPE,
     BYTE_TYPE,
     INT_TYPE,
     SHORT_TYPE,
@@ -30,19 +31,18 @@ typedef enum {
     CHAR_TYPE,
     STRING_TYPE,
     ARRAY_TYPE,
-    FUNCTION_TYPE
-    // ANY_TYPE - Do we need catchall?
-    // LAST_TYPE
-
+    FUNCTION_TYPE,
+    ANY_TYPE, //Not sure if we need this catchall type
+    LAST_TYPE
 } basicType;
 
-typedef struct typeIsnfo {
+typedef struct typeInfo {
     int basicType;
     union {
         struct funcInfo {
             char *name;
             int defined;
-            struct symTab *symTab;
+            struct symTab *st;
             struct typeInfo *returnType;
             int numParams;
             struct param *parameterss;

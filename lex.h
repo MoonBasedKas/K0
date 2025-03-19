@@ -1,3 +1,5 @@
+#ifndef LEX_H
+#define LEX_H
 //included for definition of FILE
 #include <stdio.h>
 
@@ -38,3 +40,5 @@ struct token {
    char *sval;     /* for string constants, malloc space, de-escape, store */
                    /*    the string (less quotes and after escapes) here */
 };
+
+#endif
