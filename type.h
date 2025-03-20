@@ -45,7 +45,7 @@ typedef struct typeInfo {
             struct symTab *st;
             struct typeInfo *returnType;
             int numParams;
-            struct param *parameterss;
+            struct param *parameters;
         } func;
         struct arrayInfo {
             int size; // -1 unkown size

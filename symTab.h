@@ -3,7 +3,7 @@
 
 
 struct symTab{
-    char *name; 
+    char *name;
     struct symTab *parent;
     struct symEntry **buckets;
     int tableType;
@@ -12,9 +12,10 @@ struct symTab{
 struct symEntry{
     char *name;
     struct tree *type;
-    struct symTab *scope;  
+    struct symTab *scope;
     struct symEntry *next;
     int func;
+    struct typeInfo *type;
 };
 
 enum types{

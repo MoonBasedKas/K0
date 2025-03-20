@@ -89,10 +89,88 @@ typePtr alcType(int baseType) {
 
 typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     typePtr rv = alcType(FUNCTION_TYPE);
-    if (rv == NULL) {
+    if (rv == NULL)
         return NULL;
-    
+
+    // Symbol table for the scope
     rv->u.func.st = st;
-    // Traverse subtrees
+
+    // Get the return type
+    if (r != NULL) {
+        if (r->type != NULL)
+            rv->u.func.returnType = r->type;
+        else
+            rv->u.func.returnType = alcType(r->id);
+    } else {
+        // If no return type is provided, use a null_type (this was used interchangeably with NONE_TYPE in examples)
+        rv->u.func.returnType = null_typePtr;
     }
+    // Traverse/process subtree(s) for parameters
+    rv->u.func.numParams = p->nkids;
+    rv->u.func.parameters = NULL;
+    struct param *lastParam = NULL;
+
+    for (int i = 0; i < p->nkids; i++) {
+        struct tree *paramNode = p->kids[i];
+        typePtr paramType = NULL;
+        char *paramName = NULL;
+
+    /*
+    Hide yo kids, hide yo wife
+    We need synthesize types from the children of the paramNode
+    */
+    if (paramNode->nkids >= 1) {
+        if (paramNode->kids[0]->type != NULL)
+            paramType = paramNode->kids[0]->type;
+        else
+            paramType = alcType(paramNode->kids[0]->id);
+
+    } else {
+        paramType = null_typePtr;
+    }
+
+    // Get the name of the parameter
+    if (paramNode->nkids >= 2) {
+        paramName = paramNode->kids[1]->symbolname;
+    } else {
+        paramName = "unknown"; // Not sure if this is correct or what we want to name it
+    }
+
+    // New node for the parameter
+    struct param *newParam = malloc(sizeof(struct param));
+    if (newParam == NULL) {
+        fprintf(stderr, "Out of memory in alcFuncType (param)\n");
+        exit(1);
+    }
+    newParam->name = strdup(paramName);
+    newParam->type = paramType;
+    newParam->next = NULL;
+
+    // Add to the end of the list
+    if (rv->u.func.parameters == NULL) {
+        rv->u.func.parameters = newParam;
+    } else {
+        lastParam->next = newParam;
+    }
+    lastParam = newParam;
+    }
+    return rv;
+}
+
+typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
+    typePtr rv = alcType(ARRAY_TYPE);
+    if (rv == NULL)
+        return NULL;
+
+    // Type of array
+    rv->u.array.elemType = elemType;
+
+    // Size of array
+    if (size != NULL && size->leaf != NULL) {
+        rv->u.array.size = size->leaf->ival; // Assume int value?
+    } else {
+        rv->u.array.size = -1; // Unknown size
+    }
+    return rv;
+}
 
