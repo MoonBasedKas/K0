@@ -17,10 +17,10 @@ struct symTab *currentScope;
 
 /**
  * @brief Prints the tree
- * 
- * @param root 
- * @param depth 
- * @return int 
+ *
+ * @param root
+ * @param depth
+ * @return int
  */
 int printTree(nodeptr root, int depth) {
     static int last[256];
@@ -61,15 +61,15 @@ int printTree(nodeptr root, int depth) {
 
 /**
  * @brief Alocates a token.
- * 
- * @param prodrule 
- * @param symbolname 
- * @param nkids 
- * @param ... 
- * @return struct tree* 
+ *
+ * @param prodrule
+ * @param symbolname
+ * @param nkids
+ * @param ...
+ * @return struct tree*
  */
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
-    
+
     struct tree *node = malloc(sizeof(struct tree));
     if (!node) {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
@@ -96,8 +96,8 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
 
 /**
  * @brief Frees the whole tree...
- * 
- * @param node 
+ *
+ * @param node
  */
 void freeTree(nodeptr node) {
     if (node == NULL)
@@ -121,8 +121,8 @@ void freeTree(nodeptr node) {
 
 /**
  * @brief Runs through the tree interesting into the table.
- * 
- * @param node 
+ *
+ * @param node
  */
 void buildSymTabs(struct tree *node, struct symTab *scope)
 {
@@ -153,15 +153,15 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
                 } else {
                     if (contains(rootScope, "Math")) addMathModule();
                 }
-            } 
-            
+            }
+
             // Check if next is valid.
             break;
 
         // Singular imports.
         case collapsedImport:
             if(node->kids[1]->nkids == 0){
-                if (strcmp(node->kids[1]->leaf->text, "*")){ 
+                if (strcmp(node->kids[1]->leaf->text, "*")){
                     addSymTab(scope, node->kids[1]->leaf->text, NULL, VARIABLE);
                 } else {
                     fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
@@ -183,14 +183,14 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
             if (scope->parent != NULL) scope = scope->parent;
             break;
 
-        case funcDecTypeBody:    
+        case funcDecTypeBody:
         case funcDecType:
             scope = addSymTab(scope, node->kids[1]->leaf->text, node->kids[2], FUNCTION);
             for(int i = 2; i < node->nkids; i++)
             {
                 buildSymTabs(node->kids[i], scope);
             }
-            
+
             if (scope->parent != NULL) scope = scope->parent;
             break;
 
@@ -224,25 +224,25 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
             }
             break;
     }
-    
+
 }
 
 /**
  * @brief Checks if everything in a tree has been declared.
- * 
- * @param node 
- * @param scope 
- * @return int 
+ *
+ * @param node
+ * @param scope
+ * @return int
  */
 int verifyDeclared(struct tree *node, struct symTab *scope){
     if(node->nkids == 0){
         checkExistance(node, scope);
-    } 
+    }
     switch(node->prodrule){
         // Entering a new scope.
         case funcDecAll:
         case funcDecParamType:
-        case funcDecTypeBody:    
+        case funcDecTypeBody:
         case funcDecType:
         case funcDecParamBody:
         case funcDecBody:
@@ -259,12 +259,10 @@ int verifyDeclared(struct tree *node, struct symTab *scope){
             break;
 
         default:
-            for(int i = 0; i < node->nkids; i++) 
+            for(int i = 0; i < node->nkids; i++)
                 verifyDeclared(node->kids[i], scope);
             break;
     }
-
-
 
     return 0;
 }
@@ -272,10 +270,10 @@ int verifyDeclared(struct tree *node, struct symTab *scope){
 
 /**
  * @brief Checks if something has been declared or not.
- * 
- * @param node 
- * @param scope 
- * @return int 
+ *
+ * @param node
+ * @param scope
+ * @return int
  */
 int checkExistance(struct tree *node, struct symTab *scope){
     if(node->leaf->category == IDENTIFIER)
@@ -289,7 +287,7 @@ int checkExistance(struct tree *node, struct symTab *scope){
                 return declared;
             }
             scope = scope->parent;
-        
+
         }
         if(!declared)
         {
@@ -303,10 +301,10 @@ int checkExistance(struct tree *node, struct symTab *scope){
 
 /**
  * @brief If the math module is called add its functions to global.
- * This is done because I don't want scope looking to have a time 
+ * This is done because I don't want scope looking to have a time
  * complexity of O(n).
- * 
- * @return int 
+ *
+ * @return int
  */
 int addMathModule(){
 

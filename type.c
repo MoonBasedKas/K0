@@ -157,6 +157,14 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     return rv;
 }
 
+
+/**
+ * @brief Allocates an array type (composite type)
+ *
+ * @param size - size of the array
+ * @param elemType - element type of the array
+ * @return rv
+ */
 typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     typePtr rv = alcType(ARRAY_TYPE);
     if (rv == NULL)

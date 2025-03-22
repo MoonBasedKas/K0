@@ -8,11 +8,11 @@ struct symTab *rootScope;
 
 /**
  * @brief Inserts an element into a symbol table.
- * @param table 
- * @param elem 
- * @param type 
+ * @param table
+ * @param elem
+ * @param type
  * @param func
- * @return int 
+ * @return int
  */
 struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func){
     int bucket = hash(elem);
@@ -20,7 +20,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
 
     // No entry insert it!
     if(temp == NULL){
-        
+
         table->buckets[bucket] = createEntry(table, elem, type, func);
         temp = table->buckets[bucket];
 
@@ -38,7 +38,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     if (func == FUNCTION){
         return temp->next->scope;
     }
-    
+
 
     return NULL;
 }
@@ -46,11 +46,11 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
 
 /**
  * @brief Create a Entry object
- * 
- * @param table 
- * @param elem 
- * @param type 
- * @return struct symEntry* 
+ *
+ * @param table
+ * @param elem
+ * @param type
+ * @return struct symEntry*
  */
 struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
@@ -69,16 +69,16 @@ struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type
 
 /**
  * @brief Checks if an element exists within the symbol table.
- * 
- * @param elem 
- * @param table 
+ *
+ * @param elem
+ * @param table
  * @return struct symEntry* NULL if not there.
  */
 struct symEntry *contains(struct symTab *table, char *elem){
 
     int bucket = hash(elem);
     struct symEntry *temp = table->buckets[bucket];
-    
+
     if (!temp) return NULL; // Bucket does not exist
     for(; temp != NULL; temp = temp->next){
 
@@ -93,9 +93,9 @@ struct symEntry *contains(struct symTab *table, char *elem){
 
 /**
  * @brief Computes a quick hash for our function.
- * 
- * @param e 
- * @return int 
+ *
+ * @param e
+ * @return int
  */
 int hash(char *e){
     int val = 0;
@@ -110,13 +110,13 @@ int hash(char *e){
 
 /**
  * @brief Create a Table object
- * 
- * @return struct symTab* 
+ *
+ * @return struct symTab*
  */
 struct symTab *createTable(struct symTab *parent, char *name, int type){
     struct symTab *table = malloc(sizeof(struct symTab));
     table->tableType = type;
-    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*)); 
+    table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*));
     table->name = name;
     table->parent = parent;
     return table;
@@ -124,9 +124,9 @@ struct symTab *createTable(struct symTab *parent, char *name, int type){
 
 /**
  * @brief Frees the table
- * 
- * @param table 
- * @return int 
+ *
+ * @param table
+ * @return int
  */
 int freeTable(struct symTab *table){
     for(int i = 0; i < SYMBUCKETS; i++){
@@ -142,9 +142,9 @@ int freeTable(struct symTab *table){
 
 /**
  * @brief Frees each table entry.
- * 
- * @param e 
- * @return int 
+ *
+ * @param e
+ * @return int
  */
 int freeEntry(struct symEntry *e){
     struct symEntry *temp;
@@ -162,9 +162,9 @@ int freeEntry(struct symEntry *e){
 
 /**
  * @brief Prints out the entire symbol table reachable from a singular table.
- * 
- * @param table 
- * @return int 
+ *
+ * @param table
+ * @return int
  */
 int printTable(struct symTab *table){
     struct symEntry *temp;
@@ -179,12 +179,12 @@ int printTable(struct symTab *table){
         }
     }
     printf("---\n");
-    
+
     for(int i = 0; i < SYMBUCKETS; i++){
         temp = table->buckets[i];
-        // printf("%p %d\n", temp); 
+        // printf("%p %d\n", temp);
         if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
-            
+
             printTable(temp->scope);
         }
     }
@@ -194,9 +194,9 @@ int printTable(struct symTab *table){
 
 /**
  * @brief Gets the string of a given table type.
- * 
- * @param type 
- * @return char* 
+ *
+ * @param type
+ * @return char*
  */
 char *getTableType(int type){
     switch(type){

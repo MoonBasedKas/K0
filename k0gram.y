@@ -245,7 +245,7 @@ typeParameters:
 
 functionDeclaration:
     FUN IDENTIFIER functionValueParameters COLON type functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6);}
-    |     FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7);}
+    | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7);}
     | FUN IDENTIFIER functionValueParameters COLON type             {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5);}
     | FUN IDENTIFIER functionValueParameters functionBody           {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $4);}
     | FUN IDENTIFIER functionValueParameters SEMICOLON functionBody {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $5);}
