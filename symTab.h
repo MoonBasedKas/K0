@@ -37,5 +37,6 @@ int freeTable(struct symTab *table);
 int freeEntry(struct symEntry *e);
 int printTable(struct symTab *table);
 char *getTableType(int type);
+int grabTypes(struct symTab *table);
 
 #endif

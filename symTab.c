@@ -44,6 +44,36 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     return NULL;
 }
 
+/**
+ * @brief Writes the types to each symtable entry.
+ * 
+ * @param table 
+ * @return int
+ */
+int grabTypes(struct symTab *table){
+    struct symEntry *temp;
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        if (temp != NULL){
+            for(; temp != NULL;){
+                temp->type = temp->typeSource->type;
+            }
+        }
+    }
+    printf("---\n");
+
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        // printf("%p %d\n", temp);
+        if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
+
+            grabTypes(temp->scope);
+        }
+    }
+
+    return 0;
+}
+
 
 /**
  * @brief Create a Entry object
@@ -175,7 +205,7 @@ int printTable(struct symTab *table){
         temp = table->buckets[i];
         if (temp != NULL){
             for(; temp != NULL;){
-                printf("%s (%s)\n", temp->name, typeName(temp->type));
+                printf("%s %s\n", temp->name, typeName(temp->type));
                 temp = temp->next;
             }
         }

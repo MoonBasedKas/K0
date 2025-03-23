@@ -112,7 +112,8 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         if (r->type != NULL)
             rv->u.func.returnType = r->type;
         else
-            rv->u.func.returnType = alcType(r->id);
+            // rv->u.func.returnType = alcType(r->id);
+            rv->u.func.returnType = alcType(findType(r));
     } else {
         // If no return type is provided, use a null_type (this was used interchangeably with NONE_TYPE in examples)
         rv->u.func.returnType = null_typePtr;
@@ -137,7 +138,9 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         if (paramNode->kids[0]->type != NULL)
             paramType = paramNode->kids[0]->type;
         else
-            paramType = alcType(paramNode->kids[0]->id);
+            // paramType = alcType(paramNode->kids[0]->id);
+
+            paramType = alcType(findType(paramNode->kids[0]));
 
     } else {
         paramType = null_typePtr;

@@ -74,6 +74,7 @@ int main(int argc, char *argv[])
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);
         assignType(root, rootScope);
+        // grabTypes(rootScope); Typing is not being grabbed...
 
         if(dot){
             char dotFilename[120];
