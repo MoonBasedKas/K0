@@ -3,6 +3,7 @@
 #include "k0gram.tab.h"
 #include "symTab.h"
 #include "symNonTerminals.h"
+#include "type.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -46,10 +47,10 @@ int printTree(nodeptr root, int depth) {
     }
 
     if (root->nkids > 0)
-        printf("%snode (%s, %d): %d children\n", prefix, root->symbolname, root->prodrule, root->nkids);
+        printf("%snode (%s, %d): %d children | Type %s\n", prefix, root->symbolname, root->prodrule, root->nkids, typeName(root->type));
     else
-        printf("%stoken (File: %s, Line: %d):  %s  Integer Code: %d\n", prefix, root->leaf->filename, root->leaf->lineno,
-               root->leaf->text, root->leaf->category);
+        printf("%stoken (File: %s, Line: %d):  %s  Integer Code: %d | Type %s\n", prefix, root->leaf->filename, root->leaf->lineno,
+               root->leaf->text, root->leaf->category, typeName(root->type));
 
     // recurse for each child: update the "last" array.
     for (int i = 0; i < root->nkids; i++) {

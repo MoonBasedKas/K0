@@ -58,6 +58,7 @@ typePtr alcType(int);
 typePtr alcFuncType(struct tree *returnType, struct tree *params, struct symTab *st);
 typePtr alcArrayType(struct tree *size, struct typeInfo *elemType);
 char *typeName(typePtr t);
+int findType(struct tree *node);
 
 extern struct symTab *globalTable;
 
@@ -72,7 +73,7 @@ extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
 
-extern char *typeName[];
+extern char *typeNam[];
 
 
 #endif

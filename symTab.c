@@ -1,4 +1,5 @@
 #include "symTab.h"
+#include "type.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -43,6 +44,36 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     return NULL;
 }
 
+/**
+ * @brief Writes the types to each symtable entry.
+ * 
+ * @param table 
+ * @return int
+ */
+int grabTypes(struct symTab *table){
+    struct symEntry *temp;
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        if (temp != NULL){
+            for(; temp != NULL;){
+                temp->type = temp->typeSource->type;
+            }
+        }
+    }
+    printf("---\n");
+
+    for(int i = 0; i < SYMBUCKETS; i++){
+        temp = table->buckets[i];
+        // printf("%p %d\n", temp);
+        if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
+
+            grabTypes(temp->scope);
+        }
+    }
+
+    return 0;
+}
+
 
 /**
  * @brief Create a Entry object
@@ -54,7 +85,8 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
  */
 struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
-    temp->type = type;
+    temp->typeSource = type;
+    temp->type = NULL; // To be assigned later.
     temp->scope = NULL;
     temp->name = elem;
     temp->func = func;
@@ -173,7 +205,7 @@ int printTable(struct symTab *table){
         temp = table->buckets[i];
         if (temp != NULL){
             for(; temp != NULL;){
-                printf("%s\n", temp->name);
+                printf("%s %s\n", temp->name, typeName(temp->type));
                 temp = temp->next;
             }
         }

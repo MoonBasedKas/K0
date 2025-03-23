@@ -9,6 +9,8 @@
 #include "dot.h"
 #include "tree.h"
 #include "symTab.h"
+#include "type.h"
+#include "semanticBuild.h"
 
 
 char *filename;
@@ -71,6 +73,8 @@ int main(int argc, char *argv[])
         yyparse();
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);
+        assignType(root, rootScope);
+        // grabTypes(rootScope); Typing is not being grabbed...
 
         if(dot){
             char dotFilename[120];
