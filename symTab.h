@@ -11,7 +11,7 @@ struct symTab{
 
 struct symEntry{
     char *name;
-    struct tree *type;
+    struct tree *tableType; // Kass I changed this from "type" to "tableType" - Erik
     struct symTab *scope;
     struct symEntry *next;
     int func;
@@ -36,6 +36,6 @@ struct symEntry *contains(struct symTab *table, char *elem);
 int freeTable(struct symTab *table);
 int freeEntry(struct symEntry *e);
 int printTable(struct symTab *table);
-char *getTableType(int type);
+char *getTableType(int tableType);
 
 #endif

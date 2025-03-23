@@ -76,6 +76,17 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 {delimited_comment}								{ countNewLines(); /* Discard comments */ }
 {shebang_line}									{ /* Discard comments */  }
 
+    /* Primitive Types */
+"Byte"											{ return leaf(BYTE); }
+"Short"											{ return leaf(SHORT); }
+"Int"											{ return leaf(INT); }
+"Long"											{ return leaf(LONG); }
+"Float"											{ return leaf(FLOAT); }
+"Double"										{ return leaf(DOUBLE); }
+"Boolean"										{ return leaf(BOOLEAN); }
+"Char"											{ return leaf(CHAR); }
+"String"										{ return leaf(STRING); }
+
 "="												{ return leaf(ASSIGNMENT); }
 "+="											{ return leaf(ADD_ASSIGNMENT); }
 "-="											{ return leaf(SUB_ASSIGNMENT); }

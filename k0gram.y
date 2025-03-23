@@ -83,6 +83,16 @@
 %type <treeptr> arrayDeclaration
 %type <treeptr> arrayIndex
 /* Terminals */
+%token <treeptr> BYTE
+%token <treeptr> SHORT
+%token <treeptr> INT
+%token <treeptr> LONG
+%token <treeptr> FLOAT
+%token <treeptr> DOUBLE
+%token <treeptr> BOOLEAN
+%token <treeptr> CHAR
+%token <treeptr> STRING
+%token <treeptr> BOOL
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
 %token <treeptr> SUB_ASSIGNMENT
