@@ -80,11 +80,12 @@ void decTypes(struct tree *node)
         case funcDecParamType: // @4
         case funcDecTypeBody: // @4
         case funcDecType: // @4
-
+            node->type = alcFuncType(node->kids[3], node->kids[2], /** WHY? */ NULL);
             break;
 
         case varDec: // Variable declaration.
             // Two cases normal or array.
+            
             break;
 
         
@@ -110,6 +111,7 @@ void decTypes(struct tree *node)
  */
 int findType(struct tree *node){
     if(node->nkids != 0) return ANY_TYPE;
+
     if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
 
     if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
@@ -122,6 +124,7 @@ int findType(struct tree *node){
     if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
     if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
     if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
-    if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE;
+    if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
+
     return ANY_TYPE;
 }

@@ -48,54 +48,10 @@ char *typeNam[] = {"null",
 
 
 char *typeName(typePtr t){
-    if (t == NULL) return "UNKNOWN";
-
-    switch (t->basicType)
-    {
-    case NULL_TYPE:
-        return typeNam[0];
-        break;
-    case BYTE_TYPE:
-        return typeNam[1];
-        break;
-    case INT_TYPE:
-        return typeNam[2];
-        break;
-    case SHORT_TYPE:
-        return typeNam[3];
-        break;
-    case LONG_TYPE:
-        return typeNam[4];
-        break;
-    case FLOAT_TYPE:
-        return typeNam[5];
-        break;
-    case DOUBLE_TYPE:
-        return typeNam[6];
-        break;
-    case BOOL_TYPE:
-        return typeNam[7];
-        break;
-    case CHAR_TYPE:
-        return typeNam[8];
-        break;
-    case STRING_TYPE:
-        return typeNam[9];
-        break;
-    case FUNCTION_TYPE:
-        return typeNam[10];
-        break;
-    case ARRAY_TYPE:
-        return typeNam[11];
-        break;
-    case ANY_TYPE:
-        return typeNam[12];
-        break;
-    
-    default:
-        return typeNam[12];
-        break;
-    }
+   if (!t) return "(NULL)";
+   else if (t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE)
+      return "(BOGUS)";
+   else return typeNam[t->basicType-1000000];
     
 }
 
