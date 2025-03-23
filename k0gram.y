@@ -244,16 +244,16 @@ typeParameters:
     ;
 
 functionDeclaration:
-    FUN IDENTIFIER functionValueParameters COLON type functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6);}
+    FUN IDENTIFIER functionValueParameters COLON type functionBody              {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6);}
     | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7);}
-    | FUN IDENTIFIER functionValueParameters COLON type             {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5);}
-    | FUN IDENTIFIER functionValueParameters functionBody           {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $4);}
-    | FUN IDENTIFIER functionValueParameters SEMICOLON functionBody {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $5);}
-    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody          {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $7);}
-    | FUN IDENTIFIER LPAREN RPAREN COLON type SEMICOLON functionBody          {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $8);}
-    | FUN IDENTIFIER LPAREN RPAREN COLON type                       {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6);}
-    | FUN IDENTIFIER LPAREN RPAREN functionBody                     {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5);}
-    | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody          {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type                         {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody                       {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $4);}
+    | FUN IDENTIFIER functionValueParameters SEMICOLON functionBody             {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody                      {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $7);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type SEMICOLON functionBody            {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $8);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type                                   {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6);}
+    | FUN IDENTIFIER LPAREN RPAREN functionBody                                 {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody                       {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6);}
     ;
 
 functionValueParameters:

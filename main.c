@@ -9,6 +9,7 @@
 #include "dot.h"
 #include "tree.h"
 #include "symTab.h"
+#include "type.h"
 
 
 char *filename;
@@ -69,6 +70,7 @@ int main(int argc, char *argv[])
 
         //yydebug = 1;
         yyparse();
+        assignType(root);
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);
 

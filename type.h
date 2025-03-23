@@ -72,7 +72,7 @@ extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
 
-extern char *typeName[];
+extern char *typeNam[];
 
 
 #endif

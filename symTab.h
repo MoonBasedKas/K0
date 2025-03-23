@@ -11,7 +11,7 @@ struct symTab{
 
 struct symEntry{
     char *name;
-    struct tree *type;
+    struct tree *typeSource;
     struct symTab *scope;
     struct symEntry *next;
     int func;

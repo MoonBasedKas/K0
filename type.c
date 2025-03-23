@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "type.h"
 #include "symTab.h"
 #include "lex.h"
@@ -31,7 +32,7 @@ typePtr boolean_typePtr = &boolean_type;
 typePtr char_typePtr = &char_type;
 typePtr string_typePtr = &string_type;
 
-char *typeName[] = {"null",
+char *typeNam[] = {"null",
                     "byte",
                     "int",
                     "short",
@@ -44,6 +45,59 @@ char *typeName[] = {"null",
                     "function",
                     "array",
                     "any"};
+
+
+char *typeName(typePtr t){
+    if (t == NULL) return "UNKNOWN";
+
+    switch (t->basicType)
+    {
+    case NULL_TYPE:
+        return typeNam[0];
+        break;
+    case BYTE_TYPE:
+        return typeNam[1];
+        break;
+    case INT_TYPE:
+        return typeNam[2];
+        break;
+    case SHORT_TYPE:
+        return typeNam[3];
+        break;
+    case LONG_TYPE:
+        return typeNam[4];
+        break;
+    case FLOAT_TYPE:
+        return typeNam[5];
+        break;
+    case DOUBLE_TYPE:
+        return typeNam[6];
+        break;
+    case BOOL_TYPE:
+        return typeNam[7];
+        break;
+    case CHAR_TYPE:
+        return typeNam[8];
+        break;
+    case STRING_TYPE:
+        return typeNam[9];
+        break;
+    case FUNCTION_TYPE:
+        return typeNam[10];
+        break;
+    case ARRAY_TYPE:
+        return typeNam[11];
+        break;
+    case ANY_TYPE:
+        return typeNam[12];
+        break;
+    
+    default:
+        return typeNam[12];
+        break;
+    }
+    
+}
 
 typePtr alcType(int baseType) {
 
