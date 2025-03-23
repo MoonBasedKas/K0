@@ -56,7 +56,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
 struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
     temp->typeSource = type;
-    temp->type = type->type;
+    temp->type = NULL; // To be assigned later.
     temp->scope = NULL;
     temp->name = elem;
     temp->func = func;

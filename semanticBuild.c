@@ -19,10 +19,10 @@ This file will have helper functions for the semantic analysis phase.
  * 
  * @param node 
  */
-void assignType(struct tree *n){
+void assignType(struct tree *n, struct symTab *scope){
 
     for (int i = 0; i < n->nkids; i++){
-        assignType(n->kids[i]);
+        assignType(n->kids[i], scope);
     }
     // This is a step below.
     switch (n->prodrule){
@@ -71,7 +71,7 @@ void assignType(struct tree *n){
  * 
  * @param node 
  */
-void decTypes(struct tree *node)
+void decTypes(struct tree *node, struct symTab *scope)
 {
     switch (node->prodrule)
     {
@@ -80,22 +80,27 @@ void decTypes(struct tree *node)
         case funcDecParamType: // @4
         case funcDecTypeBody: // @4
         case funcDecType: // @4
-            node->type = alcFuncType(node->kids[3], node->kids[2], /** WHY? */ NULL);
+            scope = scope->buckets[hash(node->kids[0]->leaf->text)]->scope;
+            node->type = alcFuncType(node->kids[3], node->kids[2], scope);
             break;
 
-        case varDec: // Variable declaration.
-            // Two cases normal or array.
-            
+        case varDec: 
+            // Bingo
+            node->type = alcType(findType(node->kids[1]));
             break;
 
-        
-        
+        case arrayDec:
+        case arrayDecValueless:
+        case arrayDecEqual:
+        case arrayDecEqualValueless:
+            node->type = alcArrayType(NULL, NULL);
+            break;
 
         default:
             node->type = alcType(ANY_TYPE); // NO ASSIGNED TYPE
             for(int i = 0; i < node->nkids; i++)
             {
-                decTypes(node->kids[i]);
+                decTypes(node->kids[i], scope);
             }
             break;
     }
@@ -103,28 +108,3 @@ void decTypes(struct tree *node)
 }
 
 
-/**
- * @brief Determines what the type is
- * 
- * @param node 
- * @return int 
- */
-int findType(struct tree *node){
-    if(node->nkids != 0) return ANY_TYPE;
-
-    if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
-
-    if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
-    if(!strcmp(node->leaf->text, "Float")) return FLOAT_TYPE;
-    if(!strcmp(node->leaf->text, "String")) return STRING_TYPE;
-    if(!strcmp(node->leaf->text, "Boolean")) return BOOL_TYPE;
-    if(!strcmp(node->leaf->text, "Char")) return CHAR_TYPE;
-    if(!strcmp(node->leaf->text, "Byte")) return BYTE_TYPE;
-    if(!strcmp(node->leaf->text, "Short")) return SHORT_TYPE;
-    if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
-    if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
-    if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
-    if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
-
-    return ANY_TYPE;
-}

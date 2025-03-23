@@ -58,6 +58,7 @@ typePtr alcType(int);
 typePtr alcFuncType(struct tree *returnType, struct tree *params, struct symTab *st);
 typePtr alcArrayType(struct tree *size, struct typeInfo *elemType);
 char *typeName(typePtr t);
+int findType(struct tree *node);
 
 extern struct symTab *globalTable;
 

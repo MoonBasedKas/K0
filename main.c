@@ -10,6 +10,7 @@
 #include "tree.h"
 #include "symTab.h"
 #include "type.h"
+#include "semanticBuild.h"
 
 
 char *filename;
@@ -70,9 +71,9 @@ int main(int argc, char *argv[])
 
         //yydebug = 1;
         yyparse();
-        assignType(root);
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);
+        assignType(root, rootScope);
 
         if(dot){
             char dotFilename[120];

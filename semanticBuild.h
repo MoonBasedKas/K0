@@ -1,10 +1,10 @@
-#ifndef TYPE_H
-#define TYPE_H
+#ifndef SEMANTICBUILD_H
+#define SEMANTICBUILD_H
 
 
 
-void assignType(struct tree *n);
-void decTypes(struct tree *node);
-int findType(struct tree *node);
+void assignType(struct tree *n, struct symTab *scope);
+void decTypes(struct tree *node, struct symTab *scope);
 
 #endif
+ 

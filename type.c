@@ -5,6 +5,7 @@
 #include "symTab.h"
 #include "lex.h"
 #include "k0gram.tab.h"
+#include "semanticBuild.h"
 
 struct typeInfo null_type = {NULL_TYPE};
 struct typeInfo byte_type = {BYTE_TYPE};
@@ -103,6 +104,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         return NULL;
 
     // Symbol table for the scope
+    // This might be the most difficult thing I could need to obtain.
     rv->u.func.st = st;
 
     // Get the return type
@@ -128,6 +130,8 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     /*
     Hide yo kids, hide yo wife
     We need synthesize types from the children of the paramNode
+
+    - uhhh, okay?
     */
     if (paramNode->nkids >= 1) {
         if (paramNode->kids[0]->type != NULL)
@@ -192,3 +196,28 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     return rv;
 }
 
+/**
+ * @brief Determines what the type is
+ * 
+ * @param node 
+ * @return int 
+ */
+int findType(struct tree *node){
+    if(node->nkids != 0) return ANY_TYPE;
+
+    if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
+
+    if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
+    if(!strcmp(node->leaf->text, "Float")) return FLOAT_TYPE;
+    if(!strcmp(node->leaf->text, "String")) return STRING_TYPE;
+    if(!strcmp(node->leaf->text, "Boolean")) return BOOL_TYPE;
+    if(!strcmp(node->leaf->text, "Char")) return CHAR_TYPE;
+    if(!strcmp(node->leaf->text, "Byte")) return BYTE_TYPE;
+    if(!strcmp(node->leaf->text, "Short")) return SHORT_TYPE;
+    if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
+    if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
+    if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
+    if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
+
+    return ANY_TYPE;
+}
