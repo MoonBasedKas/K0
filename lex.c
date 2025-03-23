@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdarg.h>
 #include "lex.h"
 #include "tree.h"
 #include "k0gram.tab.h"
@@ -32,6 +33,27 @@ void countNewLines()
             rows++;
         }
     }
+}
+
+/**
+ * @brief Frees tokens implied by
+ * 
+ * @param targets 
+ * @param ... 
+ * @return int 
+ */
+int freeTokens(int targets, ...){
+    va_list args;
+    struct token *temp;
+    va_start(args, targets);
+    for (int i = 0; i < targets; i++) {
+       temp = va_arg(args, struct token *);
+       free(temp->text);
+       free(temp);
+    }
+    va_end(args);
+
+    return 0;
 }
 
 //allocates a token struct and fills all fields except literal values
