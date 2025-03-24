@@ -1,7 +1,5 @@
 /*
-This file will have helper functions for the semantic analysis phase.
-
-TODO: WHAT GOES WHERE BRO
+This file will handle our type checking and type assignment.
 */
 
 #include <stdio.h>
@@ -9,6 +7,7 @@ TODO: WHAT GOES WHERE BRO
 #include "tree.h"
 #include "type.h"
 #include "symTab.h"
+#include "typeHelpers.h"
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
 #include "lex.h"
@@ -16,8 +15,8 @@ TODO: WHAT GOES WHERE BRO
 
 /**
  * @brief Assigns a type to a node
- * 
- * @param node 
+ *
+ * @param node
  */
 void assignType(struct tree *n){ // Many composite types to handle
     if (n == NULL) return;
@@ -69,10 +68,11 @@ void assignType(struct tree *n){ // Many composite types to handle
             typePtr lhsType = lookupType(n->kids[0]);
             typePtr rhsType = n->kids[1]->type;
             if(!compatible(lhsType, rhsType)){
-                fprintf(stderr, "Type error: %s and %s are not compatible\n", typeName(lhsType), typeName(rhsType));
+                fprintf(stderr, "Type error: %s and %s are not compatible\n",
+                typeName(lhsType), typeName(rhsType));
                 exit(3);
             }
-            n->type = alcType(lhsType->basicType);
+            n->type = alcType(lhsType->basicType); // TODO: Check if this is correct
             break;
         case funcDecAll:
             /*
@@ -82,10 +82,11 @@ void assignType(struct tree *n){ // Many composite types to handle
            typePtr bodyType = n->kids[4]->type;
            if(!compatible(declaredReturnType, bodyType)){
             fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
-            n->kids[1]->leaf->text, typeName(bodyType), typeName(declaredReturnType));
+            n->kids[1]->leaf->text, typeName(bodyType),
+            typeName(declaredReturnType));
             exit(3);
            }
-           n->type = alcFuncType(declaredReturnType, n->kids[2], currentSymTab());
+           n->type = alcFuncType(declaredReturnType, n->kids[2], rootScope);
            break;
         default:
             if(n->nkids > 0){

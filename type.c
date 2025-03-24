@@ -15,7 +15,7 @@ struct typeInfo boolean_type = {BOOL_TYPE};
 struct typeInfo char_type = {CHAR_TYPE};
 struct typeInfo string_type = {STRING_TYPE};
 
-extern struct symTab *globalTable;
+extern struct symTab *rootScope;
 
 typePtr null_typePtr = &null_type;
 typePtr byte_typePtr = &byte_type;
@@ -27,29 +27,6 @@ typePtr double_typePtr = &double_type;
 typePtr boolean_typePtr = &boolean_type;
 typePtr char_typePtr = &char_type;
 typePtr string_typePtr = &string_type;
-
-char *typeNam[] = {"null",
-                    "byte",
-                    "int",
-                    "short",
-                    "long",
-                    "float",
-                    "double",
-                    "boolean",
-                    "char",
-                    "string",
-                    "function",
-                    "array",
-                    "any"};
-
-
-char *typeName(typePtr t){
-   if (!t) return "(NULL)";
-   else if (t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE)
-      return "(BOGUS)";
-   else return typeNam[t->basicType-1000000];
-    
-}
 
 typePtr alcType(int baseType) {
 
@@ -108,7 +85,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
             rv->u.func.returnType = r->type;
         else
             // rv->u.func.returnType = alcType(r->id);
-            rv->u.func.returnType = alcType(findType(r));
+            rv->u.func.returnType = alcType(r);
     } else {
         // If no return type is provided, use a null_type (this was used interchangeably with NONE_TYPE in examples)
         rv->u.func.returnType = null_typePtr;
@@ -124,7 +101,6 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         char *paramName = NULL;
 
     /*
-    Hide yo kids, hide yo wife
     We need synthesize types from the children of the paramNode
 
     - uhhh, okay?
@@ -135,7 +111,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         else
             // paramType = alcType(paramNode->kids[0]->id);
 
-            paramType = alcType(findType(paramNode->kids[0]));
+            paramType = alcType(paramNode->kids[0]);
 
     } else {
         paramType = null_typePtr;
@@ -200,26 +176,22 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
  * @param node 
  * @return int 
  */
-int findType(struct tree *node){
-    if(node->nkids != 0) return ANY_TYPE;
+// int findType(struct tree *node){
+//     if(node->nkids != 0) return ANY_TYPE;
 
-    if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
+//     if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
 
-    if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
-    if(!strcmp(node->leaf->text, "Float")) return FLOAT_TYPE;
-    if(!strcmp(node->leaf->text, "String")) return STRING_TYPE;
-    if(!strcmp(node->leaf->text, "Boolean")) return BOOL_TYPE;
-    if(!strcmp(node->leaf->text, "Char")) return CHAR_TYPE;
-    if(!strcmp(node->leaf->text, "Byte")) return BYTE_TYPE;
-    if(!strcmp(node->leaf->text, "Short")) return SHORT_TYPE;
-    if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
-    if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
-    if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
-    if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
+//     if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
+//     if(!strcmp(node->leaf->text, "Float")) return FLOAT_TYPE;
+//     if(!strcmp(node->leaf->text, "String")) return STRING_TYPE;
+//     if(!strcmp(node->leaf->text, "Boolean")) return BOOL_TYPE;
+//     if(!strcmp(node->leaf->text, "Char")) return CHAR_TYPE;
+//     if(!strcmp(node->leaf->text, "Byte")) return BYTE_TYPE;
+//     if(!strcmp(node->leaf->text, "Short")) return SHORT_TYPE;
+//     if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
+//     if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
+//     if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
+//     if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
 
-    return ANY_TYPE;
-}
-
-/*
-Need lookupType() and something to check if two types are compatible
-*/
+//     return ANY_TYPE;
+// }
