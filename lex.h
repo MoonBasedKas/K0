@@ -1,12 +1,7 @@
 #ifndef LEX_H
 #define LEX_H
-<<<<<<< HEAD
-//included for definition of FILE
-#include <stdio.h>
-=======
 
 #include<stdio.h>
->>>>>>> main
 
 extern FILE *yyin;
 extern int yylex();
@@ -47,8 +42,4 @@ struct token {
                    /*    the string (less quotes and after escapes) here */
 };
 
-<<<<<<< HEAD
 #endif
-=======
-#endif
->>>>>>> main
