@@ -1,110 +1,77 @@
 /*
 This file will have helper functions for the semantic analysis phase.
 
-
+TODO: WHAT GOES WHERE BRO
 */
 
 #include <stdio.h>
-#include <string.h>
 #include "tree.h"
 #include "type.h"
-#include "lex.h"
 #include "symTab.h"
-#include "symNonTerminals.h"
 #include "k0gram.tab.h"
-#include "semanticBuild.h"
+#include "symNonTerminals.h"
+
 
 /**
- * @brief Assigns a type to a node. To be used later.
+ * @brief Assigns a type to a node
  * 
  * @param node 
  */
-void assignType(struct tree *n, struct symTab *scope){
+void assignType(struct tree *n){
+    if (n == NULL) return;
 
     for (int i = 0; i < n->nkids; i++){
-        assignType(n->kids[i], scope);
+        assignType(n->kids[i]);
     }
-    // This is a step below.
+
     switch (n->prodrule){
-        case INT_TYPE:
+        case INT:
             n->type = alcType(INT_TYPE);
             break;
-        case FLOAT_TYPE:
+        case FLOAT:
             n->type = alcType(FLOAT_TYPE);
             break;
-        case STRING_TYPE:
+        case STRING:
             n->type = alcType(STRING_TYPE);
             break;
-        case BOOL_TYPE:
+        case BOOL:
             n->type = alcType(BOOL_TYPE);
             break;
-        case CHAR_TYPE:
+        case CHAR:
             n->type = alcType(CHAR_TYPE);
             break;
-        case BYTE_TYPE:
+        case BYTE:
             n->type = alcType(BYTE_TYPE);
             break;
-        case SHORT_TYPE:
+        case SHORT:
             n->type = alcType(SHORT_TYPE);
             break;
-        case LONG_TYPE:
+        case LONG:
             n->type = alcType(LONG_TYPE);
             break;
-        case DOUBLE_TYPE:
+        case DOUBLE:
             n->type = alcType(DOUBLE_TYPE);
             break;
-        case NULL_TYPE:
+        case NULL_K:
             n->type = alcType(NULL_TYPE);
             break;
+        case varDec:
+            n->type = n->kids[1]->type;
+            break;
+        case assignment:
+            typePtr lhsType = 
+            break;
+        case funcDecAll:
+            /*
+            FUN IDENTIFIER functionValueParameters COLON type functionBody
+            */
+           typePtr decType = alcType(n->kids[3]->type);
         default:
-            // Replace w/ a user defined.
-            n->type = alcType(ANY_TYPE);
-            break; 
-            
-    }
-
-}
-
-
-/**
- * @brief Wrapper function to learn the types.
- * 
- * @param node 
- */
-void decTypes(struct tree *node, struct symTab *scope)
-{
-    switch (node->prodrule)
-    {
-        //function declarations w/ Types
-        case funcDecAll: // @ 4
-        case funcDecParamType: // @4
-        case funcDecTypeBody: // @4
-        case funcDecType: // @4
-            scope = scope->buckets[hash(node->kids[0]->leaf->text)]->scope;
-            node->type = alcFuncType(node->kids[3], node->kids[2], scope);
-            break;
-
-        case varDec: 
-            // Bingo
-            node->type = alcType(findType(node->kids[1]));
-            break;
-
-        case arrayDec:
-        case arrayDecValueless:
-        case arrayDecEqual:
-        case arrayDecEqualValueless:
-            node->type = alcArrayType(NULL, NULL);
-            break;
-
-        default:
-            node->type = alcType(ANY_TYPE); // NO ASSIGNED TYPE
-            for(int i = 0; i < node->nkids; i++)
-            {
-                decTypes(node->kids[i], scope);
+            if(n->nkids > 0){
+                n->type = n->kids[0]->type;
+            } else {
+                n->type = alcType(ANY_TYPE);
             }
             break;
     }
-
 }
-
-

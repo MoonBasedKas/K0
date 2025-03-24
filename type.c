@@ -15,13 +15,8 @@ struct typeInfo boolean_type = {BOOL_TYPE};
 struct typeInfo char_type = {CHAR_TYPE};
 struct typeInfo string_type = {STRING_TYPE};
 
-/* Aliases?
-Shorts and Longs are aliases for Integers
-Floats are aliases for Doubles
+extern struct symTab *globalTable;
 
-Short is supposed to be an alias for Int (per Kotlin docs), but k0 spec says different.
-
-*/
 typePtr null_typePtr = &null_type;
 typePtr byte_typePtr = &byte_type;
 typePtr integer_typePtr = &integer_type;
@@ -224,3 +219,7 @@ int findType(struct tree *node){
 
     return ANY_TYPE;
 }
+
+/*
+Need lookupType() and something to check if two types are compatible
+*/

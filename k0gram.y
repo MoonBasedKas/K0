@@ -82,6 +82,7 @@
 %type <treeptr> arrayValues
 %type <treeptr> arrayDeclaration
 %type <treeptr> arrayIndex
+%type <treeptr> primitiveType
 /* Terminals */
 %token <treeptr> BYTE
 %token <treeptr> SHORT
@@ -89,7 +90,6 @@
 %token <treeptr> LONG
 %token <treeptr> FLOAT
 %token <treeptr> DOUBLE
-%token <treeptr> BOOLEAN
 %token <treeptr> CHAR
 %token <treeptr> STRING
 %token <treeptr> BOOL
@@ -281,10 +281,24 @@ functionValueParameter:
     ;
 
 type:
-    functionType    {$$ = $1;}
+    primitiveType    {$$ = $1;}
+    | functionType    {$$ = $1;}
     | userType      {$$ = $1;}
     ;
 
+primitiveType:
+    BYTE    {$$ = $1;}
+    | SHORT   {$$ = $1;}
+    | INT     {$$ = $1;}
+    | LONG    {$$ = $1;}
+    | FLOAT   {$$ = $1;}
+    | DOUBLE  {$$ = $1;}
+    | BOOL    {$$ = $1;}
+    | CHAR    {$$ = $1;}
+    | STRING  {$$ = $1;}
+    | NULL_K  {$$ = $1;}
+    ;
+    
 userType:
     simpleUserType                  {$$ = $1;}
     | userType DOT simpleUserType   {$$ = alctoken(userType, "userType", 3, $1, $2, $3);}

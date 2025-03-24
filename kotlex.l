@@ -83,10 +83,9 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "Long"											{ return leaf(LONG); }
 "Float"											{ return leaf(FLOAT); }
 "Double"										{ return leaf(DOUBLE); }
-"Boolean"										{ return leaf(BOOLEAN); }
+"Boolean"										{ return leaf(BOOL); }
 "Char"											{ return leaf(CHAR); }
 "String"										{ return leaf(STRING); }
-
 "="												{ return leaf(ASSIGNMENT); }
 "+="											{ return leaf(ADD_ASSIGNMENT); }
 "-="											{ return leaf(SUB_ASSIGNMENT); }
@@ -248,7 +247,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 {nested_comment}								{ fprintf(stderr, "File: %s Line:%d Nested Comments not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {bin_literal}									{ fprintf(stderr, "File: %s Line:%d Binary Literals not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {unsigned_literal}								{ fprintf(stderr, "File: %s Line:%d Unsigned Integers not supported by k0:\t%s\n", filename, rows, yytext); exit(1);; }
-(exponent_literal)                              { fprintf(stderr, "File: %s Line:%d Exponential Notation not supported by k0:\t%s\n", filename, rows, yytext); exit(1);}
+{exponent_literal}                              { fprintf(stderr, "File: %s Line:%d Exponential Notation not supported by k0:\t%s\n", filename, rows, yytext); exit(1);}
 {backtick_identifier}							{ fprintf(stderr, "File: %s Line:%d Backtick identifiers not supported by k0:\t%s\n", filename, rows, yytext); exit(1); }
 {uni_character_literal}							{ fprintf(stderr, "File: %s Line:%d Unicode characters not supported by k0\n", filename, rows); exit(1); }
 {character_error}								{ fprintf(stderr, "File: %s Line:%d Character Literals cannot have more than one character:\t%s\n", filename, rows, yytext); exit(1); }
