@@ -182,9 +182,9 @@ program:
 
 topLevelObjectList:
     topLevelObject                                  {$$ = $1;}
-    | topLevelObject SEMICOLON                      {$$ = $1;}
+    | topLevelObject SEMICOLON                      {$$ = $1; freeTokens(1, $2);}
     | topLevelObjectList topLevelObject             {$$ = alctoken(topLevelObject, "topLevelObject", 2, $1, $2);}
-    | topLevelObjectList topLevelObject SEMICOLON   {$$ = alctoken(topLevelObjectSemi, "topLevelObjectSemi", 2, $1, $2);}
+    | topLevelObjectList topLevelObject SEMICOLON   {$$ = alctoken(topLevelObjectSemi, "topLevelObjectSemi", 2, $1, $2); freeTokens(1, $3);}
     ;
 
 topLevelObject:
@@ -211,22 +211,22 @@ declaration:
 
 propertyDeclaration:
     variable variableDeclaration                                                        {$$ = alctoken(propDecEmpty, "propDecEmpty", 2, $1, $2);}
-    | variable IDENTIFIER ASSIGNMENT expression                                         {$$ = alctoken(propDecTypeless, "propDecTypeless", 3, $1, $2, $4);}
-    | variable variableDeclaration ASSIGNMENT expression                                {$$ = alctoken(propDecAssign, "propDecAssign", 3, $1, $2, $4);}
+    | variable IDENTIFIER ASSIGNMENT expression                                         {$$ = alctoken(propDecTypeless, "propDecTypeless", 3, $1, $2, $4); freeTokens(1, $3);}
+    | variable variableDeclaration ASSIGNMENT expression                                {$$ = alctoken(propDecAssign, "propDecAssign", 3, $1, $2, $4); freeTokens(1, $3);}
     | variable reciverType variableDeclaration                                          {$$ = alctoken(propDecReceiver, "propDecReceiver", 3, $1, $2, $3);}
-    | variable reciverType variableDeclaration ASSIGNMENT expression                    {$$ = alctoken(propDecReceiverAssign, "propDecReceiverAssign", 4, $1, $2, $3, $5);}
-    | variable typeParameters variableDeclaration                                       {$$ = alctoken(propDecTypeParams, "propDecTypeParams", 4, $1, $2, $3);}
-    | variable typeParameters variableDeclaration ASSIGNMENT expression                 {$$ = alctoken(propDecTypeParamsAssign, "propDecTypeParamsAssign", 4, $1, $2, $3, $5);}
+    | variable reciverType variableDeclaration ASSIGNMENT expression                    {$$ = alctoken(propDecReceiverAssign, "propDecReceiverAssign", 4, $1, $2, $3, $5); freeTokens(1, $4);}
+    | variable typeParameters variableDeclaration                                       {$$ = alctoken(propDecTypeParams, "propDecTypeParams", 3, $1, $2, $3);}
+    | variable typeParameters variableDeclaration ASSIGNMENT expression                 {$$ = alctoken(propDecTypeParamsAssign, "propDecTypeParamsAssign", 4, $1, $2, $3, $5); freeTokens(1, $4);} 
     | variable typeParameters reciverType variableDeclaration                           {$$ = alctoken(propDecTypeParamsReceiver, "propDecTypeParamsReceiver", 4, $1, $2, $3, $4);}
-    | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression     {$$ = alctoken(propDecAll, "propDecAll", 5, $1, $2, $3, $4, $6);}
+    | variable typeParameters reciverType variableDeclaration ASSIGNMENT expression     {$$ = alctoken(propDecAll, "propDecAll", 5, $1, $2, $3, $4, $6); freeTokens(1, $5);}
     | arrayDeclaration                                                                  {$$ = $1;}
     ;
 
 arrayDeclaration:
     variable variableDeclaration arraySize arrayValues                                                  {$$ = alctoken(arrayDec, "arrayDec", 4, $1, $2, $3, $4);}
     | variable variableDeclaration arraySize                                                            {$$ = alctoken(arrayDecValueless, "arrayDecValueless", 3, $1, $2, $3);}
-    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize arrayValues {$$ = alctoken(arrayDecEqual, "arrayDecEqual", 6, $1, $2, $4, $6, $8, $9);}
-    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize             {$$ = alctoken(arrayDecEqualValueless, "arrayDecEqualValueless", 5, $1, $2, $4, $6, $8);}
+    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize arrayValues {$$ = alctoken(arrayDecEqual, "arrayDecEqual", 6, $1, $2, $4, $6, $8, $9); freeTokens(3, $3, $5, $7);}
+    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize             {$$ = alctoken(arrayDecEqualValueless, "arrayDecEqualValueless", 5, $1, $2, $4, $6, $8); freeTokens(3, $3, $5, $7);}
 
 arraySize:
     LPAREN INTEGER_LITERAL RPAREN   {$$ = alctoken(arraySizeInt, "arraySizeInt", 3, $1, $2, $3);}
@@ -250,10 +250,11 @@ constantVal:
     ;
 
 typeParameters:
-    LANGLE variableDeclarationList RANGLE   {$$ = alctoken(typeParameters, "typeParameters", 1, $2);}
+    LANGLE variableDeclarationList RANGLE   {$$ = alctoken(typeParameters, "typeParameters", 1, $2); freeTokens(1, $1, $3);}
     ;
 
 functionDeclaration:
+<<<<<<< HEAD
     FUN IDENTIFIER functionValueParameters COLON type functionBody              {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6);}
     | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7);}
     | FUN IDENTIFIER functionValueParameters COLON type                         {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5);}
@@ -264,20 +265,32 @@ functionDeclaration:
     | FUN IDENTIFIER LPAREN RPAREN COLON type                                   {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6);}
     | FUN IDENTIFIER LPAREN RPAREN functionBody                                 {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5);}
     | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody                       {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6);}
+=======
+    FUN IDENTIFIER functionValueParameters COLON type functionBody              {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6); freeTokens(1, $4);}
+    | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7); freeTokens(2, $4, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type                         {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5); freeTokens(1, $4);}
+    | FUN IDENTIFIER functionValueParameters functionBody                       {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $4);}
+    | FUN IDENTIFIER functionValueParameters SEMICOLON functionBody             {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $5); freeTokens(1, $4);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody                      {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $7); freeTokens(3, $3, $4, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type SEMICOLON functionBody            {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $8); freeTokens(4, $3, $4, $5, $7);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type                                   {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6); freeTokens(3, $3, $4, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN functionBody                                 {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5); freeTokens(2, $3, $4);}
+    | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody                       {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6); freeTokens(3, $3, $4, $5);}
+>>>>>>> main
     ;
 
 functionValueParameters:
-    LPAREN functionValueParamList RPAREN    {$$ = alctoken(funcValParams, "funcValParams", 1, $2);}
+    LPAREN functionValueParamList RPAREN    {$$ = alctoken(funcValParams, "funcValParams", 1, $2); freeTokens(2, $1, $3);}
     ;
 
 functionValueParamList:
-    functionValueParameter COMMA functionValueParamList     {$$ = alctoken(funcValParamList, "funcValParamList", 2, $1, $3);}
+    functionValueParameter COMMA functionValueParamList     {$$ = alctoken(funcValParamList, "funcValParamList", 2, $1, $3); freeTokens(1, $2);}
     | functionValueParameter                                {$$ = $1;}
     ;
 
 functionValueParameter:
     variableDeclaration                             {$$ = $1;}
-    | variableDeclaration ASSIGNMENT expression     {$$ = alctoken(funcValParamAssign, "funcValParamAssign", 2, $1, $3);}
+    | variableDeclaration ASSIGNMENT expression     {$$ = alctoken(funcValParamAssign, "funcValParamAssign", 2, $1, $3); freeTokens(1, $2);}
     ;
 
 type:
@@ -305,13 +318,13 @@ userType:
     ;
 
 simpleUserType:
-    IDENTIFIER LANGLE typeArgumentsList RANGLE  {$$ = alctoken(simpleUserType, "simpleUserType", 2, $1, $3);}
+    IDENTIFIER LANGLE typeArgumentsList RANGLE  {$$ = alctoken(simpleUserType, "simpleUserType", 2, $1, $3); freeTokens(2, $2, $4);} 
     | IDENTIFIER                                {$$ = $1;}
     ;
 
 typeArgumentsList:
     typeArgument                            {$$ = $1;}
-    | typeArgument COMMA typeArgumentsList  {$$ = alctoken(typeArgumentsList, "typeArgumentsList", 2, $1, $3);}
+    | typeArgument COMMA typeArgumentsList  {$$ = alctoken(typeArgumentsList, "typeArgumentsList", 2, $1, $3); freeTokens(1, $2);}
     ;
 
 typeArgument:
@@ -334,7 +347,7 @@ functionTypeParameters:
     ;
 
 functionTypeParamList:
-    functionTypeParameter COMMA functionTypeParamList   {$$ = alctoken(functionTypeParamList, "functionTypeParamList", 2, $1, $3);}
+    functionTypeParameter COMMA functionTypeParamList   {$$ = alctoken(functionTypeParamList, "functionTypeParamList", 2, $1, $3); freeTokens(1, $2);}
     | functionTypeParameter                             {$$ = $1;}
     ;
 
@@ -344,8 +357,8 @@ functionTypeParameter:
     ;
 
 parenthesizedType_opt:
-    LPAREN type RPAREN quests   {$$ = alctoken(parenTypeQuests, "parenTypeQuests", 2, $2, $4);}
-    | LPAREN type RPAREN        {$$ = alctoken(parenType, "parenType", 1, $2);}
+    LPAREN type RPAREN quests   {$$ = alctoken(parenTypeQuests, "parenTypeQuests", 2, $2, $4); freeTokens(2, $1, $3);}
+    | LPAREN type RPAREN        {$$ = alctoken(parenType, "parenType", 1, $2); freeTokens(2, $1, $3);}
     ;
 
 quests:
@@ -369,8 +382,8 @@ block:
     ;
 
 statements:
-    statement SEMICOLON                 {$$ = alctoken(statement, "statement", 1, $1);}
-    | statement SEMICOLON statements    {$$ = alctoken(statementsMultiple, "statementsMultiple", 2, $1, $3);}
+    statement SEMICOLON                 {$$ = alctoken(statement, "statement", 1, $1); freeTokens(1, $2);}
+    | statement SEMICOLON statements    {$$ = alctoken(statementsMultiple, "statementsMultiple", 2, $1, $3); freeTokens(1, $2);}
     | SEMICOLON                         {$$ = $1;}
     ;
 
@@ -381,16 +394,16 @@ statement:
     ;
 
 assignment:
-    IDENTIFIER ASSIGNMENT expression        {$$ = alctoken(assignment, "assignment", 2, $1, $3);}
-    | IDENTIFIER ADD_ASSIGNMENT expression  {$$ = alctoken(assignAdd, "assignAdd", 2, $1, $3);}
-    | IDENTIFIER SUB_ASSIGNMENT expression  {$$ = alctoken(assignSub, "assignSub", 2, $1, $3);}
-    | arrayIndex ASSIGNMENT expression      {$$ = alctoken(arrayAssignment, "arrayAssignment", 2, $1, $3);}
-    | arrayIndex ADD_ASSIGNMENT expression  {$$ = alctoken(arrayAssignAdd, "arrayAssignAdd", 2, $1, $3);}
-    | arrayIndex SUB_ASSIGNMENT expression  {$$ = alctoken(arrayAssignSub, "arrayAssignSub", 2, $1, $3);}
+    IDENTIFIER ASSIGNMENT expression        {$$ = alctoken(assignment, "assignment", 2, $1, $3); freeTokens(1, $2);}
+    | IDENTIFIER ADD_ASSIGNMENT expression  {$$ = alctoken(assignAdd, "assignAdd", 2, $1, $3); freeTokens(1, $2);}
+    | IDENTIFIER SUB_ASSIGNMENT expression  {$$ = alctoken(assignSub, "assignSub", 2, $1, $3); freeTokens(1, $2);}
+    | arrayIndex ASSIGNMENT expression      {$$ = alctoken(arrayAssignment, "arrayAssignment", 2, $1, $3); freeTokens(1, $2);}
+    | arrayIndex ADD_ASSIGNMENT expression  {$$ = alctoken(arrayAssignAdd, "arrayAssignAdd", 2, $1, $3); freeTokens(1, $2);}
+    | arrayIndex SUB_ASSIGNMENT expression  {$$ = alctoken(arrayAssignSub, "arrayAssignSub", 2, $1, $3); freeTokens(1, $2);}
     ;
 
 arrayIndex:
-    IDENTIFIER LSQUARE INTEGER_LITERAL RSQUARE {$$ = alctoken(arrayIndex, "arrayIndex", 2, $1, $3);}
+    IDENTIFIER LSQUARE INTEGER_LITERAL RSQUARE {$$ = alctoken(arrayIndex, "arrayIndex", 2, $1, $3); freeTokens(2, $2, $4);}
     ;
 
 
@@ -401,21 +414,21 @@ loopStatement:
     ;
 
 forStatement:
-    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody               {$$ = alctoken(forStmntWithVars, "forStmntWithVars", 4, $1, $3, $5, $7);}
-    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody                       {$$ = alctoken(forStmnt, "forStmnt", 4, $1, $3, $5, $7);}
-    | FOR LPAREN variableDeclarations IN expression RPAREN SEMICOLON controlStructureBody   {$$ = alctoken(forStmntWithVars, "forStmntWithVars", 4, $1, $3, $5, $8);}
-    | FOR LPAREN IDENTIFIER IN expression RPAREN SEMICOLON controlStructureBody             {$$ = alctoken(forStmnt, "forStmnt", 4, $1, $3, $5, $8);}
+    FOR LPAREN variableDeclarations IN expression RPAREN controlStructureBody               {$$ = alctoken(forStmntWithVars, "forStmntWithVars", 4, $1, $3, $5, $7); freeTokens(3, $2, $4, $6);}
+    | FOR LPAREN IDENTIFIER IN expression RPAREN controlStructureBody                       {$$ = alctoken(forStmnt, "forStmnt", 4, $1, $3, $5, $7); freeTokens(3, $2, $4, $6);}
+    | FOR LPAREN variableDeclarations IN expression RPAREN SEMICOLON controlStructureBody   {$$ = alctoken(forStmntWithVars, "forStmntWithVars", 4, $1, $3, $5, $8); freeTokens(4, $2, $4, $6, $7);}
+    | FOR LPAREN IDENTIFIER IN expression RPAREN SEMICOLON controlStructureBody             {$$ = alctoken(forStmnt, "forStmnt", 4, $1, $3, $5, $8); freeTokens(4, $2, $4, $6, $7);}
     ;
 
 whileStatement:
-    WHILE LPAREN expression RPAREN controlStructureBody                         {$$ = alctoken(whileStmntCtrlBody, "whileStmntCtrlBody", 3, $1, $3, $5);}
-    | WHILE LPAREN expression RPAREN SEMICOLON                                  {$$ = alctoken(whileStmnt, "whileStmnt", 2, $1, $3);}
-    | WHILE LPAREN expression RPAREN SEMICOLON controlStructureBody             {$$ = alctoken(whileStmntCtrlBody, "whileStmntCtrlBody", 3, $1, $3, $6);}
+    WHILE LPAREN expression RPAREN controlStructureBody                         {$$ = alctoken(whileStmntCtrlBody, "whileStmntCtrlBody", 3, $1, $3, $5); freeTokens(2, $2, $4);}
+    | WHILE LPAREN expression RPAREN SEMICOLON                                  {$$ = alctoken(whileStmnt, "whileStmnt", 2, $1, $3); freeTokens(3, $2, $4, $5);}
+    | WHILE LPAREN expression RPAREN SEMICOLON controlStructureBody             {$$ = alctoken(whileStmntCtrlBody, "whileStmntCtrlBody", 3, $1, $3, $6); freeTokens(3, $2, $4, $5);}
     ;
 
 doWhileStatement:
-    DO controlStructureBody WHILE LPAREN expression RPAREN                {$$ = alctoken(doWhileStmnt, "doWhileStmnt", 4, $1, $2, $3, $5);}
-    | DO controlStructureBody SEMICOLON WHILE LPAREN expression RPAREN    {$$ = alctoken(doWhileStmnt, "doWhileStmnt", 4, $1, $2, $4, $6);}
+    DO controlStructureBody WHILE LPAREN expression RPAREN                {$$ = alctoken(doWhileStmnt, "doWhileStmnt", 4, $1, $2, $3, $5); freeTokens(2, $4, $6);}
+    | DO controlStructureBody SEMICOLON WHILE LPAREN expression RPAREN    {$$ = alctoken(doWhileStmnt, "doWhileStmnt", 4, $1, $2, $4, $6); freeTokens(3, $3, $5, $7);}
     ;
 
 variableDeclarations:
@@ -424,17 +437,17 @@ variableDeclarations:
     ;
 
 variableDeclaration:
-    IDENTIFIER COLON type           {$$ = alctoken(varDec, "varDec", 2, $1, $3);}
-    | IDENTIFIER COLON type quests  {$$ = alctoken(varDecQuests, "varDecQuests", 3, $1, $3, $4);}
+    IDENTIFIER COLON type           {$$ = alctoken(varDec, "varDec", 2, $1, $3); freeTokens(1, $2);}
+    | IDENTIFIER COLON type quests  {$$ = alctoken(varDecQuests, "varDecQuests", 3, $1, $3, $4); freeTokens(1, $2);}
     ;
 
 multiVariableDeclaration:
-    LPAREN variableDeclarationList RPAREN   {$$ = $2;}
+    LPAREN variableDeclarationList RPAREN   {$$ = $2; freeTokens(2, $1, $3);}
     ;
 
 variableDeclarationList:
     variableDeclaration                                     {$$ = $1;}
-    | variableDeclarationList COMMA variableDeclaration     {$$ = alctoken(varDecList, "varDecList", 2, $1, $3);}
+    | variableDeclarationList COMMA variableDeclaration     {$$ = alctoken(varDecList, "varDecList", 2, $1, $3); freeTokens(1, $2);}
     ;
 
 expression:
@@ -442,38 +455,38 @@ expression:
     ;
 
 disjunction:
-    disjunction DISJ conjunction        {$$ = alctoken(disj, "disj", 2, $1, $3);}
+    disjunction DISJ conjunction        {$$ = alctoken(disj, "disj", 2, $1, $3); freeTokens(1, $2);}
     | conjunction                       {$$ = $1;}
     ;
 
 conjunction:
-    conjunction CONJ equality           {$$ = alctoken(conj, "conj", 2, $1, $3);}
+    conjunction CONJ equality           {$$ = alctoken(conj, "conj", 2, $1, $3); freeTokens(1, $2);}
     | equality                          {$$ = $1;}
     ;
 
 equality:
-    equality EQEQ comparison            {$$ = alctoken(equal, "equal", 2, $1, $3);}
-    | equality EXCL_EQ comparison       {$$ = alctoken(notEqual, "notEqual", 2, $1, $3);}
-    | equality EQEQEQ comparison        {$$ = alctoken(eqeqeq, "eqeqeq", 2, $1, $3);}
-    | equality EXCL_EQEQ comparison     {$$ = alctoken(notEqeqeq, "notEqeqeq", 2, $1, $3);}
+    equality EQEQ comparison            {$$ = alctoken(equal, "equal", 2, $1, $3); freeTokens(1, $2);}
+    | equality EXCL_EQ comparison       {$$ = alctoken(notEqual, "notEqual", 2, $1, $3); freeTokens(1, $2);}
+    | equality EQEQEQ comparison        {$$ = alctoken(eqeqeq, "eqeqeq", 2, $1, $3); freeTokens(1, $2);}
+    | equality EXCL_EQEQ comparison     {$$ = alctoken(notEqeqeq, "notEqeqeq", 2, $1, $3); freeTokens(1, $2);}
     | comparison                        {$$ = $1;}
     ;
 
 comparison:
-    comparison LANGLE infixOperation    {$$ = alctoken(less, "less", 2, $1, $3);}
-    | comparison RANGLE infixOperation  {$$ = alctoken(greater, "greater", 2, $1, $3);}
-    | comparison GE infixOperation      {$$ = alctoken(lessEqual, "lessEqual", 2, $1, $3);}
-    | comparison LE infixOperation      {$$ = alctoken(greaterEqual, "greaterEqual", 2, $1, $3);}
+    comparison LANGLE infixOperation    {$$ = alctoken(less, "less", 2, $1, $3); freeTokens(1, $2);}
+    | comparison RANGLE infixOperation  {$$ = alctoken(greater, "greater", 2, $1, $3); freeTokens(1, $2);}
+    | comparison GE infixOperation      {$$ = alctoken(lessEqual, "lessEqual", 2, $1, $3); freeTokens(1, $2);}
+    | comparison LE infixOperation      {$$ = alctoken(greaterEqual, "greaterEqual", 2, $1, $3); freeTokens(1, $2);}
     | infixOperation                    {$$ = $1;}
     ;
 
 infixOperation:
-    infixOperation IN elvisExpression   {$$ = alctoken(in, "in", 2, $1, $3);}
+    infixOperation IN elvisExpression   {$$ = alctoken(in, "in", 2, $1, $3); freeTokens(1, $2);}
     | elvisExpression                   {$$ = $1;}
     ;
 
 elvisExpression:
-    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(elvis, "elvis", 2, $1, $4);}
+    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(elvis, "elvis", 2, $1, $4); freeTokens(2, $2, $3);}
     | infixFunctionCall                                     {$$ = $1;}
     ;
 
@@ -483,21 +496,21 @@ infixFunctionCall:
     ;
 
 rangeExpression:
-    additiveExpression RANGE rangeExpression                {$$ = alctoken(range, "range", 2, $1, $3);}
-    | additiveExpression RANGE_UNTIL rangeExpression        {$$ = alctoken(rangeUntil, "rangeUntil", 2, $1, $3);}
+    additiveExpression RANGE rangeExpression                {$$ = alctoken(range, "range", 2, $1, $3); freeTokens(1, $2);}
+    | additiveExpression RANGE_UNTIL rangeExpression        {$$ = alctoken(rangeUntil, "rangeUntil", 2, $1, $3); freeTokens(1, $2);}
     | additiveExpression                                    {$$ = $1;}
     ;
 
 additiveExpression:
-    additiveExpression ADD multiplicativeExpression         {$$ = alctoken(add, "add", 2, $1, $3);}
-    | additiveExpression SUB multiplicativeExpression       {$$ = alctoken(sub, "sub", 2, $1, $3);}
+    additiveExpression ADD multiplicativeExpression         {$$ = alctoken(add, "add", 2, $1, $3); freeTokens(1, $2);} 
+    | additiveExpression SUB multiplicativeExpression       {$$ = alctoken(sub, "sub", 2, $1, $3); freeTokens(1, $2);}
     | multiplicativeExpression                              {$$ = $1;}
     ;
 
 multiplicativeExpression:
-    multiplicativeExpression MULT prefixUnaryExpression     {$$ = alctoken(mult, "mult", 2, $1, $3);}
-    | multiplicativeExpression DIV prefixUnaryExpression    {$$ = alctoken(div_k, "div", 2, $1, $3);}
-    | multiplicativeExpression MOD prefixUnaryExpression    {$$ = alctoken(mod, "mod", 2, $1, $3);}
+    multiplicativeExpression MULT prefixUnaryExpression     {$$ = alctoken(mult, "mult", 2, $1, $3); freeTokens(1, $2);}
+    | multiplicativeExpression DIV prefixUnaryExpression    {$$ = alctoken(div_k, "div", 2, $1, $3); freeTokens(1, $2);}
+    | multiplicativeExpression MOD prefixUnaryExpression    {$$ = alctoken(mod, "mod", 2, $1, $3); freeTokens(1, $2);}
     | prefixUnaryExpression                                 {$$ = $1;}
     ;
 
@@ -534,22 +547,22 @@ primaryExpression:
     | ifExpression                              {$$ = $1;}
     | whenExpression                            {$$ = $1;}
     | jumpExpression                            {$$ = $1;}
-    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(arrayAccess, "arrayAccess", 2, $1, $3);}
+    | IDENTIFIER LSQUARE expression RSQUARE     {$$ = alctoken(arrayAccess, "arrayAccess", 2, $1, $3); freeTokens(2, $2, $4);}
     ;
 
 postfixExpression:
     primaryExpression {$$ = $1;}
-    | postfixExpression LPAREN expressionList RPAREN                                {$$ = alctoken(postfixExpr, "postfixExpr", 2, $1, $3);}
-    | postfixExpression LPAREN RPAREN                                               {$$ = alctoken(postfixNoExpr, "postfixNoExpr", 1, $1);}
+    | postfixExpression LPAREN expressionList RPAREN                                {$$ = alctoken(postfixExpr, "postfixExpr", 2, $1, $3); freeTokens(2, $2, $4);}
+    | postfixExpression LPAREN RPAREN                                               {$$ = alctoken(postfixNoExpr, "postfixNoExpr", 1, $1); freeTokens(2, $2, $3);}
     | postfixExpression DOT IDENTIFIER                                              {$$ = alctoken(postfixDotID, "postfixDotID", 3, $1, $2, $3);}
-    | postfixExpression DOT IDENTIFIER LPAREN expressionList RPAREN                 {$$ = alctoken(postfixDotIDExpr, "postfixDotIDExpr", 4, $1, $2, $3, $5);}
-    | postfixExpression DOT IDENTIFIER LPAREN RPAREN                                {$$ = alctoken(postfixDotIDNoExpr, "postfixDotIDNoExpr", 3, $1, $2, $3);}
+    | postfixExpression DOT IDENTIFIER LPAREN expressionList RPAREN                 {$$ = alctoken(postfixDotIDExpr, "postfixDotIDExpr", 4, $1, $2, $3, $5); freeTokens(2, $4, $6);}
+    | postfixExpression DOT IDENTIFIER LPAREN RPAREN                                {$$ = alctoken(postfixDotIDNoExpr, "postfixDotIDNoExpr", 3, $1, $2, $3); freeTokens(2, $4, $5);}
     | postfixExpression QUEST_NO_WS DOT IDENTIFIER                                  {$$ = alctoken(postfixSafeDotID, "postfixSafeDotID", 4, $1, $2, $3, $4);}
-    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN expressionList RPAREN     {$$ = alctoken(postfixSafeDotIDExpr, "postfixSafeDotIDExpr", 5, $1, $2, $3, $4, $6);}
-    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN RPAREN                    {$$ = alctoken(postfixSafeDotIDNoExpr, "postfixSafeDotIDNoExpr", 4, $1, $2, $3, $4);}
-    | postfixExpression LSQUARE expression RSQUARE                                  {$$ = alctoken(postfixArrayAccess, "postfixArrayAccess", 2, $1, $3);}
-    | postfixExpression INCR                                                        {$$ = alctoken(postfixIncr, "postfixIncr", 1, $1);}
-    | postfixExpression DECR                                                        {$$ = alctoken(postfixDecr, "postfixDecr", 1, $1);}
+    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN expressionList RPAREN     {$$ = alctoken(postfixSafeDotIDExpr, "postfixSafeDotIDExpr", 5, $1, $2, $3, $4, $6); freeTokens(2, $5, $7);}
+    | postfixExpression QUEST_NO_WS DOT IDENTIFIER LPAREN RPAREN                    {$$ = alctoken(postfixSafeDotIDNoExpr, "postfixSafeDotIDNoExpr", 4, $1, $2, $3, $4); freeTokens(2, $5, $6);}
+    | postfixExpression LSQUARE expression RSQUARE                                  {$$ = alctoken(postfixArrayAccess, "postfixArrayAccess", 2, $1, $3); freeTokens(2, $2, $4);}
+    | postfixExpression INCR                                                        {$$ = alctoken(postfixIncr, "postfixIncr", 1, $1); freeTokens(1, $2);}
+    | postfixExpression DECR                                                        {$$ = alctoken(postfixDecr, "postfixDecr", 1, $1); freeTokens(1, $2);}
     ;
 
 expressionList:
@@ -562,30 +575,30 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON                                       {$$ = alctoken(emptyIf, "emptyIf", 2, $1, $3);}
-    | IF LPAREN expression RPAREN block                                         {$$ = alctoken(if_k, "if", 3, $1, $3, $5);}
-    | IF LPAREN expression RPAREN SEMICOLON block                               {$$ = alctoken(if_k, "if", 3, $1, $3, $6);}
-    | IF LPAREN expression RPAREN block ELSE block                              {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $6, $7);}
-    | IF LPAREN expression RPAREN SEMICOLON block ELSE block                    {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $7, $8);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE block          {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $9);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE SEMICOLON block          {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $10);}
-    | IF LPAREN expression RPAREN  block SEMICOLON ELSE block                   {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $7, $8);}
-    | IF LPAREN expression RPAREN block ELSE ifExpression                           {$$ = alctoken(ifElseIf, "ifElseif", 5, $1, $3, $5, $6, $7);}
-    | IF LPAREN expression RPAREN SEMICOLON block ELSE ifExpression                 {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $7, $8);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE ifExpression       {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $8, $9);}
-    | IF LPAREN expression RPAREN  block SEMICOLON ELSE ifExpression                {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $5, $7, $8);}
+    IF LPAREN expression RPAREN SEMICOLON                                           {$$ = alctoken(emptyIf, "emptyIf", 2, $1, $3); freeTokens(3, $2, $4, $5);}
+    | IF LPAREN expression RPAREN block                                             {$$ = alctoken(if_k, "if", 3, $1, $3, $5); freeTokens(2, $2, $4);}
+    | IF LPAREN expression RPAREN SEMICOLON block                                   {$$ = alctoken(if_k, "if", 3, $1, $3, $6); freeTokens(3, $2, $4, $5);}
+    | IF LPAREN expression RPAREN block ELSE block                                  {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $6, $7); freeTokens(2, $2, $4);}
+    | IF LPAREN expression RPAREN SEMICOLON block ELSE block                        {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $7, $8); freeTokens(3, $2, $4, $5);}
+    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE block              {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $9); freeTokens(4, $2, $4, $5, $7);}
+    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE SEMICOLON block    {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $10); freeTokens(5, $2, $4, $5, $7, $9);}
+    | IF LPAREN expression RPAREN  block SEMICOLON ELSE block                       {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $7, $8); freeTokens(3, $2, $4, $6);}
+    | IF LPAREN expression RPAREN block ELSE ifExpression                           {$$ = alctoken(ifElseIf, "ifElseif", 5, $1, $3, $5, $6, $7); freeTokens(2, $2, $4);}
+    | IF LPAREN expression RPAREN SEMICOLON block ELSE ifExpression                 {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $7, $8); freeTokens(3, $2, $4, $5);}
+    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE ifExpression       {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $8, $9); freeTokens(4, $2, $4, $5, $7);}
+    | IF LPAREN expression RPAREN  block SEMICOLON ELSE ifExpression                {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $5, $7, $8);  freeTokens(3, $2, $4, $6);}
     ;
 
 whenExpression:
-    WHEN LCURL RCURL                                                                    {$$ = alctoken(whenNoSubNoEnt, "whenNoSubNoEnt", 1, $1);}
-    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(whenEnt, "whenEnt", 2, $1, $3);}
-    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(whenSub, "whenSub", 1, $1, $2);}
-    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(whenSubEnt, "whenSubEnt", 3, $1, $2, $3);}
+    WHEN LCURL RCURL                                                                    {$$ = alctoken(whenNoSubNoEnt, "whenNoSubNoEnt", 1, $1);  freeTokens(2, $2, $3);}
+    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(whenEnt, "whenEnt", 2, $1, $3); freeTokens(2, $2, $4);}
+    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(whenSub, "whenSub", 1, $1, $2); freeTokens(2, $3, $4);}
+    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(whenSubEnt, "whenSubEnt", 3, $1, $2, $3); freeTokens(2, $3, $5);}
     ;
 
 whenSubject:
-    LPAREN expression RPAREN                                                            {$$ = alctoken(whenSubExp, "whenSubExp", 1, $2);}
-    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN                       {$$ = alctoken(whenSubVar, "whenSubVar", 4, $2, $3, $4, $5);}
+    LPAREN expression RPAREN                                                            {$$ = alctoken(whenSubExp, "whenSubExp", 1, $2); freeTokens(2, $1, $3);}
+    | LPAREN VAL variableDeclaration ASSIGNMENT expression RPAREN                       {$$ = alctoken(whenSubVar, "whenSubVar", 4, $2, $3, $4, $5); freeTokens(2, $1, $6);}
     ;
 
 whenEntries:
@@ -594,12 +607,12 @@ whenEntries:
     ;
 
 whenEntry:
-    whenConditionList ARROW controlStructureBody SEMICOLON                              {$$ = alctoken(whenEntryConds, "whenEntryConds", 3, $1, $2, $3);}
-    | ELSE ARROW controlStructureBody SEMICOLON                                         {$$ = alctoken(whenEntryElse, "whenEntryElse", 3, $1, $2, $3);}
+    whenConditionList ARROW controlStructureBody SEMICOLON                              {$$ = alctoken(whenEntryConds, "whenEntryConds", 3, $1, $2, $3); freeTokens(1, $4);}
+    | ELSE ARROW controlStructureBody SEMICOLON                                         {$$ = alctoken(whenEntryElse, "whenEntryElse", 3, $1, $2, $3); freeTokens(1, $4);}
     ;
 
 whenConditionList:
-    whenCondition COMMA whenConditionList                                               {$$ = alctoken(whenConds, "whenConds", 2, $1, $3);}
+    whenCondition COMMA whenConditionList                                               {$$ = alctoken(whenConds, "whenConds", 2, $1, $3); freeTokens(1, $2);}
     | whenCondition                                                                     {$$ = $1;}
     ;
 
@@ -610,7 +623,7 @@ whenCondition:
 
 controlStructureBody:
     block                   {$$ = $1;}
-    | statement SEMICOLON   {$$ = alctoken(controlStmnt, "controlStmnt", 1, $1);}
+    | statement SEMICOLON   {$$ = alctoken(controlStmnt, "controlStmnt", 1, $1); freeTokens(1, $2);}
     ;
 
 jumpExpression: // SEMICOLON added for shift/reduce conflict. Exclude in semantic value?

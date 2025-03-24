@@ -1,7 +1,12 @@
 #ifndef LEX_H
 #define LEX_H
+<<<<<<< HEAD
 //included for definition of FILE
 #include <stdio.h>
+=======
+
+#include<stdio.h>
+>>>>>>> main
 
 extern FILE *yyin;
 extern int yylex();
@@ -29,6 +34,7 @@ int stringLiteral(int code);
 int multiLineString(int code);
 int addSemi();
 char *removeUnderscores();
+int freeTokens(int targets, ...);
 
 struct token {
    int category;   /* the integer code returned by yylex */
@@ -41,4 +47,8 @@ struct token {
                    /*    the string (less quotes and after escapes) here */
 };
 
+<<<<<<< HEAD
 #endif
+=======
+#endif
+>>>>>>> main
