@@ -12,6 +12,7 @@ struct tree
     int nkids;
     struct tree *kids[10]; // idk  how many kids we need
     struct token *leaf;    // if nkids == 0, null for epsilon
+    struct typeInfo *type;
 };
 
 typedef struct tree *nodeptr;

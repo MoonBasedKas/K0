@@ -82,7 +82,17 @@
 %type <treeptr> arrayValues
 %type <treeptr> arrayDeclaration
 %type <treeptr> arrayIndex
+%type <treeptr> primitiveType
 /* Terminals */
+%token <treeptr> BYTE
+%token <treeptr> SHORT
+%token <treeptr> INT
+%token <treeptr> LONG
+%token <treeptr> FLOAT
+%token <treeptr> DOUBLE
+%token <treeptr> CHAR
+%token <treeptr> STRING
+%token <treeptr> BOOL
 %token <treeptr> ASSIGNMENT
 %token <treeptr> ADD_ASSIGNMENT
 %token <treeptr> SUB_ASSIGNMENT
@@ -244,6 +254,18 @@ typeParameters:
     ;
 
 functionDeclaration:
+<<<<<<< HEAD
+    FUN IDENTIFIER functionValueParameters COLON type functionBody              {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6);}
+    | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7);}
+    | FUN IDENTIFIER functionValueParameters COLON type                         {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5);}
+    | FUN IDENTIFIER functionValueParameters functionBody                       {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $4);}
+    | FUN IDENTIFIER functionValueParameters SEMICOLON functionBody             {$$ = alctoken(funcDecParamBody, "funcDecParamBody", 4, $1, $2, $3, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type functionBody                      {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $7);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type SEMICOLON functionBody            {$$ = alctoken(funcDecTypeBody, "funcDecTypeBody", 4, $1, $2, $6, $8);}
+    | FUN IDENTIFIER LPAREN RPAREN COLON type                                   {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6);}
+    | FUN IDENTIFIER LPAREN RPAREN functionBody                                 {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5);}
+    | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody                       {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6);}
+=======
     FUN IDENTIFIER functionValueParameters COLON type functionBody              {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $6); freeTokens(1, $4);}
     | FUN IDENTIFIER functionValueParameters COLON type SEMICOLON functionBody  {$$ = alctoken(funcDecAll, "funcDecAll", 5, $1, $2, $3, $5, $7); freeTokens(2, $4, $6);}
     | FUN IDENTIFIER functionValueParameters COLON type                         {$$ = alctoken(funcDecParamType, "funcDecParamType", 4, $1, $2, $3, $5); freeTokens(1, $4);}
@@ -254,6 +276,7 @@ functionDeclaration:
     | FUN IDENTIFIER LPAREN RPAREN COLON type                                   {$$ = alctoken(funcDecType, "funcDecType", 3, $1, $2, $6); freeTokens(3, $3, $4, $5);}
     | FUN IDENTIFIER LPAREN RPAREN functionBody                                 {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $5); freeTokens(2, $3, $4);}
     | FUN IDENTIFIER LPAREN RPAREN SEMICOLON functionBody                       {$$ = alctoken(funcDecBody, "funcDecBody", 3, $1, $2, $6); freeTokens(3, $3, $4, $5);}
+>>>>>>> main
     ;
 
 functionValueParameters:
@@ -271,10 +294,24 @@ functionValueParameter:
     ;
 
 type:
-    functionType    {$$ = $1;}
+    primitiveType    {$$ = $1;}
+    | functionType    {$$ = $1;}
     | userType      {$$ = $1;}
     ;
 
+primitiveType:
+    BYTE    {$$ = $1;}
+    | SHORT   {$$ = $1;}
+    | INT     {$$ = $1;}
+    | LONG    {$$ = $1;}
+    | FLOAT   {$$ = $1;}
+    | DOUBLE  {$$ = $1;}
+    | BOOL    {$$ = $1;}
+    | CHAR    {$$ = $1;}
+    | STRING  {$$ = $1;}
+    | NULL_K  {$$ = $1;}
+    ;
+    
 userType:
     simpleUserType                  {$$ = $1;}
     | userType DOT simpleUserType   {$$ = alctoken(userType, "userType", 3, $1, $2, $3);}

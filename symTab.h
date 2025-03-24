@@ -3,7 +3,7 @@
 
 
 struct symTab{
-    char *name; 
+    char *name;
     struct symTab *parent;
     struct symEntry **buckets;
     int tableType;
@@ -11,10 +11,11 @@ struct symTab{
 
 struct symEntry{
     char *name;
-    struct tree *type;
-    struct symTab *scope;  
+    struct tree *typeSource;
+    struct symTab *scope;
     struct symEntry *next;
     int func;
+    struct typeInfo *type;
 };
 
 enum types{
@@ -36,5 +37,6 @@ int freeTable(struct symTab *table);
 int freeEntry(struct symEntry *e);
 int printTable(struct symTab *table);
 char *getTableType(int type);
+int grabTypes(struct symTab *table);
 
 #endif

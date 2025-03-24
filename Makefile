@@ -5,7 +5,7 @@ FLEX=flex
 BISON=bison
 HFLAG=-d
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
@@ -38,11 +38,17 @@ dot.o: dot.c dot.h
 symTab.o: symTab.c symTab.h
 	$(CC) $(OBJFLAGS) $<
 
+type.o: type.c type.h
+	$(CC) $(OBJFLAGS) $<
+
+semanticBuild.o: semanticBuild.c type.h
+	$(CC) $(OBJFLAGS) $<
+
 dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
 
-zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/ dotOutputs/ symTab.c symTab.h symNonTerminals.h
-	zip -r hw4.zip $^
+zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/ dotOutputs/ symTab.c symTab.h symNonTerminals.h type.c type.h semanticBuild.c semanticBuild.h
+	zip -r lab7.zip $^
