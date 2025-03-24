@@ -2,9 +2,3 @@ Lab7 : Lily, Kassidy, Erik
 
 Lily = 2
 Kassidy = 2
-
-Needed primitive types in lex
-type.h, type.c, semanticBuild.c were started
-
-Setup is for multiple pass, we could switch to single pass
-and add the type alocations to our .y.

@@ -5,11 +5,13 @@ TODO: WHAT GOES WHERE BRO
 */
 
 #include <stdio.h>
+#include <string.h>
 #include "tree.h"
 #include "type.h"
 #include "symTab.h"
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
+#include "lex.h"
 
 
 /**
@@ -17,7 +19,7 @@ TODO: WHAT GOES WHERE BRO
  * 
  * @param node 
  */
-void assignType(struct tree *n){
+void assignType(struct tree *n){ // Many composite types to handle
     if (n == NULL) return;
 
     for (int i = 0; i < n->nkids; i++){
@@ -58,14 +60,33 @@ void assignType(struct tree *n){
         case varDec:
             n->type = n->kids[1]->type;
             break;
+        case assignAdd:
+        case assignSub:
+        case arrayAssignment:
+        case arrayAssignAdd:
+        case arrayAssignSub:
         case assignment:
-            typePtr lhsType = 
+            typePtr lhsType = lookupType(n->kids[0]);
+            typePtr rhsType = n->kids[1]->type;
+            if(!compatible(lhsType, rhsType)){
+                fprintf(stderr, "Type error: %s and %s are not compatible\n", typeName(lhsType), typeName(rhsType));
+                exit(3);
+            }
+            n->type = alcType(lhsType->basicType);
             break;
         case funcDecAll:
             /*
             FUN IDENTIFIER functionValueParameters COLON type functionBody
             */
-           typePtr decType = alcType(n->kids[3]->type);
+           typePtr declaredReturnType = n->kids[3]->type;
+           typePtr bodyType = n->kids[4]->type;
+           if(!compatible(declaredReturnType, bodyType)){
+            fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
+            n->kids[1]->leaf->text, typeName(bodyType), typeName(declaredReturnType));
+            exit(3);
+           }
+           n->type = alcFuncType(declaredReturnType, n->kids[2], currentSymTab());
+           break;
         default:
             if(n->nkids > 0){
                 n->type = n->kids[0]->type;
@@ -75,3 +96,5 @@ void assignType(struct tree *n){
             break;
     }
 }
+
+
