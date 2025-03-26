@@ -62,15 +62,15 @@ char *typeName(typePtr t);
 
 extern struct symTab *globalSymTab;
 
-extern typePtr int_typePtr;
-extern typePtr byte_typePtr;
-extern typePtr short_typePtr;
-extern typePtr long_typePtr;
-extern typePtr float_typePtr;
-extern typePtr double_typePtr;
-extern typePtr boolean_typePtr;
-extern typePtr char_typePtr;
-extern typePtr string_typePtr;
-extern typePtr null_typePtr;
+extern typePtr integerType_ptr;
+extern typePtr byteType_ptr;
+extern typePtr shortType_ptr;
+extern typePtr longType_ptr;
+extern typePtr floatType_ptr;
+extern typePtr doubleType_ptr;
+extern typePtr booleanType_ptr;
+extern typePtr charType_ptr;
+extern typePtr stringType_ptr;
+extern typePtr nullType_ptr;
 
 #endif

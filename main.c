@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
 
         root = NULL;
         rootScope = createTable(NULL, "global", PACKAGE);
-        populateTypes();
-        populateStdlib();
+        //populateTypes();
+        //populateStdlib();
 
         //checks that the file name is legal and opens the file
         openFile(fileNames[i]);

@@ -55,7 +55,7 @@ typePtr alcType(int baseType) {
             rv = (typePtr)calloc(1, sizeof(struct typeInfo));
             if (rv == NULL) {
                 fprintf(stderr, "Out of memory in alcType\n");
-                exit(1);
+                exit(3);
             }
             rv->basicType = baseType;
             return rv;
@@ -138,7 +138,9 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         lastParam->next = newParam;
     }
     lastParam = newParam;
+    free(paramName);
     }
+
     return rv;
 }
 
