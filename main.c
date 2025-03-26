@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
         //checks that the file name is legal and opens the file
         openFile(fileNames[i]);
 
-        yydebug = 1;
+        //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);

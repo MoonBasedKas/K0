@@ -9,7 +9,7 @@ Type helpers for the semantic analysis phase.
 #include "type.h"
 #include "tree.h"
 
-extern struct symTab *globalSymTab;
+struct symTab *globalSymTab = NULL;
 extern typePtr nullType_ptr;
 
 /**
