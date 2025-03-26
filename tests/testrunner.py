@@ -73,16 +73,16 @@ class test:
         for tar in self.targets:
             print("-----")
             if tar.result == 0:
-                printColor(color.GREEN, f"{tar.file} | SEMATNIC ERROR with return code 3")
+                printColor(color.GREEN, f"{tar.file} | SUCCESS with return code 0")
                 self.success += 1
 
             elif tar.result == 1:
-                printColor(color.RED, f"{tar.file} | SEMATNIC ERROR with return code 3")
+                printColor(color.RED, f"{tar.file} | LEXICAL ERROR with return code 1")
                 self.lex += 1
                 print(tar.resultData.stderr.decode("ASCII"))
 
             elif tar.result == 2:
-                printColor(color.YELLOW, f"{tar.file} | SEMATNIC ERROR with return code 3")
+                printColor(color.YELLOW, f"{tar.file} | SYNTAX ERROR with return code 2")
                 print(tar.resultData.stderr.decode("ASCII"))
                 self.syntax += 1
 
@@ -92,7 +92,7 @@ class test:
                 print(tar.resultData.stderr.decode("ASCII"))
             else:
                 printColor(color.LIGHT_BLUE, f"{tar.file} | UNKNOWN ERROR with return code {tar.result}")
-    
+                print(tar.resultData.stderr.decode("ASCII"))
 
 """
 Holds information for a singular test.
