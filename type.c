@@ -6,6 +6,7 @@
 #include "lex.h"
 #include "k0gram.tab.h"
 #include "semanticBuild.h"
+#include "genHelpers.h"
 
 struct typeInfo null_type = {NULL_TYPE};
 struct typeInfo byte_type = {BYTE_TYPE};
@@ -17,16 +18,16 @@ struct typeInfo string_type = {STRING_TYPE};
 
 extern struct symTab *rootScope;
 
-typePtr null_typePtr = &null_type;
-typePtr byte_typePtr = &byte_type;
-typePtr integer_typePtr = &integer_type;
-typePtr short_typePtr = &integer_type;
-typePtr long_typePtr = &integer_type;
-typePtr float_typePtr = &double_type;
-typePtr double_typePtr = &double_type;
-typePtr boolean_typePtr = &boolean_type;
-typePtr char_typePtr = &char_type;
-typePtr string_typePtr = &string_type;
+typePtr nullType_ptr = &null_type;
+typePtr byteType_ptr = &byte_type;
+typePtr integerType_ptr = &integer_type;
+typePtr shortType_ptr = &integer_type;
+typePtr longType_ptr = &integer_type;
+typePtr floatType_ptr = &double_type;
+typePtr doubleType_ptr = &double_type;
+typePtr booleanType_ptr = &boolean_type;
+typePtr charType_ptr = &char_type;
+typePtr stringType_ptr = &string_type;
 
 typePtr alcType(int baseType) {
 
@@ -34,22 +35,22 @@ typePtr alcType(int baseType) {
 
     switch (baseType) {
         case NULL_TYPE:
-            return null_typePtr;
+            return nullType_ptr;
         case BYTE_TYPE:
-            return byte_typePtr;
+            return byteType_ptr;
         case INT_TYPE:
         case SHORT_TYPE:
         case LONG_TYPE:
-            return integer_typePtr;
+            return integerType_ptr;
         case FLOAT_TYPE:
         case DOUBLE_TYPE:
-            return double_typePtr;
+            return doubleType_ptr;
         case BOOL_TYPE:
-            return boolean_typePtr;
+            return booleanType_ptr;
         case CHAR_TYPE:
-            return char_typePtr;
+            return charType_ptr;
         case STRING_TYPE:
-            return string_typePtr;
+            return stringType_ptr;
         default:
             rv = (typePtr)calloc(1, sizeof(struct typeInfo));
             if (rv == NULL) {
@@ -84,11 +85,10 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         if (r->type != NULL)
             rv->u.func.returnType = r->type;
         else
-            // rv->u.func.returnType = alcType(r->id);
-            rv->u.func.returnType = alcType(r);
+           fprintf(stderr, "Function return type not found\n");
     } else {
         // If no return type is provided, use a null_type (this was used interchangeably with NONE_TYPE in examples)
-        rv->u.func.returnType = null_typePtr;
+        rv->u.func.returnType = nullType_ptr;
     }
     // Traverse/process subtree(s) for parameters
     rv->u.func.numParams = p->nkids;
@@ -102,19 +102,16 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
 
     /*
     We need synthesize types from the children of the paramNode
-
-    - uhhh, okay?
     */
     if (paramNode->nkids >= 1) {
         if (paramNode->kids[0]->type != NULL)
             paramType = paramNode->kids[0]->type;
-        else
-            // paramType = alcType(paramNode->kids[0]->id);
-
-            paramType = alcType(paramNode->kids[0]);
-
+        else {
+            fprintf(stderr, "Parameter type not found\n");
+            exit(3);
+        }
     } else {
-        paramType = null_typePtr;
+        paramType = nullType_ptr;
     }
 
     // Get the name of the parameter
@@ -130,7 +127,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         fprintf(stderr, "Out of memory in alcFuncType (param)\n");
         exit(1);
     }
-    newParam->name = strdup(paramName);
+    newParam->name = my_strdup(paramName);
     newParam->type = paramType;
     newParam->next = NULL;
 
