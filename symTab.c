@@ -1,5 +1,6 @@
 #include "symTab.h"
 #include "type.h"
+#include "typeHelpers.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

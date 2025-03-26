@@ -4,6 +4,7 @@
 #include "symTab.h"
 #include "symNonTerminals.h"
 #include "type.h"
+#include "typeHelpers.h"
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>

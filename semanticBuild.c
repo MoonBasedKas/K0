@@ -4,6 +4,7 @@ This file will handle our type checking and type assignment.
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include "tree.h"
 #include "type.h"
 #include "symTab.h"
@@ -86,7 +87,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             typeName(declaredReturnType));
             exit(3);
            }
-           n->type = alcFuncType(declaredReturnType, n->kids[2], rootScope);
+           n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
            break;
         default:
             if(n->nkids > 0){
