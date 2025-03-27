@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
         yyparse();
         buildSymTabs(root, rootScope);
         verifyDeclared(root, rootScope);
+        if (symError != 0) return symError; // If something is undeclared.
         assignType(root, rootScope);
         // grabTypes(rootScope); Typing is not being grabbed...
 

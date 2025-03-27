@@ -225,8 +225,8 @@ propertyDeclaration:
 arrayDeclaration:
     variable variableDeclaration arraySize arrayValues                                                  {$$ = alctoken(arrayDec, "arrayDec", 4, $1, $2, $3, $4);}
     | variable variableDeclaration arraySize                                                            {$$ = alctoken(arrayDecValueless, "arrayDecValueless", 3, $1, $2, $3);}
-    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize arrayValues {$$ = alctoken(arrayDecEqual, "arrayDecEqual", 6, $1, $2, $4, $6, $8, $9); freeTokens(3, $3, $5, $7);}
-    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE IDENTIFIER RANGLE arraySize             {$$ = alctoken(arrayDecEqualValueless, "arrayDecEqualValueless", 5, $1, $2, $4, $6, $8); freeTokens(3, $3, $5, $7);}
+    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE type RANGLE arraySize arrayValues {$$ = alctoken(arrayDecEqual, "arrayDecEqual", 6, $1, $2, $4, $6, $8, $9); freeTokens(3, $3, $5, $7);}
+    | variable variableDeclaration ASSIGNMENT IDENTIFIER LANGLE type RANGLE arraySize             {$$ = alctoken(arrayDecEqualValueless, "arrayDecEqualValueless", 5, $1, $2, $4, $6, $8); freeTokens(3, $3, $5, $7);}
 
 arraySize:
     LPAREN INTEGER_LITERAL RPAREN   {$$ = alctoken(arraySizeInt, "arraySizeInt", 3, $1, $2, $3);}

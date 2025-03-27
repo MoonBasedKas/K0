@@ -326,6 +326,14 @@ int addSemi(){
         case RSQUARE:
         case RPAREN:
         case RCURL:
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case FLOAT:
+        case DOUBLE:
+        case CHAR:
+        case STRING:
             yytext = ";";
             return 1; // True
         default:
