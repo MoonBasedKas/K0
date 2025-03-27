@@ -1,7 +1,3 @@
-/*
-This file will handle our type checking and type assignment.
-*/
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -66,6 +62,7 @@ void assignType(struct tree *n){ // Many composite types to handle
         case arrayAssignAdd:
         case arrayAssignSub:
         case assignment:
+        {
             typePtr lhsType = lookupType(n->kids[0]);
             typePtr rhsType = n->kids[1]->type;
             if(!compatible(lhsType, rhsType)){
@@ -75,7 +72,9 @@ void assignType(struct tree *n){ // Many composite types to handle
             }
             n->type = alcType(lhsType->basicType); // TODO: Check if this is correct
             break;
+        }
         case funcDecAll:
+        {
             /*
             FUN IDENTIFIER functionValueParameters COLON type functionBody
             */
@@ -89,19 +88,25 @@ void assignType(struct tree *n){ // Many composite types to handle
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
             break;
+        }
         case funcDecParamType:
+        {
             /*
             FUN IDENTIFIER functionValueParameters COLON type
             */
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
             break;
+        }
         case funcDecParamBody:
+        {
             /*
             FUN IDENTIFIER functionValueParameters functionBody
             */
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
             break;
+        }
         case funcDecTypeBody:
+        {
             /*
             FUN IDENTIFIER LPAREN RPAREN COLON type functionBody
             */
@@ -124,7 +129,9 @@ void assignType(struct tree *n){ // Many composite types to handle
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
             free(emptyParam);
             break;
+        }
         case funcDecType:
+        {
             /*
             FUN IDENTIFIER LPAREN RPAREN COLON type
             */
@@ -137,7 +144,9 @@ void assignType(struct tree *n){ // Many composite types to handle
             emptyParam->type = NULL;
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
             break;
+        }
         case funcDecBody:
+        {
             /*
             FUN IDENTIFIER functionValueParameters functionBody
             */
@@ -151,13 +160,16 @@ void assignType(struct tree *n){ // Many composite types to handle
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
             free(emptyParam);
             break;
+        }
         default:
+        {
             if(n->nkids > 0){
                 n->type = n->kids[0]->type;
             } else {
                 n->type = alcType(ANY_TYPE);
             }
             break;
+        }
     }
 }
 
