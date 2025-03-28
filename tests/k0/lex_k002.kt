@@ -1,7 +1,23 @@
-fun numbers() {
-    val dec = 12345
-    val hex = 0x1A3F
-    val longNum = 9876543210L
-    val dbl = 3.1415
-    val flt = 2.718f
+fun main(args : Array<String>) {
+    var x : Int = 5;
+    x += 10;
+    x -= 3;
+    x++;
+    x--;
+    
+    if (x == 12 && x != 0) {
+        println("x equals 12 and is nonzero");
+    }
+    if (x < 20 || x >= 10) {
+        println("x is between 10 and 20 or greater");
+    }
+    
+    // Using range operators in expressions (the tokens ".." and "..<" are tested)
+    println("Range: " + (1..10));
+    println("Range Until: " + (1..<10));
+    
+    // Test unary operators: logical not and unary minus
+    if (!(x < 0)) {
+        println("x is non-negative");
+    }
 }

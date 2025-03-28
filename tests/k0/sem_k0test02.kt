@@ -1,8 +1,8 @@
-fun echo(x: Int): Int {
-    return x;
+fun mixNumbers(a: Int, b: Double): Double {
+    return a + b;  // Numeric types are compatible
 }
 
-fun main(): Int {
-    val value: Int = echo(42);
-    return value;
+fun main(args: Array<String>) {
+    val result: Double = mixNumbers(3, 4.5);
+    print("Mixed Numbers: " + result);
 }

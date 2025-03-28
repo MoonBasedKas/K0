@@ -1,9 +1,12 @@
-fun processArray(arr: Array<Int>): Int {
-    arr[1] = 100;
-    return arr[1];
+fun combine(a: String, b: String): String {
+    return a + b;
 }
 
-fun main(): Int {
-    val arr: Int(3) { 10, 20, 30 };
-    return processArray(arr);
+fun main(args: Array<String>) {
+    val s: String = combine("k", "0");
+    if (s.equals("k0")) {
+         print("String concatenation valid: " + s);
+    } else {
+         print("Error in string operation");
+    }
 }

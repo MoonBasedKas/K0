@@ -1,13 +1,18 @@
-fun nestedLoops() : Int {
-    var total: Int = 0;
-    for (i: Int in 1..3) {
-        for (j: Int in 1..3) {
-            total = total + (i * j);
-        };
-    };
-    return total;
+fun allTrue(flags: Array<Boolean>): Boolean {
+    for (i in 0..2) {
+        if (!flags[i]) {
+            return false
+        }
+    }
+    return true
 }
 
-fun main() : Int {
-    return nestedLoops();
+fun main(args: Array<String>) {
+    var bools: Array<Boolean>(3) { true, true, true }
+    bools[1] = false
+    if (allTrue(bools)) {
+        println("All are true.")
+    } else {
+        println("Not all true.")
+    }
 }

@@ -1,12 +1,20 @@
-fun operators() {
-    var x = 5
-    x += 3
-    x -= 2
-    val a = 10 + 20 - 5 * 3 / 2 % 4;
-    val b = a++ // increment operator
-    val c = a-- // decrement operator
-    val eqTest = (a == b) && (a != c)
-    val range1 = 1..100
-    val range2 = 1..<100
-    val lambda = { x: Int -> x * 2 }
+// This is a single-line comment.
+
+   // Leading spaces before a comment.
+   
+/* This is a block comment.
+   It spans multiple lines.
+   It should be completely ignored by the lexer.
+*/
+
+fun dummy(args : Array<String>) {
+    // Inline comment after code:
+    val a : Int = 10;    // Comment after declaration
+    
+    
+    
+    
+    
+    /* Another block comment with extra blank lines and whitespace */
+    println("Dummy function executed");
 }

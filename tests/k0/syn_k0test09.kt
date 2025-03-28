@@ -1,23 +1,9 @@
-fun computeValue(x: Int) : Int {
-    if (x < 10) {
-        if (x % 2 == 0) {
-            return x * 2;
-        } else {
-            return x * 3;
-        };
-    } else {
-        when {
-            x < 20 -> { return x + 10; };
-            x < 30 -> { return x + 20; };
-            else   -> { return x + 30; };
-        };
-    };
+fun firstChar(chars: Array<Char>): Char {
+    return chars[0]
 }
 
-fun helperFunction() : Int {
-    return computeValue(5) + computeValue(15);
-}
-
-fun main() : Int {
-    return helperFunction();
+fun main(args: Array<String>) {
+    var letters: Array<Char>(3) { 'A', 'B', 'C' }
+    println("First letter is: " + firstChar(letters))
+    println("Also, this sucks :()")
 }

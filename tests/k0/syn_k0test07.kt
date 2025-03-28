@@ -1,22 +1,11 @@
-fun process(x: Int) : Int {
-    if (x > 0) { 
-        when {
-            x == 1 -> { return 100; };
-            x == 2 -> { return 200; };
-            else   -> { return 300; };
-        };
-    } else {
-        if (x == 0) { 
-            return 0; 
-        } else { 
-            return -1; 
-        };
-    };
+fun fillArray(arr: Array<Double>) {
+    arr[0] = 3.14
+    arr[1] = 2.718
+    arr[2] = 1.414
 }
 
-fun main() : Int {
-    val a: Int = process(1);
-    val b: Int = process(2);
-    val c: Int = process(0);
-    return a + b + c;
+fun main(args: Array<String>) {
+    var nums: Array<Double>(3) { 0.0, 0.0, 0.0 }
+    fillArray(nums)
+    println("First element in nums: " + nums[0])
 }
