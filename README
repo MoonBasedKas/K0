@@ -2,3 +2,16 @@ Lab8 : Lily, Kassidy, Erik
 
 Lily = 2
 Kassidy = 2
+
+lab8:
+test cases
+
+HW5:
+Seg faults
+redclaration error handling
+Add bools to treenodes
+Expand compatible() in typeHelpers.c
+
+Maybe:
+
+Separate the params construction -> synthesize paramList?

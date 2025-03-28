@@ -63,6 +63,8 @@ char *typeName(typePtr t){
 /**
  * @brief Check if two types are compatible
  *
+ * Do we need to handle operators?
+ * Elvis, dot
  * @param type1
  * @param type2
  * @return int

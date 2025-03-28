@@ -296,6 +296,11 @@ int checkExistance(struct tree *node, struct symTab *scope){
             fprintf(stderr, "ERROR undeclared variable: %s\n", node->leaf->text);
             symError = 3;
         }
+
+        if (declared) {
+            fprintf(stderr, "ERROR redclaration of variable: %s\n", node->leaf->text);
+            symError = 3;
+        }
     }
 
     return 0;
