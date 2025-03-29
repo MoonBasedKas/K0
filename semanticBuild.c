@@ -9,18 +9,20 @@
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
 #include "lex.h"
+#include "semanticBuild.h"
 
+struct tree *createEmptyParam(void);
 
 /**
  * @brief Assigns a type to a node
  *
  * @param node
  */
-void assignType(struct tree *n){ // Many composite types to handle
+void assignType(struct tree *n, struct symTab *rootScope){ // Many composite types to handle
     if (n == NULL) return;
 
     for (int i = 0; i < n->nkids; i++){
-        assignType(n->kids[i]);
+        assignType(n->kids[i], rootScope);
     }
 
     switch (n->prodrule){
@@ -120,15 +122,8 @@ void assignType(struct tree *n){ // Many composite types to handle
                 exit(3);
             }
             // Create an empty param node
-            struct tree *emptyParam = malloc(sizeof(struct tree));
-            if(emptyParam == NULL){
-                fprintf(stderr, "Failed to allocate memory for empty param node.\n");
-                exit(EXIT_FAILURE);
-            }
-            emptyParam->nkids = 0;
-            emptyParam->type = NULL;
+            struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
-            free(emptyParam);
             break;
         }
         case funcDecType:
@@ -136,13 +131,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             /*
             FUN IDENTIFIER LPAREN RPAREN COLON type
             */
-            struct tree *emptyParam = malloc(sizeof(struct tree));
-            if(emptyParam == NULL){
-                fprintf(stderr, "Failed to allocate memory for empty param node.\n");
-                exit(EXIT_FAILURE);
-            }
-            emptyParam->nkids = 0;
-            emptyParam->type = NULL;
+            struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             break;
         }
@@ -151,15 +140,8 @@ void assignType(struct tree *n){ // Many composite types to handle
             /*
             FUN IDENTIFIER functionValueParameters functionBody
             */
-            struct tree *emptyParam = malloc(sizeof(struct tree));
-            if(emptyParam == NULL){
-                fprintf(stderr, "Failed to allocate memory for empty param node.\n");
-                exit(EXIT_FAILURE);
-            }
-            emptyParam->nkids = 0;
-            emptyParam->type = NULL;
+            struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
-            free(emptyParam);
             break;
         }
         default:
@@ -172,4 +154,20 @@ void assignType(struct tree *n){ // Many composite types to handle
             break;
         }
     }
+}
+
+/**
+ * @brief Creates an empty parameter node
+ *
+ * @return struct tree*
+ */
+struct tree *createEmptyParam(void) {
+    struct tree *emptyParam = malloc(sizeof(struct tree));
+    if (emptyParam == NULL) {
+        fprintf(stderr, "Failed to allocate memory for empty parameter node.\n");
+        exit(EXIT_FAILURE);
+    }
+    emptyParam->nkids = 0;
+    emptyParam->type = NULL;
+    return emptyParam;
 }
