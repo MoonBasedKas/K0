@@ -6,7 +6,6 @@
 #include "lex.h"
 #include "k0gram.tab.h"
 #include "semanticBuild.h"
-#include "genHelpers.h"
 
 struct typeInfo null_type = {NULL_TYPE};
 struct typeInfo byte_type = {BYTE_TYPE};
@@ -55,7 +54,7 @@ typePtr alcType(int baseType) {
             rv = (typePtr)calloc(1, sizeof(struct typeInfo));
             if (rv == NULL) {
                 fprintf(stderr, "Out of memory in alcType\n");
-                exit(1);
+                exit(3);
             }
             rv->basicType = baseType;
             return rv;
@@ -127,7 +126,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         fprintf(stderr, "Out of memory in alcFuncType (param)\n");
         exit(1);
     }
-    newParam->name = my_strdup(paramName);
+    newParam->name = strdup(paramName);
     newParam->type = paramType;
     newParam->next = NULL;
 
@@ -138,7 +137,9 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         lastParam->next = newParam;
     }
     lastParam = newParam;
+    free(paramName);
     }
+
     return rv;
 }
 

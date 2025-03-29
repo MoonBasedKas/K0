@@ -5,7 +5,7 @@ FLEX=flex
 BISON=bison
 HFLAG=-d
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o genHelpers.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
@@ -38,7 +38,7 @@ dot.o: dot.c dot.h
 symTab.o: symTab.c symTab.h
 	$(CC) $(OBJFLAGS) $<
 
-type.o: type.c type.h typeHelpers.h genHelpers.h
+type.o: type.c type.h typeHelpers.h
 	$(CC) $(OBJFLAGS) $<
 
 semanticBuild.o: semanticBuild.c type.h symTab.h tree.h symNonTerminals.h typeHelpers.h
@@ -47,14 +47,11 @@ semanticBuild.o: semanticBuild.c type.h symTab.h tree.h symNonTerminals.h typeHe
 typeHelpers.o: typeHelpers.c typeHelpers.h type.h
 	$(CC) $(OBJFLAGS) $<
 
-genHelpers.o: genHelpers.c genHelpers.h
-	$(CC) $(OBJFLAGS) $<
-
 dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
 
-zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCases/ dotOutputs/ symTab.c symTab.h symNonTerminals.h type.c type.h semanticBuild.c semanticBuild.h typeHelpers.c typeHelpers.h
+zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCasesOld/ dotOutputs/ symTab.c symTab.h symNonTerminals.h type.c type.h semanticBuild.c semanticBuild.h typeHelpers.c typeHelpers.h tests/
 	zip -r lab8.zip $^

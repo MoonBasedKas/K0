@@ -1,0 +1,2 @@
+// unsupported operator error
+*=

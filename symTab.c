@@ -6,8 +6,7 @@
 #include <string.h>
 
 struct symTab *rootScope;
-
-
+extern int symError;
 /**
  * @brief Inserts an element into a symbol table.
  * @param table
@@ -19,6 +18,15 @@ struct symTab *rootScope;
 struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func){
     int bucket = hash(elem);
     struct symEntry *temp = table->buckets[bucket];
+
+    // Check for redeclaration in the same scope
+    struct symEntry *checker = temp;
+    for (; checker != NULL; checker = checker->next) {
+        if (strcmp(checker->name, elem) == 0) {
+            fprintf(stderr, "ERROR: redeclaration of '%s' in the same scope.\n", elem);
+            symError = 3;
+        }
+    }
 
     // No entry insert it!
     if(temp == NULL){
@@ -33,14 +41,12 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
         return NULL;
     }
 
-
     // Find the first invalid next entry and insert it there.
     for(;temp->next != NULL; temp = temp->next);
     temp->next = createEntry(table, elem, type, func);
     if (func == FUNCTION){
         return temp->next->scope;
     }
-
 
     return NULL;
 }
