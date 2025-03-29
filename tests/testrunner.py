@@ -131,7 +131,7 @@ def main():
 def defaultCase():
     testData = test()
 
-    error = os.listdir("./error")
+    error = os.listdir("./errors")
     kotlin = os.listdir("./kotlin")
     k0 = os.listdir("./k0")
 
