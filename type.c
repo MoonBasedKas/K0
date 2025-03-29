@@ -82,7 +82,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     rv->u.func.st = st;
 
     // Get the return type
-    rv->u.func.returnType = determineReturnType(r);
+    rv->u.func.returnType = determineReturnType(r); //typeHelpers.c
 
     // Traverse/process subtree(s) for parameters
     rv->u.func.numParams = p->nkids;
@@ -92,7 +92,7 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
         for (int i = 0; i < p->nkids; i++) {
         struct tree *paramNode = p->kids[i];
         // Use the new helper to create a new parameter node.
-        struct param *newParam = createParamFromTree(paramNode);
+        struct param *newParam = createParamFromTree(paramNode); //typeHelpers.c
 
         // Add to the end of the list.
         if (rv->u.func.parameters == NULL) {
@@ -122,7 +122,7 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     rv->u.array.elemType = elemType;
 
     // Size of array
-    rv->u.array.size = extractArraySize(size);
+    rv->u.array.size = extractArraySize(size); //typeHelpers.c
     return rv;
 }
 
