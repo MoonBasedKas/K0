@@ -1,6 +1,8 @@
 #include "symTab.h"
 #include "type.h"
 #include "typeHelpers.h"
+#include "symTabHelper.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -229,21 +231,4 @@ int printTable(struct symTab *table){
     }
 
     return 0;
-}
-
-/**
- * @brief Gets the string of a given table type.
- *
- * @param type
- * @return char*
- */
-char *getTableType(int type){
-    switch(type){
-        case FUNCTION:
-            return "Function";
-        case PACKAGE:
-            return "Package";
-        default:
-            return "UNKNOWN";
-    }
 }

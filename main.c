@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h>
+
 #include "k0gram.tab.h"
 #include "lex.h"
 #include "dot.h"
@@ -11,7 +12,7 @@
 #include "symTab.h"
 #include "type.h"
 #include "semanticBuild.h"
-
+#include "symTabHelper.h"
 
 char *filename;
 char temp[100];
@@ -24,7 +25,7 @@ void openFile(char *name);
 void populateTypes();
 void populateStdlib();
 void populateLibraries();
-extern int symError;
+int symError = 0;
 
 int main(int argc, char *argv[])
 {
@@ -156,62 +157,4 @@ void openFile(char *name)
         fprintf(stderr, "File %s cannot be opened.\n", filename);
         exit(1);
     }
-}
-
-/**
- * @brief Preloads the standard library.
- *
- */
-void populateTypes(){
-    // Types
-    addSymTab(rootScope, "Int", NULL, VARIABLE);
-    addSymTab(rootScope, "String", NULL, VARIABLE);
-    addSymTab(rootScope, "Byte", NULL, VARIABLE);
-    addSymTab(rootScope, "Short", NULL, VARIABLE);
-    addSymTab(rootScope, "Long", NULL, VARIABLE);
-    addSymTab(rootScope, "Float", NULL, VARIABLE);
-    addSymTab(rootScope, "Boolean", NULL, VARIABLE);
-    addSymTab(rootScope, "Double", NULL, VARIABLE);
-    addSymTab(rootScope, "Array", NULL, VARIABLE);
-}
-
-/**
- * @brief Populates the standard library of what is there without includes.
- * 
- */
-void populateStdlib(){
-    // Functions
-    addSymTab(rootScope, "print", NULL, VARIABLE);
-    addSymTab(rootScope, "println", NULL, VARIABLE);
-    addSymTab(rootScope, "get", NULL, VARIABLE);
-    addSymTab(rootScope, "equals", NULL, VARIABLE);
-    addSymTab(rootScope, "length", NULL, VARIABLE);
-    addSymTab(rootScope, "toString", NULL, VARIABLE);
-    addSymTab(rootScope, "valueOf", NULL, VARIABLE);
-    addSymTab(rootScope, "substring", NULL, VARIABLE);
-    addSymTab(rootScope, "readln", NULL, VARIABLE);
-}
-
-
-/**
- * @brief Pre adds all libraries in k0
- *
- */
-void populateLibraries(){
-    //Predefined libraries
-    addSymTab(rootScope, "java", NULL, PACKAGE);
-    addSymTab(rootScope, "util", NULL, PACKAGE);
-    addSymTab(rootScope, "lang", NULL, PACKAGE);
-    addSymTab(rootScope, "math", NULL, PACKAGE);
-    addSymTab(rootScope, "Random", NULL, PACKAGE);
-
-    // Functions within predfined libraries.
-    addSymTab(rootScope, "nextInt", NULL, VARIABLE);
-    addSymTab(rootScope, "abs", NULL, VARIABLE);
-    addSymTab(rootScope, "max", NULL, VARIABLE);
-    addSymTab(rootScope, "min", NULL, VARIABLE);
-    addSymTab(rootScope, "pow", NULL, VARIABLE);
-    addSymTab(rootScope, "cos", NULL, VARIABLE);
-    addSymTab(rootScope, "sin", NULL, VARIABLE);
-    addSymTab(rootScope, "tan", NULL, VARIABLE);
 }
