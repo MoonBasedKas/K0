@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "type.h"
 #include "symTab.h"
 #include "lex.h"
