@@ -176,3 +176,60 @@ int extractArraySize(struct tree *size) {
     }
     return -1; // Unknown size
 }
+
+
+/**
+ * @brief Check if two types are equal
+ *
+ * @param type1
+ * @param type2
+ * @return int
+ */
+int typeEquals(typePtr type1, typePtr type2)
+{
+    if(type1->basicType == type2->basicType)
+    {
+        if(type1->basicType != ARRAY_TYPE)
+        {
+            if(!typeEquals(type1->u.array.elemType, type2->u.array.elemType))
+            {
+                //if array type doesn't match types aren't equal
+                return 0;
+            }
+        }
+        if(type1->basicType != FUNCTION_TYPE)
+        {
+
+        }
+        if(type1->basicType != ANY_TYPE)
+        {
+
+        }
+    
+        return 1;
+    }
+    //if basic types don't match then the types can't be equal
+    return 0;
+}
+
+/**
+ * @brief returns a copy of the passed type
+ *
+ * @param type
+ * @return typePtr
+ */
+typePtr copyType(typePtr type)
+{
+
+}
+
+/**
+ * @brief frees memeory allocated for type
+ *
+ * @param type
+ * @return typePtr
+ */
+void deleteType(typePtr type)
+{
+
+}
