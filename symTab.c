@@ -17,7 +17,7 @@ extern int symError;
  * @param func
  * @return int
  */
-struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func){
+struct symTab *addSymTab(struct symTab *table, char *elem, int func){
     int bucket = hash(elem);
     struct symEntry *temp = table->buckets[bucket];
 
@@ -33,7 +33,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
     // No entry insert it!
     if(temp == NULL){
 
-        table->buckets[bucket] = createEntry(table, elem, type, func);
+        table->buckets[bucket] = createEntry(table, elem, func);
         temp = table->buckets[bucket];
 
         if(func == FUNCTION || func == PACKAGE){
@@ -45,7 +45,7 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
 
     // Find the first invalid next entry and insert it there.
     for(;temp->next != NULL; temp = temp->next);
-    temp->next = createEntry(table, elem, type, func);
+    temp->next = createEntry(table, elem, func);
     if (func == FUNCTION){
         return temp->next->scope;
     }
@@ -59,29 +59,29 @@ struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, in
  * @param table 
  * @return int
  */
-int grabTypes(struct symTab *table){
-    struct symEntry *temp;
-    for(int i = 0; i < SYMBUCKETS; i++){
-        temp = table->buckets[i];
-        if (temp != NULL){
-            for(; temp != NULL;){
-                temp->type = temp->typeSource->type;
-            }
-        }
-    }
-    printf("---\n");
+// int grabTypes(struct symTab *table){
+//     struct symEntry *temp;
+//     for(int i = 0; i < SYMBUCKETS; i++){
+//         temp = table->buckets[i];
+//         if (temp != NULL){
+//             for(; temp != NULL;){
+//                 temp->type = temp->typeSource->type;
+//             }
+//         }
+//     }
+//     printf("---\n");
 
-    for(int i = 0; i < SYMBUCKETS; i++){
-        temp = table->buckets[i];
-        // printf("%p %d\n", temp);
-        if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
+//     for(int i = 0; i < SYMBUCKETS; i++){
+//         temp = table->buckets[i];
+//         // printf("%p %d\n", temp);
+//         if (temp != NULL && (temp->func == FUNCTION || temp->func == PACKAGE)){
 
-            grabTypes(temp->scope);
-        }
-    }
+//             grabTypes(temp->scope);
+//         }
+//     }
 
-    return 0;
-}
+//     return 0;
+// }
 
 
 /**
@@ -92,9 +92,8 @@ int grabTypes(struct symTab *table){
  * @param type
  * @return struct symEntry*
  */
-struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func){
+struct symEntry *createEntry(struct symTab *table, char *elem, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
-    temp->typeSource = type;
     temp->type = NULL; // To be assigned later.
     temp->scope = NULL;
     temp->name = elem;
