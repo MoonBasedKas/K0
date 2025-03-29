@@ -11,7 +11,6 @@ struct symTab{
 
 struct symEntry{
     char *name;
-    struct tree *typeSource;
     struct symTab *scope;
     struct symEntry *next;
     int func;
@@ -28,8 +27,8 @@ enum types{
 
 extern struct symTab *rootScope;
 
-struct symTab *addSymTab(struct symTab *table, char *elem, struct tree *type, int func);
-struct symEntry *createEntry(struct symTab *table, char *elem, struct tree *type, int func);
+struct symTab *addSymTab(struct symTab *table, char *elem, int func);
+struct symEntry *createEntry(struct symTab *table, char *elem, int func);
 struct symTab *createTable(struct symTab *parent, char *name, int type);
 int hash(char *elem);
 struct symEntry *contains(struct symTab *table, char *elem);

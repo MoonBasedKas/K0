@@ -4,7 +4,9 @@ lex.yy.c
 *.tab.h
 .vscode
 *.h.gch
-testFiles/*
 test.kt
 dotfile.dot
 dotfile.png
+/k0
+!/k0/
+k0
