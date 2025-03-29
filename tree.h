@@ -10,8 +10,8 @@ struct tree
     int prodrule;
     char *symbolname;
     int nkids;
-    struct tree *kids[10]; // idk  how many kids we need
-    struct token *leaf;    // if nkids == 0, null for epsilon
+    struct tree *kids[10];
+    struct token *leaf;
     struct typeInfo *type;
 };
 
