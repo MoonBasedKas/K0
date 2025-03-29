@@ -144,6 +144,26 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             break;
         }
+        case arrayDec:
+        {
+            n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
+            break;
+        }
+        case arrayDecValueless:
+        {
+            n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
+            break;
+        }
+        case arrayDecEqual:
+        {
+            n->type = alcArrayType(n->kids[7], n->kids[1]->type); //type.c
+            break;
+        }
+        case arrayDecEqualValueless:
+        {
+            n->type = alcArrayType(n->kids[7], n->kids[1]->type); //type.c
+            break;
+        }
         default:
         {
             if(n->nkids > 0){
