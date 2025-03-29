@@ -1,11 +1,9 @@
 package lexicalcheck
 
-// Importing functions and constants from the Kotlin standard library
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.collections.listOf
 
-// Using Kotlin specific keywords
 data class Point(val x: Int, val y: Int)
 
 object Singleton {
@@ -14,12 +12,10 @@ object Singleton {
 
 class Calculator {
     companion object {
-        // Inline function using Kotlin's built-in inline modifier
         inline fun add(a: Int, b: Int): Int = a + b
     }
 }
 
-// Defining an infix function to check alternative operator syntax
 infix fun Int.multiplyBy(other: Int): Int = this * other
 
 fun main() {

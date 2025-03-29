@@ -3,15 +3,23 @@ Lab8 : Lily, Kassidy, Erik
 Lily = 2
 Kassidy = 2
 
+We have a python script to run our test cases.
+Erik: I would like to point out we also just handle multiple test cases (99% sure)
+
+Todo (For us):
+
 lab8:
-test cases
+test cases (Done)
 
 HW5:
-Seg faults
-redclaration error handling
+Seg faults -> line 4 in test3.kt (old)
+redeclaration error handling (finished)
 Add bools to treenodes
 Expand compatible() in typeHelpers.c
+- We need to handle const's (one of the bools)
 
 Maybe:
 
-Separate the params construction -> synthesize paramList?
+Lily: Separate the params construction -> synthesize paramList?
+
+Erik: We need a refactor. Tree.c currently handles tree stuff and some symTab stuff
