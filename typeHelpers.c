@@ -10,6 +10,8 @@ Type helpers for the semantic analysis phase.
 #include "lex.h"
 #include "type.h"
 #include "tree.h"
+#include "symNonTerminals.h"
+#include "k0gram.tab.h"
 
 struct symTab *globalSymTab = NULL;
 extern typePtr nullType_ptr;
@@ -232,4 +234,75 @@ typePtr copyType(typePtr type)
 void deleteType(typePtr type)
 {
 
+}
+
+typePtr *typeCheckExpression(struct tree *node)
+{
+    if(node == NULL)
+    {
+        return NULL;
+    }
+
+    switch (node->prodrule)
+    {
+    case INTEGER_LITERAL:
+    case HEX_LITERAL:
+    case CHARACTER_LITERAL:
+    case REAL_LITERAL:
+    case TRUE:
+    case FALSE:
+    case NULL_K:
+    case LINE_STRING:
+    case MULTILINE_STRING:
+
+
+    case disj: //bool bool, bool
+    case conj: //bool bool, bool
+
+    case equal: //? ?, bool
+    case notEqual: //? ?, bool
+    case eqeqeq: //? ?, bool
+    case notEqeqeq: //? ?, bool
+
+    case less: //int int, bool - double double, bool
+    case greater: //int int, bool - double double, bool
+    case lessEqual: //int int, bool - double double, bool
+    case greaterEqual: //int int, bool - double double, bool
+
+    case in: //? ?, bool
+
+    case range:
+    case rangeUntil:
+
+    case add: 
+    case sub:
+    case mult:
+    case div_k:
+
+
+    case mod:
+
+
+    case prefix: //assignable expression for ++ and --
+
+
+    case arrayAccess:
+
+
+    case postfixExpr:
+    case postfixNoExpr:
+    case postfixDotID:
+    case postfixDotIDExpr:
+    case postfixDotIDNoExpr:
+    case postfixSafeDotID:
+    case postfixSafeDotIDExpr:
+    case postfixSafeDotIDNoExpr:
+    case postfixArrayAccess:
+    case postfixIncr:
+    case postfixDecr:
+        
+    
+    default:
+        break;
+    }
 }
