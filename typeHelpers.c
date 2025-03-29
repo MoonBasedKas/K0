@@ -3,6 +3,8 @@ Type helpers for the semantic analysis phase.
 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "typeHelpers.h"
 #include "symTab.h"
 #include "lex.h"
@@ -11,6 +13,7 @@ Type helpers for the semantic analysis phase.
 
 struct symTab *globalSymTab = NULL;
 extern typePtr nullType_ptr;
+extern int symError;
 
 /**
  * @brief Check if a type is numeric (used for compatibility checks)
@@ -94,4 +97,82 @@ typePtr lookupType(struct tree *n){
         return nullType_ptr;
     }
     return entry->type;
+}
+
+/**
+ * @brief Create a parameter from a tree node
+ *
+ * @param paramNode
+ * @return struct param*
+ */
+struct param* createParamFromTree(struct tree *paramNode) {
+    typePtr paramType = NULL;
+    char *paramName = NULL;
+
+    // Extract parameter type
+    if (paramNode->nkids >= 1) {
+        if (paramNode->kids[0]->type != NULL)
+            paramType = paramNode->kids[0]->type;
+        else {
+            fprintf(stderr, "Parameter type not found\n");
+            exit(3);
+        }
+    } else {
+        paramType = nullType_ptr;
+    }
+
+    // Extract parameter name
+    if (paramNode->nkids >= 2) {
+        paramName = paramNode->kids[1]->symbolname;
+    } else {
+        paramName = strdup("unknown"); // Duplicate to ensure proper memory handling
+    }
+
+    // Allocate and initialize the parameter struct
+    struct param *newParam = malloc(sizeof(struct param));
+    if (newParam == NULL) {
+        fprintf(stderr, "Out of memory in createParamFromTree\n");
+        exit(1);
+    }
+    newParam->name = strdup(paramName);
+    newParam->type = paramType;
+    newParam->next = NULL;
+
+    // If paramName was strdup-ed because of missing symbolname, free our temporary copy
+    if (paramNode->nkids < 2) {
+        free(paramName);
+    }
+    
+    return newParam;
+}
+
+/**
+ * @brief Determine the return type of a function
+ *
+ * @param r
+ * @return typePtr
+ */
+typePtr determineReturnType(struct tree *r) {
+    if (r != NULL) {
+        if (r->type != NULL)
+            return r->type;
+        else {
+            fprintf(stderr, "Function return type not found\n");
+            symError = 3;
+        }
+    }
+    return nullType_ptr; // Default to null type if no return type is provided
+}
+
+/**
+ * @brief Extract the size of an array
+ *
+ * @param size
+ * @return int
+ */
+int extractArraySize(struct tree *size) {
+    if (size != NULL && size->leaf != NULL) {
+        return size->leaf->ival;
+    }
+    return -1; // Unknown size
 }

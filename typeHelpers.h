@@ -4,13 +4,11 @@
 #include "type.h"
 #include "tree.h"
 
-// Lookup the type of a node
 typePtr lookupType(struct tree *n);
-
-// Get the name of a type
 char *typeName(typePtr t);
-
-// Check if two types are compatible
 int compatible(typePtr t1, typePtr t2);
+struct param* createParamFromTree(struct tree *paramNode);
+typePtr determineReturnType(struct tree *r);
+int extractArraySize(struct tree *size);
 
 #endif
