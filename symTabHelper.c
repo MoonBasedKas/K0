@@ -38,8 +38,8 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
         // Import chains
         case expandingImportID:
             // Is it there?
-            if(contains(rootScope, node->kids[0]->leaf->text) == NULL)
-            scope = addSymTab(rootScope, node->kids[0]->leaf->text, PACKAGE);
+            if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
+            scope = addSymTab(rootScope, node->kids[0]->leaf->text, PACKAGE); //symTab.c
 
             // So we need to check if the next leaf is a *...
 
@@ -60,7 +60,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
         case collapsedImport:
             if(node->kids[1]->nkids == 0){
                 if (strcmp(node->kids[1]->leaf->text, "*")){
-                    addSymTab(scope, node->kids[1]->leaf->text, VARIABLE);
+                    addSymTab(scope, node->kids[1]->leaf->text, VARIABLE); //symTab.c
                 } else {
                     fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
                     symError = 3;
@@ -73,7 +73,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
         //function declarations
         case funcDecAll:
         case funcDecParamType:
-            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION);
+            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION); //symTab.c
             for(int i = 2; i < node->nkids; i++)
             {
                 buildSymTabs(node->kids[i], scope);
@@ -83,7 +83,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
         case funcDecTypeBody:
         case funcDecType:
-            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION);
+            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION); //symTab.c
             for(int i = 2; i < node->nkids; i++)
             {
                 buildSymTabs(node->kids[i], scope);
@@ -95,7 +95,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
         case funcDecParamBody:
         case funcDecBody:
 
-            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION);
+            scope = addSymTab(scope, node->kids[1]->leaf->text, FUNCTION); //symTab.c
             for(int i = 2; i < node->nkids; i++)
             {
                 buildSymTabs(node->kids[i], scope);
@@ -108,7 +108,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
         //variable decalarations
         case varDec:
-            addSymTab(scope, node->kids[0]->leaf->text, VARIABLE);
+            addSymTab(scope, node->kids[0]->leaf->text, VARIABLE); //symTab.c
             break;
 
         case varDecQuests:
@@ -179,7 +179,7 @@ int checkExistance(struct tree *node, struct symTab *scope){
         bool declared = false;
         while(scope != NULL)
         {
-            if(contains(scope, node->leaf->text) != NULL)
+            if(contains(scope, node->leaf->text) != NULL) //symTab.c
             {
                 declared = true;
                 return declared;
@@ -206,7 +206,7 @@ int checkExistance(struct tree *node, struct symTab *scope){
  */
 int addMathModule(){
 
-    addSymTab(rootScope, "abs", FUNCTION);
+    addSymTab(rootScope, "abs", FUNCTION); //symTab.c
     addSymTab(rootScope, "max", FUNCTION);
     addSymTab(rootScope, "min", FUNCTION);
     addSymTab(rootScope, "pow", FUNCTION);
@@ -223,7 +223,7 @@ int addMathModule(){
  */
 void populateTypes(){
     // Types
-    addSymTab(rootScope, "Int", VARIABLE);
+    addSymTab(rootScope, "Int", VARIABLE); //symTab.c
     addSymTab(rootScope, "String", VARIABLE);
     addSymTab(rootScope, "Byte", VARIABLE);
     addSymTab(rootScope, "Short", VARIABLE);
@@ -240,7 +240,7 @@ void populateTypes(){
  */
 void populateStdlib(){
     // Functions
-    addSymTab(rootScope, "print", VARIABLE);
+    addSymTab(rootScope, "print", VARIABLE); //symTab.c
     addSymTab(rootScope, "println", VARIABLE);
     addSymTab(rootScope, "get", VARIABLE);
     addSymTab(rootScope, "equals", VARIABLE);
@@ -258,14 +258,14 @@ void populateStdlib(){
  */
 void populateLibraries(){
     //Predefined libraries
-    addSymTab(rootScope, "java", PACKAGE);
+    addSymTab(rootScope, "java", PACKAGE); //symTab.c
     addSymTab(rootScope, "util", PACKAGE);
     addSymTab(rootScope, "lang", PACKAGE);
     addSymTab(rootScope, "math", PACKAGE);
     addSymTab(rootScope, "Random", PACKAGE);
 
     // Functions within predfined libraries.
-    addSymTab(rootScope, "nextInt", VARIABLE);
+    addSymTab(rootScope, "nextInt", VARIABLE); //symTab.c
     addSymTab(rootScope, "abs", VARIABLE);
     addSymTab(rootScope, "max", VARIABLE);
     addSymTab(rootScope, "min", VARIABLE);

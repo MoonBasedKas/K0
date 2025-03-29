@@ -91,7 +91,7 @@ typePtr lookupType(struct tree *n){
         fprintf(stderr, "Type lookup failed: Invalid node\n");
         return nullType_ptr;
     }
-    struct symEntry *entry = contains(globalSymTab, n->leaf->text);
+    struct symEntry *entry = contains(globalSymTab, n->leaf->text); //symTab.c
     if(!entry) {
         fprintf(stderr, "Type lookup failed: No symbol table\n");
         return nullType_ptr;

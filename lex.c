@@ -94,7 +94,7 @@ int leaf(int code)
 {
     token(code);
 
-    yylval.treeptr = alctoken(code, nextToken->text, 0);
+    yylval.treeptr = alctoken(code, nextToken->text, 0); //tree.c
     yylval.treeptr->leaf = nextToken;
 
     return code;

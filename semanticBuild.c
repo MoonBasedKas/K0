@@ -25,34 +25,34 @@ void assignType(struct tree *n){ // Many composite types to handle
 
     switch (n->prodrule){
         case INT:
-            n->type = alcType(INT_TYPE);
+            n->type = alcType(INT_TYPE); //type.c
             break;
         case FLOAT:
-            n->type = alcType(FLOAT_TYPE);
+            n->type = alcType(FLOAT_TYPE); //type.c
             break;
         case STRING:
-            n->type = alcType(STRING_TYPE);
+            n->type = alcType(STRING_TYPE); //type.c
             break;
         case BOOL:
-            n->type = alcType(BOOL_TYPE);
+            n->type = alcType(BOOL_TYPE); //type.c
             break;
         case CHAR:
-            n->type = alcType(CHAR_TYPE);
+            n->type = alcType(CHAR_TYPE); //type.c
             break;
         case BYTE:
-            n->type = alcType(BYTE_TYPE);
+            n->type = alcType(BYTE_TYPE); //type.c
             break;
         case SHORT:
-            n->type = alcType(SHORT_TYPE);
+            n->type = alcType(SHORT_TYPE); //type.c
             break;
         case LONG:
-            n->type = alcType(LONG_TYPE);
+            n->type = alcType(LONG_TYPE); //type.c
             break;
         case DOUBLE:
-            n->type = alcType(DOUBLE_TYPE);
+            n->type = alcType(DOUBLE_TYPE); //type.c
             break;
         case NULL_K:
-            n->type = alcType(NULL_TYPE);
+            n->type = alcType(NULL_TYPE); //type.c
             break;
         case varDec:
             n->type = n->kids[1]->type;
@@ -64,14 +64,14 @@ void assignType(struct tree *n){ // Many composite types to handle
         case arrayAssignSub:
         case assignment:
         {
-            typePtr lhsType = lookupType(n->kids[0]);
+            typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
-            if(!compatible(lhsType, rhsType)){
+            if(!compatible(lhsType, rhsType)){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible\n",
-                typeName(lhsType), typeName(rhsType));
+                typeName(lhsType), typeName(rhsType)); //typeHelpers.c
                 exit(3);
             }
-            n->type = alcType(lhsType->basicType); // TODO: Check if this is correct
+            n->type = alcType(lhsType->basicType); // TODO: Check if this is correct - type.c
             break;
         }
         case funcDecAll:
@@ -81,13 +81,13 @@ void assignType(struct tree *n){ // Many composite types to handle
             */
             typePtr declaredReturnType = n->kids[3]->type;
             typePtr bodyType = n->kids[4]->type;
-            if(!compatible(declaredReturnType, bodyType)){
+            if(!compatible(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
-                typeName(declaredReturnType));
+                typeName(declaredReturnType)); //typeHelpers.c
                 exit(3);
             }
-            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
+            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
         case funcDecParamType:
@@ -95,7 +95,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             /*
             FUN IDENTIFIER functionValueParameters COLON type
             */
-            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
+            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
         case funcDecParamBody:
@@ -103,7 +103,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             /*
             FUN IDENTIFIER functionValueParameters functionBody
             */
-            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
+            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
         case funcDecTypeBody:
@@ -113,10 +113,10 @@ void assignType(struct tree *n){ // Many composite types to handle
             */
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
-            if(!compatible(declaredReturnType, bodyType)){
+            if(!compatible(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
-                typeName(declaredReturnType));
+                typeName(declaredReturnType)); //typeHelpers.c
                 exit(3);
             }
             // Create an empty param node
@@ -127,7 +127,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             }
             emptyParam->nkids = 0;
             emptyParam->type = NULL;
-            n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
+            n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             free(emptyParam);
             break;
         }
@@ -143,7 +143,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             }
             emptyParam->nkids = 0;
             emptyParam->type = NULL;
-            n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
+            n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             break;
         }
         case funcDecBody:
@@ -158,7 +158,7 @@ void assignType(struct tree *n){ // Many composite types to handle
             }
             emptyParam->nkids = 0;
             emptyParam->type = NULL;
-            n->type = alcFuncType(n->kids[2], emptyParam, rootScope);
+            n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             free(emptyParam);
             break;
         }
@@ -167,11 +167,9 @@ void assignType(struct tree *n){ // Many composite types to handle
             if(n->nkids > 0){
                 n->type = n->kids[0]->type;
             } else {
-                n->type = alcType(ANY_TYPE);
+                n->type = alcType(ANY_TYPE); //type.c
             }
             break;
         }
     }
 }
-
-// Free empty param node

@@ -50,10 +50,10 @@ int printTree(nodeptr root, int depth) {
     }
 
     if (root->nkids > 0)
-        printf("%snode (%s, %d): %d children | Type %s\n", prefix, root->symbolname, root->prodrule, root->nkids, typeName(root->type));
+        printf("%snode (%s, %d): %d children | Type %s\n", prefix, root->symbolname, root->prodrule, root->nkids, typeName(root->type)); //typeHelpers.c
     else
         printf("%stoken (File: %s, Line: %d):  %s  Integer Code: %d | Type %s\n", prefix, root->leaf->filename, root->leaf->lineno,
-               root->leaf->text, root->leaf->category, typeName(root->type));
+               root->leaf->text, root->leaf->category, typeName(root->type)); //typeHelpers.c
 
     // recurse for each child: update the "last" array.
     for (int i = 0; i < root->nkids; i++) {

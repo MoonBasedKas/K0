@@ -65,17 +65,17 @@ int main(int argc, char *argv[])
         root = NULL;
         rootScope = createTable(NULL, "global", PACKAGE);
         //populateTypes();
-        populateStdlib();
+        populateStdlib(); //symTabHelper.c
 
         //checks that the file name is legal and opens the file
         openFile(fileNames[i]);
 
         //yydebug = 1;
         yyparse();
-        buildSymTabs(root, rootScope);
-        verifyDeclared(root, rootScope);
+        buildSymTabs(root, rootScope); //symTabHelper.c
+        verifyDeclared(root, rootScope); //symTabHelper.c
         if (symError != 0) return symError; // If something is undeclared.
-        assignType(root, rootScope);
+        assignType(root, rootScope); //semanticBuild.c
         // grabTypes(rootScope); Typing is not being grabbed...
 
         if(dot){
@@ -91,19 +91,19 @@ int main(int argc, char *argv[])
             }
         }
         if (tree) {
-            printTree(root, 0);
+            printTree(root, 0); //tree.c
         }
 
         if(symtab){
-            printTable(rootScope);
+            printTable(rootScope); //symTab.c
         } else if(symError == 0)
         {
              printf("No errors in file: %s\n\n", fileNames[i]);
         }
 
-        freeTable(rootScope);
+        freeTable(rootScope); //symTab.c
         fclose(yyin);
-        freeTree(root);
+        freeTree(root); //tree.c
         yylex_destroy();
     }
 
