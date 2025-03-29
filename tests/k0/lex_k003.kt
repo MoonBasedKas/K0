@@ -3,8 +3,7 @@ fun main(args : Array<String>) {
     val dec : Int = 123456;
     val longNum : Int = 98765L;
     val dbl : Double = 3.14159;
-    val flt : Double = 2.71828F;
-    val hex : Int = 0x1A3F;  // hexadecimal literal
+    val flt : Double = 2.71828F; // This will be ignored, and just be a double
 
     // Character literals with escape sequences
     val ch1 : Char = 'A';

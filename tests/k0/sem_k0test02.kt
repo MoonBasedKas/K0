@@ -1,5 +1,5 @@
 fun mixNumbers(a: Int, b: Double): Double {
-    return a + b;  // Numeric types are compatible
+    return a + b;
 }
 
 fun main(args: Array<String>) {

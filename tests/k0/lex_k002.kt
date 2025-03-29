@@ -12,11 +12,11 @@ fun main(args : Array<String>) {
         println("x is between 10 and 20 or greater");
     }
     
-    // Using range operators in expressions (the tokens ".." and "..<" are tested)
+    // Using range operators in expressions (the tokens ".." and "..<")
     println("Range: " + (1..10));
     println("Range Until: " + (1..<10));
     
-    // Test unary operators: logical not and unary minus
+    // Test unary operators
     if (!(x < 0)) {
         println("x is non-negative");
     }
