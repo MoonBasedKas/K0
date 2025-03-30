@@ -19,26 +19,6 @@ extern int symError;
 
 static struct param *copyParamList(struct param *params);
 
-/**
- * @brief Check if a type is numeric (used for compatibility checks)
- *
- * @param t
- * @return int
- */
-static int isNumeric(typePtr t){
-    if(!t) return 0;
-    switch(t->basicType){
-        case INT_TYPE:
-        case DOUBLE_TYPE:
-        case FLOAT_TYPE:
-        case LONG_TYPE:
-        case SHORT_TYPE:
-        case BYTE_TYPE:
-            return 1;
-        default:
-            return 0;
-    }
-}
 
 /**
  * @brief Get the name of a type
@@ -65,23 +45,6 @@ char *typeName(typePtr t){
     if(!t) return "NULL";
     if(t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE) return "UNKNOWN";
     return typeNames[t->basicType - FIRST_TYPE];
-}
-
-/**
- * @brief Check if two types are compatible
- *
- * Do we need to handle operators?
- * Elvis, dot
- * @param type1
- * @param type2
- * @return int
- */
-int compatible(typePtr type1, typePtr type2){
-    if (!type1 || !type2) return 0;
-    if (type1 == type2) return 1;
-    if (type1->basicType == ANY_TYPE || type2->basicType == ANY_TYPE) return 1;
-    if (isNumeric(type1) && isNumeric(type2)) return 1;
-    return 0;
 }
 
 /**
