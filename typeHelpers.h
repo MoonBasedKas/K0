@@ -11,4 +11,9 @@ struct param* createParamFromTree(struct tree *paramNode);
 typePtr determineReturnType(struct tree *r);
 int extractArraySize(struct tree *size);
 
+int typeEquals(typePtr type1, typePtr type2);
+typePtr copyType(typePtr type);
+void deleteType(typePtr type);
+typePtr *typeCheckExpression(struct tree *node);
+
 #endif

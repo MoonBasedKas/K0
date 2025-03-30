@@ -10,10 +10,14 @@ Type helpers for the semantic analysis phase.
 #include "lex.h"
 #include "type.h"
 #include "tree.h"
+#include "symNonTerminals.h"
+#include "k0gram.tab.h"
 
 struct symTab *globalSymTab = NULL;
 extern typePtr nullType_ptr;
 extern int symError;
+
+static struct param *copyParamList(struct param *params);
 
 /**
  * @brief Check if a type is numeric (used for compatibility checks)
@@ -142,7 +146,7 @@ struct param* createParamFromTree(struct tree *paramNode) {
     if (paramNode->nkids < 2) {
         free(paramName);
     }
-    
+
     return newParam;
 }
 
@@ -175,4 +179,269 @@ int extractArraySize(struct tree *size) {
         return size->leaf->ival;
     }
     return -1; // Unknown size
+}
+
+
+/**
+ * @brief Check if two types are equal
+ *
+ * @param type1
+ * @param type2
+ * @return int
+ */
+int typeEquals(typePtr type1, typePtr type2)
+{
+    if(type1 == NULL || type2 == NULL)
+        return 0;
+
+    if(type1->basicType != type2->basicType)
+        return 0;
+
+    // Keep the switch train alive
+    switch(type1->basicType)
+    {
+        case ARRAY_TYPE:
+        {
+            return typeEquals(type1->u.array.elemType, type2->u.array.elemType);
+        }
+        case FUNCTION_TYPE:
+            if(!typeEquals(type1->u.func.returnType, type2->u.func.returnType))
+                return 0;
+
+            if(type1->u.func.numParams != type2->u.func.numParams)
+                return 0;
+
+        {
+            // Need to check parameters
+            struct param *param1 = type1->u.func.parameters;
+            struct param *param2 = type2->u.func.parameters;
+            while(param1 != NULL && param2 != NULL)
+            {
+                if(!typeEquals(param1->type, param2->type))
+                    return 0;
+                param1 = param1->next;
+                param2 = param2->next;
+            }
+            if(param1 || param2)
+                return 0;
+            // If we get here, all parameters matched
+            return 1;
+        }
+        case ANY_TYPE:
+            return 1;
+        default:
+            // If we get here, basic types match
+            return 1;
+    }
+}
+
+/**
+ * @brief returns a copy of the passed type
+ *
+ * @param type
+ * @return typePtr
+ */
+typePtr copyType(typePtr type)
+{
+    if(type == NULL)
+        return NULL;
+
+    typePtr copy = malloc(sizeof(*type));
+    if(copy == NULL)
+    {
+        fprintf(stderr, "Out of memory in copyType\n");
+        exit(EXIT_FAILURE);
+    }
+
+    copy->basicType = type->basicType;
+
+    switch(type->basicType)
+    {
+        case ARRAY_TYPE:
+        {
+            copy->u.array.size = type->u.array.size;
+            copy->u.array.elemType = copyType(type->u.array.elemType);
+            break;
+        }
+        case FUNCTION_TYPE:
+        {
+            // Defined flag
+            copy->u.func.defined = type->u.func.defined;
+
+            // Name
+            if(type->u.func.name != NULL)
+                copy->u.func.name = strdup(type->u.func.name);
+            else
+                copy->u.func.name = NULL;
+
+            // Does this need to be deep?
+            copy->u.func.st = type->u.func.st;
+
+            // Return type
+            copy->u.func.returnType = copyType(type->u.func.returnType);
+
+            // Number of parameters
+            copy->u.func.numParams = type->u.func.numParams;
+
+            // Copy linked list of parameters
+            copy->u.func.parameters = copyParamList(type->u.func.parameters);
+            break;
+        }
+        default:
+            break;
+    }
+    return copy;
+}
+
+/**
+ * @brief Copy a linked list of parameters
+ *
+ * @param params
+ * @return struct param*
+ */
+static struct param *copyParamList(struct param *params)
+{
+    if(params == NULL)
+        return NULL;
+
+    struct param *head = NULL;
+    struct param **lastPtrRef = &head;
+
+    while(params != NULL)
+    {
+        struct param *newParam = malloc(sizeof(struct param));
+        if(newParam == NULL)
+        {
+            fprintf(stderr, "Out of memory in copyParamList\n");
+            exit(EXIT_FAILURE);
+        }
+        // Name
+        newParam->name = (params->name != NULL) ? strdup(params->name) : NULL;
+
+        // Type
+        newParam->type = copyType(params->type);
+
+        // Next
+        newParam->next = NULL;
+
+        // Add to list
+        *lastPtrRef = newParam;
+        lastPtrRef = &newParam->next;
+
+        // Move to next parameter
+        params = params->next;
+    }
+    return head;
+}
+
+/**
+ * @brief frees memeory allocated for type
+ *
+ * @param type
+ * @return typePtr
+ */
+void deleteType(typePtr type)
+{
+    if(type == NULL)
+        return;
+
+    switch(type->basicType)
+    {
+        case ARRAY_TYPE:
+        {
+            deleteType(type->u.array.elemType);
+            break;
+        }
+        case FUNCTION_TYPE:
+            if(type->u.func.name != NULL)
+                free(type->u.func.name);
+            deleteType(type->u.func.returnType);
+        {
+            struct param *p = type->u.func.parameters;
+            while(p != NULL)
+            {
+                struct param *temp = p;
+                p = p->next;
+                if(temp->name != NULL)
+                    free(temp->name);
+                deleteType(temp->type);
+                free(temp);
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    free(type);
+}
+
+typePtr *typeCheckExpression(struct tree *node)
+{
+    if(node == NULL)
+    {
+        return NULL;
+    }
+
+    switch (node->prodrule)
+    {
+    case INTEGER_LITERAL:
+    case HEX_LITERAL:
+    case CHARACTER_LITERAL:
+    case REAL_LITERAL:
+    case TRUE:
+    case FALSE:
+    case NULL_K:
+    case LINE_STRING:
+    case MULTILINE_STRING:
+
+
+    case disj: //bool bool, bool
+    case conj: //bool bool, bool
+
+    case equal: //? ?, bool
+    case notEqual: //? ?, bool
+    case eqeqeq: //? ?, bool
+    case notEqeqeq: //? ?, bool
+
+    case less: //int int, bool - double double, bool
+    case greater: //int int, bool - double double, bool
+    case lessEqual: //int int, bool - double double, bool
+    case greaterEqual: //int int, bool - double double, bool
+
+    case in: //? ?, bool
+
+    case range:
+    case rangeUntil:
+
+    case add:
+    case sub:
+    case mult:
+    case div_k:
+
+
+    case mod:
+
+
+    case prefix: //assignable expression for ++ and --
+
+
+    case arrayAccess:
+
+
+    case postfixExpr:
+    case postfixNoExpr:
+    case postfixDotID:
+    case postfixDotIDExpr:
+    case postfixDotIDNoExpr:
+    case postfixSafeDotID:
+    case postfixSafeDotIDExpr:
+    case postfixSafeDotIDNoExpr:
+    case postfixArrayAccess:
+    case postfixIncr:
+    case postfixDecr:
+
+
+    default:
+        break;
+    }
 }
