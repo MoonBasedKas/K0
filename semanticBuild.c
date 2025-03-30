@@ -68,7 +68,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
-            if(!compatible(lhsType, rhsType)){ //typeHelpers.c
+            if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible\n",
                 typeName(lhsType), typeName(rhsType)); //typeHelpers.c
                 exit(3);
@@ -83,7 +83,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             typePtr declaredReturnType = n->kids[3]->type;
             typePtr bodyType = n->kids[4]->type;
-            if(!compatible(declaredReturnType, bodyType)){ //typeHelpers.c
+            if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
@@ -115,7 +115,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
-            if(!compatible(declaredReturnType, bodyType)){ //typeHelpers.c
+            if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
