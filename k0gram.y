@@ -289,10 +289,7 @@ type:
 
 primitiveType:
     BYTE    {$$ = $1;}
-    | SHORT   {$$ = $1;}
     | INT     {$$ = $1;}
-    | LONG    {$$ = $1;}
-    | FLOAT   {$$ = $1;}
     | DOUBLE  {$$ = $1;}
     | BOOL    {$$ = $1;}
     | CHAR    {$$ = $1;}

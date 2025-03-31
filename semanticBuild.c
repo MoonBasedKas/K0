@@ -29,9 +29,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case INT:
             n->type = alcType(INT_TYPE); //type.c
             break;
-        case FLOAT:
-            n->type = alcType(FLOAT_TYPE); //type.c
-            break;
         case STRING:
             n->type = alcType(STRING_TYPE); //type.c
             break;
@@ -43,12 +40,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             break;
         case BYTE:
             n->type = alcType(BYTE_TYPE); //type.c
-            break;
-        case SHORT:
-            n->type = alcType(SHORT_TYPE); //type.c
-            break;
-        case LONG:
-            n->type = alcType(LONG_TYPE); //type.c
             break;
         case DOUBLE:
             n->type = alcType(DOUBLE_TYPE); //type.c

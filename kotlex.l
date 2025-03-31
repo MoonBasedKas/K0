@@ -78,10 +78,10 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
     /* Primitive Types */
 "Byte"											{ return leaf(BYTE); }
-"Short"											{ return leaf(SHORT); }
+"Short"											{ return leaf(INT); }
 "Int"											{ return leaf(INT); }
-"Long"											{ return leaf(LONG); }
-"Float"											{ return leaf(FLOAT); }
+"Long"											{ return leaf(INT); }
+"Float"											{ return leaf(DOUBLE); }
 "Double"										{ return leaf(DOUBLE); }
 "Boolean"										{ return leaf(BOOL); }
 "Char"											{ return leaf(CHAR); }
