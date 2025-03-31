@@ -337,7 +337,7 @@ void deleteType(typePtr type)
     }
     free(type);
 }
-
+/*
 typePtr *typeCheckExpression(struct tree *node)
 {
     if(node == NULL)
@@ -408,3 +408,4 @@ typePtr *typeCheckExpression(struct tree *node)
         break;
     }
 }
+*/

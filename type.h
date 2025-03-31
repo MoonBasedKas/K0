@@ -14,18 +14,12 @@ struct field {
     struct type *elemType;
 };
 
-/* Basic types
-Note that short, long, and float are aliases in Kotlin so.... ?
-
-*/
+/* Basic types */
 typedef enum {
     FIRST_TYPE = 1000000,
     NULL_TYPE,
     BYTE_TYPE,
     INT_TYPE,
-    SHORT_TYPE,
-    LONG_TYPE,
-    FLOAT_TYPE,
     DOUBLE_TYPE,
     BOOL_TYPE,
     CHAR_TYPE,
@@ -64,9 +58,6 @@ extern struct symTab *globalSymTab;
 
 extern typePtr integerType_ptr;
 extern typePtr byteType_ptr;
-extern typePtr shortType_ptr;
-extern typePtr longType_ptr;
-extern typePtr floatType_ptr;
 extern typePtr doubleType_ptr;
 extern typePtr booleanType_ptr;
 extern typePtr charType_ptr;

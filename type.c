@@ -22,9 +22,6 @@ extern struct symTab *rootScope;
 typePtr nullType_ptr = &null_type;
 typePtr byteType_ptr = &byte_type;
 typePtr integerType_ptr = &integer_type;
-typePtr shortType_ptr = &integer_type;
-typePtr longType_ptr = &integer_type;
-typePtr floatType_ptr = &double_type;
 typePtr doubleType_ptr = &double_type;
 typePtr booleanType_ptr = &boolean_type;
 typePtr charType_ptr = &char_type;
@@ -40,10 +37,7 @@ typePtr alcType(int baseType) {
         case BYTE_TYPE:
             return byteType_ptr;
         case INT_TYPE:
-        case SHORT_TYPE:
-        case LONG_TYPE:
             return integerType_ptr;
-        case FLOAT_TYPE:
         case DOUBLE_TYPE:
             return doubleType_ptr;
         case BOOL_TYPE:
@@ -125,29 +119,3 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     rv->u.array.size = extractArraySize(size); //typeHelpers.c
     return rv;
 }
-
-/**
- * @brief Determines what the type is
- * 
- * @param node 
- * @return int 
- */
-// int findType(struct tree *node){
-//     if(node->nkids != 0) return ANY_TYPE;
-
-//     if(node->leaf->category != IDENTIFIER) return ANY_TYPE;
-
-//     if(!strcmp(node->leaf->text, "Int")) return INT_TYPE;
-//     if(!strcmp(node->leaf->text, "Float")) return FLOAT_TYPE;
-//     if(!strcmp(node->leaf->text, "String")) return STRING_TYPE;
-//     if(!strcmp(node->leaf->text, "Boolean")) return BOOL_TYPE;
-//     if(!strcmp(node->leaf->text, "Char")) return CHAR_TYPE;
-//     if(!strcmp(node->leaf->text, "Byte")) return BYTE_TYPE;
-//     if(!strcmp(node->leaf->text, "Short")) return SHORT_TYPE;
-//     if(!strcmp(node->leaf->text, "Long")) return LONG_TYPE;
-//     if(!strcmp(node->leaf->text, "Double")) return DOUBLE_TYPE;
-//     if(!strcmp(node->leaf->text, "Null")) return NULL_TYPE;
-//     if(!strcmp(node->leaf->text, "Any")) return ANY_TYPE; // This shouldn't really happen
-
-//     return ANY_TYPE;
-// }
