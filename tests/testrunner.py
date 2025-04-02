@@ -102,7 +102,7 @@ class test:
                 printColor(color.LIGHT_BLUE, f"{tar.file} | UNKNOWN ERROR with return code {tar.result}")
                 print(tar.resultData.stderr.decode("ASCII"))
             if self.stdout or self.subArgs != []:
-                print(tar.resultData.stdout.decode("ASCII"))
+                print(tar.resultData.stdout.decode("utf-8"))
 
     """
     Adds any interesting sub args to our executable
