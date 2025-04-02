@@ -55,6 +55,7 @@ class test:
         self.lex = 0
         self.syntax = 0
         self.semantic = 0
+        self.stdout = False
 
     """
     Parses a requested directory and generates our targets.
@@ -100,7 +101,7 @@ class test:
             else:
                 printColor(color.LIGHT_BLUE, f"{tar.file} | UNKNOWN ERROR with return code {tar.result}")
                 print(tar.resultData.stderr.decode("ASCII"))
-            if self.subArgs != []:
+            if self.stdout or self.subArgs != []:
                 print(tar.resultData.stdout.decode("ASCII"))
 
     """
@@ -108,6 +109,9 @@ class test:
     """
     def loadOption(self, arg):
         self.subArgs.append(arg)
+
+    def setStdout(self, stdout):
+        self.stdout = stdout
 
 """
 Holds information for a singular test.
@@ -152,6 +156,8 @@ def main():
                 testData.loadOption(temp)
             elif temp == "-tree":
                 testData.loadOption(temp)
+            elif temp == "-stdout":
+                testData.setStdout(True)
         
             
         defaultCase()
