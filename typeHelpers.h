@@ -4,7 +4,6 @@
 #include "type.h"
 #include "tree.h"
 
-extern struct symTab *rootScope;
 
 typePtr lookupType(struct tree *n);
 char *typeName(typePtr t);

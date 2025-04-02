@@ -13,6 +13,8 @@ struct tree
     struct tree *kids[10];
     struct token *leaf;
     struct typeInfo *type;
+
+    struct symTab *table;
 };
 
 typedef struct tree *nodeptr;

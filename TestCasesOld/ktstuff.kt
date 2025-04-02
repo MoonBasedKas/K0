@@ -1,10 +1,10 @@
-fun assignments() {
+fun assignments() : Int  {
         val a : Int = 1;
         val b : Int = 2;
         val c : Int = - 3;
 }
 
-fun Operators() {
+fun Operators() : Int {
    var w : Int = 0;
    var x : Int;
    var y : Int = 0;
@@ -29,7 +29,7 @@ fun Operators() {
    val logicalValue : Boolean = w > 20;
 }
 
-fun WhileStuff() {
+fun WhileStuff() : Int  {
    var x : Int = 0;
    while (x < 20) 
    {
@@ -38,19 +38,19 @@ fun WhileStuff() {
    }
 }
 
-fun RollTheDice() {
+fun RollTheDice() : Int  {
    val d6Var : Int = 6;
    val y45 : Int = d6Var;
 }
 
-fun main() {
+fun main() : Int {
         RollTheDice();
         println("stuff and things\n");
         val p0var : Int = 2;
 }
 
 // class variable declaration
-fun MakeAPet() {
+fun MakeAPet()  : Int {
    // local scope variable declaration
    val happy : Int = 1;
    println("{happy}\n")

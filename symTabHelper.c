@@ -24,6 +24,7 @@ extern struct symTab *currentScope;
  */
 void buildSymTabs(struct tree *node, struct symTab *scope)
 {
+    node->table = scope;
     switch (node->prodrule)
     {
         //global

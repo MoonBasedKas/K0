@@ -49,8 +49,10 @@ char *typeName(typePtr t){
 }
 
 /**
- * @brief Lookup the type of a node
- *
+ * @brief Lookup the type of a node, finds it within its symbol table.
+ * 
+ * TODO: Proper scope retrival
+ * 
  * @param n
  * @return typePtr
  */
@@ -59,9 +61,10 @@ typePtr lookupType(struct tree *n){
         fprintf(stderr, "Type lookup failed: Invalid node\n");
         return nullType_ptr;
     }
-    struct symEntry *entry = contains(rootScope, n->leaf->text); //symTab.c
+    // It seems like there is a problem wiht finding the correct scope.
+    struct symEntry *entry = contains(n->table, n->leaf->text); //symTab.c
     if(!entry) {
-        fprintf(stderr, "Type lookup failed: No symbol table\n");
+        fprintf(stderr, "Type lookup failed: No entry in table\n");
         return nullType_ptr;
     }
     return entry->type;

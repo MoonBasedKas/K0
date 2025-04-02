@@ -88,6 +88,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             /*
             FUN IDENTIFIER functionValueParameters COLON type
             */
+            rootScope = contains(rootScope, n->kids[1]->leaf->text)->scope;
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
@@ -157,6 +158,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         }
         default:
         {
+            
             if(n->nkids > 0){
                 n->type = n->kids[0]->type;
             } else {
