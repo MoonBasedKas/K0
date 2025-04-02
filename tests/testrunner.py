@@ -135,7 +135,7 @@ def defaultCase():
     kotlin = os.listdir("./kotlin")
     k0 = os.listdir("./k0")
 
-    if error != []: testData.parseDirectory("./error", error)
+    if error != []: testData.parseDirectory("./errors", error)
     if kotlin != []: testData.parseDirectory("./kotlin", kotlin)
     if k0 != []: testData.parseDirectory("./k0", k0)
 
