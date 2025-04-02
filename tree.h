@@ -14,7 +14,7 @@ struct tree
     struct token *leaf;
     struct typeInfo *type;
 
-    struct symTab *table;
+    struct symTab *table; // Scope that the node exists within.
 };
 
 typedef struct tree *nodeptr;

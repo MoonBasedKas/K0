@@ -95,6 +95,7 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
         node->kids[i] = va_arg(args, struct tree *);
     }
     va_end(args);
+    node->table = NULL;  // Done for debugging
     return node;
 }
 
