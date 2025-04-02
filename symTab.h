@@ -38,5 +38,6 @@ int printTable(struct symTab *table);
 char *getTableType(int type);
 int grabTypes(struct symTab *table);
 int addMathModule();
+int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type);
 
 #endif

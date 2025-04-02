@@ -49,6 +49,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             break;
         case varDec:
             n->type = n->kids[1]->type;
+            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
         case assignAdd:
         case assignSub:
