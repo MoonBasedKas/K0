@@ -56,6 +56,9 @@ class test:
         self.syntax = 0
         self.semantic = 0
 
+    """
+    Parses a requested directory and generates our targets.
+    """
     def parseDirectory(self, directory, files):
         for fp in files:
             self.addTarget(f"{directory}/{fp}", f"{directory}:None")
