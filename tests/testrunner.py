@@ -49,6 +49,7 @@ class test:
 
         self.targets = []
         self.executable = "../k0"
+        self.subArgs = []
         
         self.success = 0
         self.lex = 0
@@ -65,9 +66,12 @@ class test:
     def setExecutable(self, string):
         self.executable = string
 
+    """
+    runs tests
+    """
     def executeTests(self):
         for tar in self.targets:
-            tar.execute(self.executable)
+            tar.execute(self.executable, self.subArgs)
         
         print("Test results")
         for tar in self.targets:
@@ -93,6 +97,14 @@ class test:
             else:
                 printColor(color.LIGHT_BLUE, f"{tar.file} | UNKNOWN ERROR with return code {tar.result}")
                 print(tar.resultData.stderr.decode("ASCII"))
+            if self.subArgs != []:
+                print(tar.resultData.stdout.decode("ASCII"))
+
+    """
+    Adds any interesting sub args to our executable
+    """
+    def loadOption(self, arg):
+        self.subArgs.append(arg)
 
 """
 Holds information for a singular test.
@@ -104,32 +116,50 @@ class data:
         self.result = 0
         self.resultData = None
 
-    def execute(self, executable):
-        result = subprocess.run([executable, self.file], capture_output=True)
+    """
+    Executes a requested command with the provided file
+    """
+    def execute(self, executable, subargs):
+        cmd = [executable, self.file]
+        for arg in subargs:
+            cmd.append(arg)
+
+        result = subprocess.run(cmd, capture_output=True)
         
         self.resultData = result
         self.result = result.returncode
         
-
+testData = test() # Bad coding practice but I need the POWER!
 
 def main():
+    global testData
     args = sys.argv
     args.pop(0) # Removes first elem
     if args == []: 
         defaultCase()
         return 0
     else:
-        if args.pop(0) == "-color":
-            global colors
-            colors = True
+        temp = None
+        while args != []:
+            temp = args.pop(0)
+            if temp == "-color":
+                global colors
+                colors = True
+            elif temp == "-symtab":
+                testData.loadOption(temp)
+            elif temp == "-tree":
+                testData.loadOption(temp)
+        
             
-        # print(color.RED + "ERROR | Currently do not support custom set ups." + color.RESET)
         defaultCase()
         return 0
 
 
+"""
+Generic test case no fancy things.
+"""
 def defaultCase():
-    testData = test()
+    global testData
 
     error = os.listdir("./errors")
     kotlin = os.listdir("./kotlin")
@@ -143,7 +173,12 @@ def defaultCase():
 
     return 0
 
+"""
+Tired of your code being written like its the 1960's? With this new invention 
+any string can be turned into the RAINBOW*.
 
+* just one specific color.
+"""
 def printColor(c, string):
     if colors == True:
         print(c, string, color.RESET)
