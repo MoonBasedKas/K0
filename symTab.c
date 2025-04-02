@@ -199,3 +199,17 @@ int printTable(struct symTab *table){
 
     return 0;
 }
+
+/**
+ * @brief Assigns an entry in a given symbol table its type.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
+int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return 1; // No entry
+    entry->type = type;
+    return 0; // Yay!
+}

@@ -13,6 +13,8 @@ struct tree
     struct tree *kids[10];
     struct token *leaf;
     struct typeInfo *type;
+
+    struct symTab *table; // Scope that the node exists within.
 };
 
 typedef struct tree *nodeptr;

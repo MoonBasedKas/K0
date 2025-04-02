@@ -4,6 +4,7 @@
 #include "type.h"
 #include "tree.h"
 
+
 typePtr lookupType(struct tree *n);
 char *typeName(typePtr t);
 struct param* createParamFromTree(struct tree *paramNode);

@@ -1,6 +1,4 @@
 import qemu.emulator
-import java.lang.Math.tan
-import java.lang.Math.cosine
 import java.lang.Math.*
 
 fun f() : Int {

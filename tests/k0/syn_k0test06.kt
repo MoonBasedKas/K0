@@ -1,8 +1,9 @@
 fun halfAndAbs(f: Float): Float {
+    // Must have type mentioned
     val half = f / 2.0F
-    val doubleVal = half.toDouble()
+    val doubleVal = half.toDouble() // Not in standard library
     val absVal = java.lang.Math.abs(doubleVal)  // returns a Double
-    return absVal.toFloat()
+    return absVal.toFloat() //Not in standard library
 }
 
 fun main(args: Array<String>) {
