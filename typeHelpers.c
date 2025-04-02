@@ -13,7 +13,8 @@ Type helpers for the semantic analysis phase.
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
 
-struct symTab *globalSymTab = NULL;
+// Bingo
+// struct symTab *globalSymTab = rootScope;
 extern typePtr nullType_ptr;
 extern int symError;
 
@@ -58,7 +59,7 @@ typePtr lookupType(struct tree *n){
         fprintf(stderr, "Type lookup failed: Invalid node\n");
         return nullType_ptr;
     }
-    struct symEntry *entry = contains(globalSymTab, n->leaf->text); //symTab.c
+    struct symEntry *entry = contains(rootScope, n->leaf->text); //symTab.c
     if(!entry) {
         fprintf(stderr, "Type lookup failed: No symbol table\n");
         return nullType_ptr;
