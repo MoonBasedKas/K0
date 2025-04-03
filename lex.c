@@ -332,6 +332,8 @@ int addSemi(){
         case DOUBLE:
         case CHAR:
         case STRING:
+        case TRUE:
+        case FALSE:
             yytext = ";";
             return 1; // True
         default:

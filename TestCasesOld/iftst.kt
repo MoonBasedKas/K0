@@ -1,6 +1,5 @@
 fun f(): Int {
-  if (0 == 1) {
-    println("hi")
+  if (1 == 1) {
+    return false;
   }
-
 }
