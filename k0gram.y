@@ -551,27 +551,27 @@ postfixExpression:
     ;
 
 expressionList:
-    expression COMMA expressionList             {$$ = alctoken(expressionList, "expressionList", 2, $1, $3);}
+    expression COMMA expressionList             {$$ = alctoken(expressionList, "expressionList", 2, $1, $3); freeTokens(1, $2);}
     | expression                                {$$ = $1;}
     ;
 
 parenthesizedExpression:
-    LPAREN expression RPAREN                    {$$ = $2;}
+    LPAREN expression RPAREN                    {$$ = $2; freeTokens(2, $1, $3);}
     ;
 
 ifExpression:
-    IF LPAREN expression RPAREN SEMICOLON                                           {$$ = alctoken(emptyIf, "emptyIf", 2, $1, $3); freeTokens(3, $2, $4, $5);}
-    | IF LPAREN expression RPAREN block                                             {$$ = alctoken(if_k, "if", 3, $1, $3, $5); freeTokens(2, $2, $4);}
-    | IF LPAREN expression RPAREN SEMICOLON block                                   {$$ = alctoken(if_k, "if", 3, $1, $3, $6); freeTokens(3, $2, $4, $5);}
-    | IF LPAREN expression RPAREN block ELSE block                                  {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $6, $7); freeTokens(2, $2, $4);}
-    | IF LPAREN expression RPAREN SEMICOLON block ELSE block                        {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $7, $8); freeTokens(3, $2, $4, $5);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE block              {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $9); freeTokens(4, $2, $4, $5, $7);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE SEMICOLON block    {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $6, $8, $10); freeTokens(5, $2, $4, $5, $7, $9);}
-    | IF LPAREN expression RPAREN  block SEMICOLON ELSE block                       {$$ = alctoken(ifElse, "ifElse", 5, $1, $3, $5, $7, $8); freeTokens(3, $2, $4, $6);}
-    | IF LPAREN expression RPAREN block ELSE ifExpression                           {$$ = alctoken(ifElseIf, "ifElseif", 5, $1, $3, $5, $6, $7); freeTokens(2, $2, $4);}
-    | IF LPAREN expression RPAREN SEMICOLON block ELSE ifExpression                 {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $7, $8); freeTokens(3, $2, $4, $5);}
-    | IF LPAREN expression RPAREN SEMICOLON block SEMICOLON ELSE ifExpression       {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $6, $8, $9); freeTokens(4, $2, $4, $5, $7);}
-    | IF LPAREN expression RPAREN  block SEMICOLON ELSE ifExpression                {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $3, $5, $7, $8);  freeTokens(3, $2, $4, $6);}
+    IF parenthesizedExpression statement SEMICOLON                                 {$$ = alctoken(emptyIf, "emptyIf", 3, $1, $2, $3); freeTokens(1, $4);}
+    | IF parenthesizedExpression block                                               {$$ = alctoken(if_k, "if", 3, $1, $2, $3);}
+    | IF parenthesizedExpression SEMICOLON block                                   {$$ = alctoken(if_k, "if", 3, $1, $2, $4); freeTokens(1, $3);}
+    | IF parenthesizedExpression block ELSE block                                  {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $3, $4, $5);}
+    | IF parenthesizedExpression SEMICOLON block ELSE block                        {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $5, $6); freeTokens(1, $3);}
+    | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE block              {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $6, $7); freeTokens(2, $3, $5);}
+    | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE SEMICOLON block    {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $6, $8); freeTokens(3, $3, $5, $7);}
+    /* | IF parenthesizedExpression  block SEMICOLON ELSE block                       {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $3, $5, $6); freeTokens(1, $4);} */
+    | IF parenthesizedExpression block ELSE ifExpression                           {$$ = alctoken(ifElseIf, "ifElseif", 5, $1, $2, $3, $4, $5);}
+    | IF parenthesizedExpression SEMICOLON block ELSE ifExpression                 {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $4, $5, $6); freeTokens(1, $3);}
+    | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE ifExpression       {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $4, $6, $7); freeTokens(2, $3, $5);}
+    /* | IF parenthesizedExpression  block SEMICOLON ELSE ifExpression                {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $3, $5, $6);  freeTokens(1, $4);} */
     ;
 
 whenExpression:
