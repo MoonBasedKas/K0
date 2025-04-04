@@ -7,7 +7,7 @@ fun main(args : Array<String>) {
 
     // Character literals with escape sequences
     val ch1 : Char = 'A';
-    val ch2 : Char = '\n';
+    // val ch2 : Char = '\n';
 
     // String literal with escape sequences and a field identifier ($foo)
     val str : String = "Line1\nLine2\twith tab and a dollar sign: \$foo";
