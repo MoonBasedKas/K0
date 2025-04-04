@@ -67,7 +67,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 fprintf(stderr, "Type error: %s and %s are not compatible\n",
                 typeName(lhsType), typeName(rhsType)); //typeHelpers.c
                 symError = 3;
-                return 3;
+                // return 3;
                 exit(3);
             }
             n->type = alcType(lhsType->basicType); // TODO: Check if this is correct - type.c
@@ -85,7 +85,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
-                return 3;
+                // return 3;
                 exit(3);
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
@@ -120,7 +120,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
-                return 3;
+                // return 3;
                 exit(3);
             }
             // Create an empty param node
@@ -203,11 +203,20 @@ int checkNullability(struct tree *root){
     }
     switch(root->prodrule){
         case assignment:
-            printf("HI\n");
-            // Yet another good coding practice violated for this compiler...
             if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
                 if(!checkNullable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
-                    fprintf(stderr, "Error | %s is not nullable but was assigned to null", root->kids[0]->leaf->text);
+                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
+            break;
+        // Arrays
+        case propDecAssign:
+            // Get Identifier node
+            struct tree *temp = root->kids[1]->kids[0];
+            if (root->kids[2]->nkids == 0 && root->kids[2]->leaf->category == NULL_K) {
+                if(!checkNullable(root->table, temp->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", temp->leaf->text);
                     symError = 1;
                 }
             }
