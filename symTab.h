@@ -15,6 +15,9 @@ struct symEntry{
     struct symEntry *next;
     int func;
     struct typeInfo *type;
+
+    int mutable;
+    int nullable;
 };
 
 enum types{
@@ -39,5 +42,6 @@ char *getTableType(int type);
 int grabTypes(struct symTab *table);
 int addMathModule();
 int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type);
-
+int makeEntryNullable(struct symTab *table, char *string);
+int makeEntryNonMutable(struct symTab *table, char *string);
 #endif
