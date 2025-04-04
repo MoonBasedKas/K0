@@ -12,6 +12,7 @@
 #include "symTab.h"
 #include "type.h"
 #include "semanticBuild.h"
+
 #include "symTabHelper.h"
 
 char *filename;
@@ -73,9 +74,12 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
-        verifyDeclared(root, rootScope); //symTabHelper.c
-        if (symError != 0) return symError; // If something is undeclared.
         assignType(root, rootScope); //semanticBuild.c
+        checkNullability(root);
+        verifyDeclared(root, rootScope); //symTabHelper.c
+        // if (symError != 0) return symError; // If something is undeclared.
+        
+        
         // grabTypes(rootScope); Typing is not being grabbed...
 
         if(dot){

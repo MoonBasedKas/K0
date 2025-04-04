@@ -66,6 +66,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible\n",
                 typeName(lhsType), typeName(rhsType)); //typeHelpers.c
+                symError = 3;
+                return 3;
                 exit(3);
             }
             n->type = alcType(lhsType->basicType); // TODO: Check if this is correct - type.c
@@ -82,6 +84,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
+                symError = 3;
+                return 3;
                 exit(3);
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
@@ -115,6 +119,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
+                symError = 3;
+                return 3;
                 exit(3);
             }
             // Create an empty param node

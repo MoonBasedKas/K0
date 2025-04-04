@@ -1,4 +1,3 @@
 fun main(){
-    var x: Int = 1
-    x = null
+    var x: Int? = null
 }
