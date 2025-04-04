@@ -230,15 +230,13 @@ int checkNullability(struct tree *root){
 
 int checkMutability(struct tree *root){
     for(int i = 0; i < root->nkids; i++){
-        checkNullability(root->kids[i]);
+        checkMutability(root->kids[i]);
     }
     switch(root->prodrule){
         case assignment:
-            if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
-                if(!checkMutable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
-                    fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
-                    symError = 1;
-                }
+            if(!checkMutable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
+                symError = 1;
             }
             break;
         default:
