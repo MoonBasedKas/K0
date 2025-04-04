@@ -52,7 +52,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case varDec:
             n->type = n->kids[1]->type;
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
-
+            
             break;
         case assignAdd:
         case assignSub:
@@ -225,4 +225,24 @@ int checkNullability(struct tree *root){
             break;
     }
     return 0;
+}
+
+
+int checkMutability(struct tree *root){
+    for(int i = 0; i < root->nkids; i++){
+        checkNullability(root->kids[i]);
+    }
+    switch(root->prodrule){
+        case assignment:
+            if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
+                if(!checkMutable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;    
 }

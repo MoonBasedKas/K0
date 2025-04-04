@@ -216,6 +216,7 @@ int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type){
     return 0; // Yay!
 }
 
+
 /**
  * @brief Makes a symtab entry nullable.
  * 
@@ -238,6 +239,12 @@ int checkNullable(struct symTab *table, char *string){
     return entry->nullable;
 }
 
+int checkMutable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return -1; // Bad
+    return entry->mutable;
+}
+
 /**
  * @brief Sets an entry to be immutable when something is done with val or const val.
  * 
@@ -251,3 +258,4 @@ int makeEntryNonMutable(struct symTab *table, char *string){
     entry->mutable = 0; // Not mutable
     return 0;
 }
+

@@ -123,3 +123,34 @@ void freeTree(nodeptr node) {
     }
     free(node);
 }
+
+
+int assignMutability(struct tree *root){
+    struct tree *temp = NULL;
+    struct tree *id = NULL;
+    for(int i = 0; i < root->nkids; i++){
+        assignMutability(root->kids[i]);
+    }
+    switch(root->prodrule){
+        // case propDecEmpty: Can't be unmutabble
+        // case propDecTypeless:
+        case propDecAssign:
+            temp = root->kids[0];
+            id = root->kids[1];
+            if (!(temp->kids == 0 && temp->leaf->category == VAR))
+            makeEntryNonMutable(id->table, id->kids[0]->leaf->text);
+            break;
+        case arrayDec:
+        case arrayDecValueless:
+        case arrayDecEqual:
+        case arrayDecEqualValueless:
+            temp = root->kids[0];
+            id = root->kids[1];
+            if (!(temp->kids == 0 && temp->leaf->category == VAR))
+            makeEntryNonMutable(id->table, id->kids[0]->leaf->text);
+            break;
+        default:
+            break;
+    }
+    return 0;
+}

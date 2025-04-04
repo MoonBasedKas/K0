@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
+        assignMutability(root);
+        checkMutability(root);
         assignType(root, rootScope); //semanticBuild.c
         checkNullability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c
