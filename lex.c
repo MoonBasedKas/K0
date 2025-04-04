@@ -334,6 +334,7 @@ int addSemi(){
         case STRING:
         case TRUE:
         case FALSE:
+        case NULL_K:
             yytext = ";";
             return 1; // True
         default:

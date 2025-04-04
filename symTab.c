@@ -231,6 +231,13 @@ int makeEntryNullable(struct symTab *table, char *string){
     return 0;
 }
 
+
+int checkNullable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return -1; // Bad
+    return entry->nullable;
+}
+
 /**
  * @brief Sets an entry to be immutable when something is done with val or const val.
  * 

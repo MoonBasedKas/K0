@@ -6,5 +6,7 @@
 void assignType(struct tree *n, struct symTab *scope);
 void decTypes(struct tree *node, struct symTab *scope);
 
+extern int symError;
+
 #endif
  

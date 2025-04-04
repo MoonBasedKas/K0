@@ -47,8 +47,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case NULL_K:
             n->type = alcType(NULL_TYPE); //type.c
             break;
-        case varDecQuests:
-            
+        case varDecQuests: // Sets the entry to nullable.
+            makeEntryNullable(n->table, n->kids[0]->leaf->text);
         case varDec:
             n->type = n->kids[1]->type;
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
@@ -187,4 +187,27 @@ struct tree *createEmptyParam(void) {
     emptyParam->nkids = 0;
     emptyParam->type = NULL;
     return emptyParam;
+}
+
+
+
+int checkNullability(struct tree *root){
+    for(int i = 0; i < root->nkids; i++){
+        checkNullability(root->kids[i]);
+    }
+    switch(root->prodrule){
+        case assignment:
+            printf("HI\n");
+            // Yet another good coding practice violated for this compiler...
+            if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
+                if(!checkNullable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but was assigned to null", root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
 }

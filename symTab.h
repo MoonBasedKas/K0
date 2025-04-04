@@ -44,4 +44,5 @@ int addMathModule();
 int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type);
 int makeEntryNullable(struct symTab *table, char *string);
 int makeEntryNonMutable(struct symTab *table, char *string);
+int checkNullable(struct symTab *table, char *string);
 #endif
