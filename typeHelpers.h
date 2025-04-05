@@ -14,6 +14,8 @@ int extractArraySize(struct tree *size);
 int typeEquals(typePtr type1, typePtr type2);
 typePtr copyType(typePtr type);
 void deleteType(typePtr type);
-//typePtr *typeCheckExpression(struct tree *node);
+void typeCheckExpression(struct tree *node);
+void leafExpression(struct tree *node);
+void binaryExpression(struct tree *node);
 
 #endif
