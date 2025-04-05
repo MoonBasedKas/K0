@@ -215,6 +215,11 @@ int checkNullability(struct tree *root){
                     fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->text);
                     symError = 1;
                 }
+            } else if (root->kids[1]->type->basicType == NULL_K){
+                if(!checkNullable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->text);
+                    symError = 1;
+                }
             }
             break;
         // Arrays
@@ -224,6 +229,11 @@ int checkNullability(struct tree *root){
             if (root->kids[2]->nkids == 0 && root->kids[2]->leaf->category == NULL_K) {
                 if(!checkNullable(root->table, temp->leaf->text)){ // Not nullable is BAD
                     fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", temp->leaf->text);
+                    symError = 1;
+                }
+            } else if (root->kids[1]->type->basicType == NULL_K){
+                if(!checkNullable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->text);
                     symError = 1;
                 }
             }
