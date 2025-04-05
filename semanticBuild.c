@@ -196,7 +196,14 @@ struct tree *createEmptyParam(void) {
 }
 
 
-
+/**
+ * @brief Checks if something not nullable is set to null
+ * 
+ * TODO: make this cover every sub case.
+ * 
+ * @param root 
+ * @return int 
+ */
 int checkNullability(struct tree *root){
     for(int i = 0; i < root->nkids; i++){
         checkNullability(root->kids[i]);
