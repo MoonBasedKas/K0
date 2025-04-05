@@ -26,6 +26,7 @@ typedef enum {
     STRING_TYPE,
     ARRAY_TYPE,
     FUNCTION_TYPE,
+    UNIT_TYPE, //does anything else need to happen to add this? -Lily
     ANY_TYPE, //Not sure if we need this catchall type
     LAST_TYPE
 } basicType;
