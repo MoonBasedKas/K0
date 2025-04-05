@@ -57,12 +57,21 @@ char *typeName(typePtr t){
  * @return typePtr
  */
 typePtr lookupType(struct tree *n){
+    struct symEntry *entry = NULL;
+    if (n->prodrule == arrayIndex) {
+        entry = contains(n->table, n->kids[0]->leaf->text);
+        if(!entry) {
+            fprintf(stderr, "Type lookup failed: No entry in table\n");
+            return nullType_ptr;
+        }
+        return entry->type;
+    }
     if(!n || !n->leaf || !n->leaf->text) {
         fprintf(stderr, "Type lookup failed: Invalid node\n");
         return nullType_ptr;
     }
     // It seems like there is a problem wiht finding the correct scope.
-    struct symEntry *entry = contains(n->table, n->leaf->text); //symTab.c
+    entry = contains(n->table, n->leaf->text); //symTab.c
     if(!entry) {
         fprintf(stderr, "Type lookup failed: No entry in table\n");
         return nullType_ptr;
