@@ -118,6 +118,8 @@ typedef enum {
     arrayAssignSub,
     arrayAssignAdd,
     arrayAssignment,
+    arrayType,
+    arrayTypeQuests,
     ifElseIf
 } symNonTerminal;
 
