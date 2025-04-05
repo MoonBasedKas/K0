@@ -42,7 +42,7 @@ char *getTableType(int type);
 int grabTypes(struct symTab *table);
 int addMathModule();
 int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type);
-int makeEntryNullable(struct symTab *table, char *string);
+int changeNullable(struct symTab *table, char *string, int mode);
 int makeEntryNonMutable(struct symTab *table, char *string);
 int checkNullable(struct symTab *table, char *string);
 int checkMutable(struct symTab *table, char *string);

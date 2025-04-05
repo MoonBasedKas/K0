@@ -83,6 +83,7 @@
 %type <treeptr> arrayDeclaration
 %type <treeptr> arrayIndex
 %type <treeptr> primitiveType
+%type <treeptr> arrayType
 /* Terminals */
 %token <treeptr> BYTE
 %token <treeptr> SHORT
@@ -285,6 +286,7 @@ type:
     primitiveType    {$$ = $1;}
     | functionType    {$$ = $1;}
     | userType      {$$ = $1;}
+    | arrayType      {$$ = $1;}
     ;
 
 primitiveType:
@@ -305,6 +307,11 @@ userType:
 simpleUserType:
     IDENTIFIER LANGLE typeArgumentsList RANGLE  {$$ = alctoken(simpleUserType, "simpleUserType", 2, $1, $3); freeTokens(2, $2, $4);} 
     | IDENTIFIER                                {$$ = $1;}
+    ;
+
+arrayType:
+    IDENTIFIER LANGLE primitiveType RANGLE {$$ = alctoken(arrayType, "arrayType", 2, $1, $3); freeTokens(2, $2, $4);} 
+    | IDENTIFIER LANGLE primitiveType quests RANGLE {$$ = alctoken(arrayTypeQuests, "arrayTypeQuests", 3, $1, $3, $4); freeTokens(2, $2, $5);}
     ;
 
 typeArgumentsList:

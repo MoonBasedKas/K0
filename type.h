@@ -30,6 +30,13 @@ typedef enum {
     LAST_TYPE
 } basicType;
 
+enum {
+    notNullable = 0,
+    nullable,
+    indexNullable,
+    squareNullable,
+};
+
 typedef struct typeInfo {
     int basicType;
     union {
