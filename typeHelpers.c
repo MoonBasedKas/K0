@@ -367,13 +367,13 @@ void typeCheckExpression(struct tree *node)
             switch (node->kids[1]->type->basicType)
             {
             case INT_TYPE:
-                node->type = alcType(INT_TYPE);
+                node->type = alcType(INT_TYPE); //type.c
                 break;
             case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
                 break;
             case CHAR_TYPE:
-                node->type = alcType(CHAR_TYPE);
+                node->type = alcType(CHAR_TYPE); //type.c
             default:
                 //type error
                 break;
@@ -384,10 +384,10 @@ void typeCheckExpression(struct tree *node)
             switch (node->kids[1]->type->basicType)
             {
             case INT_TYPE:
-                node->type = alcType(INT_TYPE);
+                node->type = alcType(INT_TYPE); //type.c
                 break;
             case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
                 break;
             default:
                 //type error
@@ -398,7 +398,7 @@ void typeCheckExpression(struct tree *node)
         case EXCL_WS:
             if(typeEquals(node->kids[1]->type, booleanType_ptr))
             {
-                node->type = alcType(BOOL_TYPE);
+                node->type = alcType(BOOL_TYPE); //type.c
             }
             else
             {
@@ -408,19 +408,38 @@ void typeCheckExpression(struct tree *node)
             break;
         }
         break;
+    case postfixIncr:
+    case postfixDecr:
+        typeCheckExpression(node->kids[0]);
+        switch (node->kids[0]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); //type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); //type.c
+            break;
+        case CHAR_TYPE:
+            node->type = alcType(CHAR_TYPE); //type.c
+        default:
+            //type error
+            break;
+        }
+        break;
+    // function call
     case postfixExpr:
     case postfixNoExpr:
+        
+        break;
+    //built in stuff
     case postfixDotID:
     case postfixDotIDExpr:
     case postfixDotIDNoExpr:
     case postfixSafeDotID:
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
-    case postfixArrayAccess:
-
-    case postfixIncr:
-    case postfixDecr:
-
+        //need to add
+        break;
     default:
         binaryExpression(node);
         break;
@@ -475,7 +494,7 @@ void binaryExpression(struct tree *node)
         {
             //type error
         }
-        node->type = alcType(BOOL_TYPE);
+        node->type = alcType(BOOL_TYPE); //type.c
         break;
     case equal: 
     case notEqual: 
@@ -485,7 +504,7 @@ void binaryExpression(struct tree *node)
         {
             //type error
         }
-        node->type = alcType(BOOL_TYPE);
+        node->type = alcType(BOOL_TYPE); //type.c
         break;
     case less: 
     case greater: 
@@ -503,7 +522,7 @@ void binaryExpression(struct tree *node)
         {
             //type error
         }
-        node->type = alcType(BOOL_TYPE);
+        node->type = alcType(BOOL_TYPE); //type.c
         break;
     case in: 
         switch(node->kids[0]->type->basicType)
@@ -546,7 +565,7 @@ void binaryExpression(struct tree *node)
             //type error
             break;
         }
-        node->type = alcType(BOOL_TYPE);
+        node->type = alcType(BOOL_TYPE); //type.c
     case range:
     case rangeUntil:
         //need range types
@@ -558,10 +577,10 @@ void binaryExpression(struct tree *node)
             switch (node->kids[1]->type->basicType)
             {
             case INT_TYPE:
-                node->type = alcType(INT_TYPE);
+                node->type = alcType(INT_TYPE); //type.c
                 break;
             case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
                 break;
             default:
                 //type error
@@ -570,7 +589,7 @@ void binaryExpression(struct tree *node)
         case DOUBLE_TYPE:
             if(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr))
             {
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
             }
             else
             {
@@ -581,10 +600,10 @@ void binaryExpression(struct tree *node)
             switch (node->kids[1]->type->basicType)
             {
             case CHAR_TYPE:
-                node->type = alcType(CHAR_TYPE);
+                node->type = alcType(CHAR_TYPE); //type.c
                 break;
             case STRING_TYPE:
-                node->type = alcType(STRING_TYPE);
+                node->type = alcType(STRING_TYPE); //type.c
                 break;
             default:
                 //type error
@@ -596,7 +615,7 @@ void binaryExpression(struct tree *node)
             {
                 //type error
             }
-            node->type = alcType(STRING_TYPE);
+            node->type = alcType(STRING_TYPE); //type.c
             break;
         case BOOL_TYPE:
             //type error
@@ -687,10 +706,10 @@ void binaryExpression(struct tree *node)
                 switch (node->kids[1]->type->basicType)
                 {
                 case INT_TYPE:
-                    node->type = alcType(INT_TYPE);
+                    node->type = alcType(INT_TYPE); //type.c
                     break;
                 case DOUBLE_TYPE:
-                    node->type = alcType(DOUBLE_TYPE);
+                    node->type = alcType(DOUBLE_TYPE); //type.c
                     break;
                 default:
                     //type error
@@ -702,7 +721,7 @@ void binaryExpression(struct tree *node)
                 {
                 case INT_TYPE:
                 case DOUBLE_TYPE:
-                    node->type = alcType(DOUBLE_TYPE);
+                    node->type = alcType(DOUBLE_TYPE); //type.c
                     break;
                 default:
                     //type error
@@ -713,10 +732,10 @@ void binaryExpression(struct tree *node)
                 switch (node->kids[1]->type->basicType)
                 {
                 case INT_TYPE:
-                    node->type = alcType(CHAR_TYPE);
+                    node->type = alcType(CHAR_TYPE); //type.c
                     break;
                 case CHAR_TYPE:
-                    node->type = alcType(INT_TYPE);
+                    node->type = alcType(INT_TYPE); //type.c
                     break;
                 default:
                     //type error
@@ -737,10 +756,10 @@ void binaryExpression(struct tree *node)
             switch (node->kids[1]->type->basicType)
             {
             case INT_TYPE:
-                node->type = alcType(INT_TYPE);
+                node->type = alcType(INT_TYPE); //type.c
                 break;
             case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
                 break;
             default:
                 //type error
@@ -752,7 +771,7 @@ void binaryExpression(struct tree *node)
             {
             case INT_TYPE:
             case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE);
+                node->type = alcType(DOUBLE_TYPE); //type.c
                 break;
             default:
                 //type error
@@ -765,6 +784,7 @@ void binaryExpression(struct tree *node)
         }
         break;
     case arrayAccess:
+    case postfixArrayAccess:
         if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
         {
             //type error
@@ -775,7 +795,7 @@ void binaryExpression(struct tree *node)
             //type error
             break;
         }
-        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);
+        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
         //error???
         break;
