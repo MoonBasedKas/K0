@@ -47,9 +47,12 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case NULL_K:
             n->type = alcType(NULL_TYPE); //type.c
             break;
+        case varDecQuests: // Sets the entry to nullable.
+            makeEntryNullable(n->table, n->kids[0]->leaf->text);
         case varDec:
             n->type = n->kids[1]->type;
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
+            
             break;
         case assignAdd:
         case assignSub:
@@ -63,6 +66,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible\n",
                 typeName(lhsType), typeName(rhsType)); //typeHelpers.c
+                symError = 3;
+                // return 3;
                 exit(3);
             }
             n->type = alcType(lhsType->basicType); // TODO: Check if this is correct - type.c
@@ -79,6 +84,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
+                symError = 3;
+                // return 3;
                 exit(3);
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
@@ -112,6 +119,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
+                symError = 3;
+                // return 3;
                 exit(3);
             }
             // Create an empty param node
@@ -184,4 +193,69 @@ struct tree *createEmptyParam(void) {
     emptyParam->nkids = 0;
     emptyParam->type = NULL;
     return emptyParam;
+}
+
+
+
+int checkNullability(struct tree *root){
+    for(int i = 0; i < root->nkids; i++){
+        checkNullability(root->kids[i]);
+    }
+    switch(root->prodrule){
+        case assignment:
+            if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
+                if(!checkNullable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
+            break;
+        // Arrays
+        case propDecAssign:
+            // Get Identifier node
+            struct tree *temp = root->kids[1]->kids[0];
+            if (root->kids[2]->nkids == 0 && root->kids[2]->leaf->category == NULL_K) {
+                if(!checkNullable(root->table, temp->leaf->text)){ // Not nullable is BAD
+                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", temp->leaf->text);
+                    symError = 1;
+                }
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+
+/**
+ * @brief Checks if something is mutable.
+ * 
+ * @param root 
+ * @return int 
+ */
+int checkMutability(struct tree *root){
+    for(int i = 0; i < root->nkids; i++){
+        checkMutability(root->kids[i]);
+    }
+    switch(root->prodrule){
+        case assignment:
+            if(!checkMutable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+                fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
+                symError = 1;
+            }
+            break;
+        // String elements cannot be modified; This isn't legal anyways lol.
+        case arrayAssignAdd:
+        case arrayAssignSub:
+        case arrayAssignment:
+            struct symEntry *entry = contains(root->table, root->kids[0]->leaf->text);
+            if(entry->type->basicType == STRING_TYPE){
+                fprintf(stderr, "Error | %s is a string and is not mutable", root->kids[0]->leaf->text);
+                symError = 1;
+            }
+        default:
+            break;
+    }
+    return 0;    
 }

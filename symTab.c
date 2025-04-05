@@ -67,6 +67,8 @@ struct symEntry *createEntry(struct symTab *table, char *elem, int func){
     temp->scope = NULL;
     temp->name = elem;
     temp->func = func;
+    temp->mutable = 1; // mutable
+    temp->nullable = 0; // Not nullable
     if(func == FUNCTION || func == PACKAGE){
         temp->scope = createTable(table, temp->name, func);
     }
@@ -213,3 +215,61 @@ int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type){
     entry->type = type;
     return 0; // Yay!
 }
+
+
+/**
+ * @brief Makes a symtab entry nullable.
+ * 
+ * @param table 
+ * @param string 
+ * @param type 
+ * @return int 
+ */
+int makeEntryNullable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return 1;
+    entry->nullable = 1; 
+    return 0;
+}
+
+/**
+ * @brief Tells us if something is nullable.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
+int checkNullable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return -1; // Bad
+    return entry->nullable;
+}
+
+
+/**
+ * @brief Tells us if something is mutable.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
+int checkMutable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return -1; // Bad
+    return entry->mutable;
+}
+
+/**
+ * @brief Sets an entry to be immutable when something is done with val or const val.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
+int makeEntryNonMutable(struct symTab *table, char *string){
+    struct symEntry *entry = contains(table, string);
+    if (!entry) return 1;
+    entry->mutable = 0; // Not mutable
+    return 0;
+}
+
