@@ -155,12 +155,20 @@ struct typeInfo array_string_type = {
     .u.array = { .size = -1, .elemType = &string_type }
 };
 
+/* any array? idk */
+static struct typeInfo any_elem_type = { .basicType = -1 }; // should be "any" elem
+struct typeInfo array_any_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &any_elem_type }
+};
+
 typePtr arrayIntegerType_ptr = &array_integer_type;
 typePtr arrayByteType_ptr    = &array_byte_type;
 typePtr arrayDoubleType_ptr  = &array_double_type;
 typePtr arrayBooleanType_ptr = &array_boolean_type;
 typePtr arrayCharType_ptr    = &array_char_type;
 typePtr arrayStringType_ptr  = &array_string_type;
+typePtr arrayAnyType_ptr     = &array_any_type;
 
 /* Global return type pointers; these alias the corresponding basic types */
 typePtr returnIntegerType_ptr = &integer_type;

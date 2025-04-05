@@ -79,6 +79,7 @@ extern typePtr arrayDoubleType_ptr;
 extern typePtr arrayBooleanType_ptr;
 extern typePtr arrayCharType_ptr;
 extern typePtr arrayStringType_ptr;
+extern typePtr arrayAnyType_ptr;
 
 /* Global pointers for return types */
 extern typePtr returnIntegerType_ptr;

@@ -45,7 +45,7 @@ char *typeName(typePtr t){
     };
     if(!t) return "NULL";
     if(t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE) return "UNKNOWN";
-    return typeNames[t->basicType - FIRST_TYPE];
+    return typeNames[t->basicType - NULL_TYPE];
 }
 
 /**
