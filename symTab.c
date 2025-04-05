@@ -232,13 +232,27 @@ int makeEntryNullable(struct symTab *table, char *string){
     return 0;
 }
 
-
+/**
+ * @brief Tells us if something is nullable.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
 int checkNullable(struct symTab *table, char *string){
     struct symEntry *entry = contains(table, string);
     if (!entry) return -1; // Bad
     return entry->nullable;
 }
 
+
+/**
+ * @brief Tells us if something is mutable.
+ * 
+ * @param table 
+ * @param string 
+ * @return int 
+ */
 int checkMutable(struct symTab *table, char *string){
     struct symEntry *entry = contains(table, string);
     if (!entry) return -1; // Bad

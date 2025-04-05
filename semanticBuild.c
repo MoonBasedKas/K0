@@ -228,6 +228,12 @@ int checkNullability(struct tree *root){
 }
 
 
+/**
+ * @brief Checks if something is mutable.
+ * 
+ * @param root 
+ * @return int 
+ */
 int checkMutability(struct tree *root){
     for(int i = 0; i < root->nkids; i++){
         checkMutability(root->kids[i]);
@@ -239,6 +245,15 @@ int checkMutability(struct tree *root){
                 symError = 1;
             }
             break;
+        // String elements cannot be modified.
+        case arrayAssignAdd:
+        case arrayAssignSub:
+        case arrayAssignment:
+            struct symEntry *entry = contains(root->table, root->kids[0]->leaf->text);
+            if(entry->type->basicType == STRING_TYPE){
+                fprintf(stderr, "Error | %s is a string and is not mutable", root->kids[0]->leaf->text);
+                symError = 1;
+            }
         default:
             break;
     }
