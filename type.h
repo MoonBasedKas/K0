@@ -63,5 +63,24 @@ extern typePtr booleanType_ptr;
 extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
+extern typePtr unitType_ptr; //also this one plz erik
+
+//ERIK make this point at shit
+//plz
+extern typePtr arrayIntegerType_ptr;
+extern typePtr arrayByteType_ptr;
+extern typePtr arrayDoubleType_ptr;
+extern typePtr arrayBooleanType_ptr;
+extern typePtr arrayCharType_ptr;
+extern typePtr arrayStringType_ptr;
+extern typePtr arrayAnyType_ptr;
+
+extern typePtr returnIntegerType_ptr;
+extern typePtr reuturnByteType_ptr;
+extern typePtr returnDoubleType_ptr;
+extern typePtr returnBooleanType_ptr;
+extern typePtr returnCharType_ptr;
+extern typePtr returnStringType_ptr;
+extern typePtr returnUnitType_ptr;
 
 #endif
