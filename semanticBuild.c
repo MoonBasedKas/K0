@@ -246,8 +246,10 @@ int checkMutability(struct tree *root){
         checkMutability(root->kids[i]);
     }
     switch(root->prodrule){
+        case assignAdd:
+        case assignSub:
         case assignment:
-            if(!checkMutable(root->table, root->kids[0]->leaf->text)){ // Not nullable is BAD
+            if(!checkMutable(root->table, root->kids[0]->leaf->text)){ 
                 fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
                 symError = 1;
             }
