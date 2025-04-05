@@ -26,9 +26,16 @@ typedef enum {
     STRING_TYPE,
     ARRAY_TYPE,
     FUNCTION_TYPE,
-    ANY_TYPE, //Not sure if we need this catchall type
+    UNIT_TYPE, //Void
     LAST_TYPE
 } basicType;
+
+enum {
+    notNullable = 0,
+    nullable,
+    indexNullable,
+    squareNullable,
+};
 
 typedef struct typeInfo {
     int basicType;
@@ -63,20 +70,19 @@ extern typePtr booleanType_ptr;
 extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
-extern typePtr unitType_ptr; //also this one plz erik
+extern typePtr unitType_ptr;
 
-//ERIK make this point at shit
-//plz
+/* Global pointers for premade array types */
 extern typePtr arrayIntegerType_ptr;
 extern typePtr arrayByteType_ptr;
 extern typePtr arrayDoubleType_ptr;
 extern typePtr arrayBooleanType_ptr;
 extern typePtr arrayCharType_ptr;
 extern typePtr arrayStringType_ptr;
-extern typePtr arrayAnyType_ptr;
 
+/* Global pointers for return types */
 extern typePtr returnIntegerType_ptr;
-extern typePtr reuturnByteType_ptr;
+extern typePtr returnByteType_ptr;
 extern typePtr returnDoubleType_ptr;
 extern typePtr returnBooleanType_ptr;
 extern typePtr returnCharType_ptr;

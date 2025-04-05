@@ -16,6 +16,7 @@ struct typeInfo double_type = {DOUBLE_TYPE};
 struct typeInfo boolean_type = {BOOL_TYPE};
 struct typeInfo char_type = {CHAR_TYPE};
 struct typeInfo string_type = {STRING_TYPE};
+struct typeInfo unit_type = {UNIT_TYPE};
 
 extern struct symTab *rootScope;
 
@@ -26,6 +27,7 @@ typePtr doubleType_ptr = &double_type;
 typePtr booleanType_ptr = &boolean_type;
 typePtr charType_ptr = &char_type;
 typePtr stringType_ptr = &string_type;
+typePtr unitType_ptr = &unit_type;
 
 typePtr alcType(int baseType) {
 
@@ -46,6 +48,8 @@ typePtr alcType(int baseType) {
             return charType_ptr;
         case STRING_TYPE:
             return stringType_ptr;
+        case UNIT_TYPE:
+            return unitType_ptr;
         default:
             rv = (typePtr)calloc(1, sizeof(struct typeInfo));
             if (rv == NULL) {
@@ -119,3 +123,50 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     rv->u.array.size = extractArraySize(size); //typeHelpers.c
     return rv;
 }
+
+/*
+    Lily's Dummy Pointers
+*/
+
+/* Global array types for each basic type. 
+   Using size -1 to indicate an unknown size. */
+struct typeInfo array_integer_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &integer_type }
+};
+struct typeInfo array_byte_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &byte_type }
+};
+struct typeInfo array_double_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &double_type }
+};
+struct typeInfo array_boolean_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &boolean_type }
+};
+struct typeInfo array_char_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &char_type }
+};
+struct typeInfo array_string_type = {
+    .basicType = ARRAY_TYPE,
+    .u.array = { .size = -1, .elemType = &string_type }
+};
+
+typePtr arrayIntegerType_ptr = &array_integer_type;
+typePtr arrayByteType_ptr    = &array_byte_type;
+typePtr arrayDoubleType_ptr  = &array_double_type;
+typePtr arrayBooleanType_ptr = &array_boolean_type;
+typePtr arrayCharType_ptr    = &array_char_type;
+typePtr arrayStringType_ptr  = &array_string_type;
+
+/* Global return type pointers; these alias the corresponding basic types */
+typePtr returnIntegerType_ptr = &integer_type;
+typePtr reuturnByteType_ptr   = &byte_type;
+typePtr returnDoubleType_ptr  = &double_type;
+typePtr returnBooleanType_ptr = &boolean_type;
+typePtr returnCharType_ptr    = &char_type;
+typePtr returnStringType_ptr  = &string_type;
+typePtr returnUnitType_ptr    = &unit_type;

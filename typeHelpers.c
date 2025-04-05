@@ -41,7 +41,7 @@ char *typeName(typePtr t){
         "string",
         "array",
         "function",
-        "any"
+        "unit"
     };
     if(!t) return "NULL";
     if(t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE) return "UNKNOWN";
@@ -57,12 +57,21 @@ char *typeName(typePtr t){
  * @return typePtr
  */
 typePtr lookupType(struct tree *n){
+    struct symEntry *entry = NULL;
+    if (n->prodrule == arrayIndex) {
+        entry = contains(n->table, n->kids[0]->leaf->text);
+        if(!entry) {
+            fprintf(stderr, "Type lookup failed: No entry in table\n");
+            return nullType_ptr;
+        }
+        return entry->type;
+    }
     if(!n || !n->leaf || !n->leaf->text) {
         fprintf(stderr, "Type lookup failed: Invalid node\n");
         return nullType_ptr;
     }
     // It seems like there is a problem wiht finding the correct scope.
-    struct symEntry *entry = contains(n->table, n->leaf->text); //symTab.c
+    entry = contains(n->table, n->leaf->text); //symTab.c
     if(!entry) {
         fprintf(stderr, "Type lookup failed: No entry in table\n");
         return nullType_ptr;
@@ -194,7 +203,7 @@ int typeEquals(typePtr type1, typePtr type2)
             // If we get here, all parameters matched
             return 1;
         }
-        case ANY_TYPE:
+        case UNIT_TYPE:
             return 1;
         default:
             // If we get here, basic types match

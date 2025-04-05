@@ -68,7 +68,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, int func){
     temp->name = elem;
     temp->func = func;
     temp->mutable = 1; // mutable
-    temp->nullable = 0; // Not nullable
+    temp->nullable = notNullable; // Not nullable
     if(func == FUNCTION || func == PACKAGE){
         temp->scope = createTable(table, temp->name, func);
     }
@@ -225,10 +225,10 @@ int assignEntrytype(struct symTab *table, char *string, struct typeInfo *type){
  * @param type 
  * @return int 
  */
-int makeEntryNullable(struct symTab *table, char *string){
+int changeNullable(struct symTab *table, char *string, int mode){
     struct symEntry *entry = contains(table, string);
     if (!entry) return 1;
-    entry->nullable = 1; 
+    entry->nullable = mode; 
     return 0;
 }
 
