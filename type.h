@@ -26,7 +26,7 @@ typedef enum {
     STRING_TYPE,
     ARRAY_TYPE,
     FUNCTION_TYPE,
-    ANY_TYPE, //Not sure if we need this catchall type
+    UNIT_TYPE, //Void
     LAST_TYPE
 } basicType;
 
@@ -63,5 +63,23 @@ extern typePtr booleanType_ptr;
 extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
+extern typePtr unitType_ptr;
+
+/* Global pointers for premade array types */
+extern typePtr arrayIntegerType_ptr;
+extern typePtr arrayByteType_ptr;
+extern typePtr arrayDoubleType_ptr;
+extern typePtr arrayBooleanType_ptr;
+extern typePtr arrayCharType_ptr;
+extern typePtr arrayStringType_ptr;
+
+/* Global pointers for return types */
+extern typePtr returnIntegerType_ptr;
+extern typePtr returnByteType_ptr;
+extern typePtr returnDoubleType_ptr;
+extern typePtr returnBooleanType_ptr;
+extern typePtr returnCharType_ptr;
+extern typePtr returnStringType_ptr;
+extern typePtr returnUnitType_ptr;
 
 #endif

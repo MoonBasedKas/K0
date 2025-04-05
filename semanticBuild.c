@@ -172,7 +172,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             if(n->nkids > 0){
                 n->type = n->kids[0]->type;
             } else {
-                n->type = alcType(ANY_TYPE); //type.c
+                n->type = alcType(UNIT_TYPE); //type.c
             }
             break;
         }

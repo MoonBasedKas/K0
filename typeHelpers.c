@@ -41,7 +41,7 @@ char *typeName(typePtr t){
         "string",
         "array",
         "function",
-        "any"
+        "unit"
     };
     if(!t) return "NULL";
     if(t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE) return "UNKNOWN";
@@ -194,7 +194,7 @@ int typeEquals(typePtr type1, typePtr type2)
             // If we get here, all parameters matched
             return 1;
         }
-        case ANY_TYPE:
+        case UNIT_TYPE:
             return 1;
         default:
             // If we get here, basic types match
