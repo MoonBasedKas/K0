@@ -245,7 +245,7 @@ int checkMutability(struct tree *root){
                 symError = 1;
             }
             break;
-        // String elements cannot be modified.
+        // String elements cannot be modified; This isn't legal anyways lol.
         case arrayAssignAdd:
         case arrayAssignSub:
         case arrayAssignment:
