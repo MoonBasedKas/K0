@@ -142,7 +142,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
-            printf("Name of bodyType: %s\n", typeName(bodyType));
+            printf("Name of bodyType: %s\n", n->kids[1]->leaf->text);
+            printf("Type of bodyType: %s\n", typeName(bodyType));
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
@@ -259,6 +260,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
               For "return expression", kids[1] is the expression but I need to check
               for VOID/UNIT_TYPE
             */
+            printf("Inside returnVal: n->nkids=%d\n", n->nkids);
+            if (n->nkids >= 2) {
+                if (n->kids[1]) {
+                    printf("Child #1 prodrule = %d\n", n->kids[1]->prodrule);
+                    printf("Child #1 type currently = %s\n", typeName(n->kids[1]->type));
+                }
+            }
             if (n->nkids >= 2 && n->kids[1] != NULL) {
                 // "return expression" -> adopt child's type
                 n->type = n->kids[1]->type;
@@ -266,8 +274,15 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 // "return" with no expression -> Unit
                 n->type = alcType(UNIT_TYPE);  // from type.c
             }
+            printf("Type of returnVal: %s\n", typeName(n->type));
             break;
         }
+        /*
+        Need IFelse stuff
+        If can be a statement or an expression => check children?
+        Statement = Unit
+        Expression = Type of the expression
+        */
         default:
         {
             break;
