@@ -29,6 +29,7 @@ typePtr charType_ptr = &char_type;
 typePtr stringType_ptr = &string_type;
 typePtr unitType_ptr = &unit_type;
 
+
 typePtr alcType(int baseType) {
 
     typePtr rv;
@@ -50,6 +51,8 @@ typePtr alcType(int baseType) {
             return stringType_ptr;
         case UNIT_TYPE:
             return unitType_ptr;
+        case RANGE_TYPE:
+            return rangeType_ptr;
         default:
             rv = (typePtr)calloc(1, sizeof(struct typeInfo));
             if (rv == NULL) {
@@ -161,6 +164,14 @@ struct typeInfo array_any_type = {
     .basicType = ARRAY_TYPE,
     .u.array = { .size = -1, .elemType = &any_elem_type }
 };
+
+/* Range type */
+struct typeInfo range_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &integer_type }
+};
+
+typePtr rangeType_ptr = &range_type;
 
 typePtr arrayIntegerType_ptr = &array_integer_type;
 typePtr arrayByteType_ptr    = &array_byte_type;
