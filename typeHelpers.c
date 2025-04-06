@@ -389,7 +389,7 @@ void typeCheckExpression(struct tree *node)
         case CHAR_TYPE:
             node->type = alcType(CHAR_TYPE); //type.c
         default:
-            //type error
+            typeError("Postfix ++ and -- operators can only be applied to types: Int, Double, Char", node);
             break;
         }
         break;
@@ -398,7 +398,7 @@ void typeCheckExpression(struct tree *node)
         struct symEntry *entry = returnType(node);
         if(entry->type->u.func.numParams !=0)
         {
-            //not enough arguments error
+            typeError("Function call missing arguments", node);
         }
         break;
     case postfixExpr:
@@ -433,6 +433,10 @@ struct symEntry *returnType(struct tree *node)
             found = 1;
         }
     }
+    if(found == 0)
+    {
+        typeError("Function not found", node);
+    }
     return entry;
 }
 
@@ -443,8 +447,8 @@ void paramTypeCheck(struct tree *node)
     struct param *paramList = node->type->u.func.parameters;
     if (entry->type->u.func.numParams == 0)
     {
-        // too many arguments error
-         return;
+        typeError("Function call has too many arguments", node);
+        return;
     }
     if (entry->type->u.func.numParams > 1)
     {
@@ -452,13 +456,13 @@ void paramTypeCheck(struct tree *node)
         {
             if (exprList->prodrule != expressionList)
             {
-                // too few arguments error arguments error
+                typeError("Function call missing arguments", node);
                 return;
             }
             typeCheckExpression(exprList->kids[0]);
             if (!typeEquals(exprList->kids[0]->type, paramList->type))
             {
-                // type error
+                typeError("Paramater type mismatch", node);
             }
             exprList = exprList->kids[1];
             paramList = paramList->next;
@@ -466,13 +470,13 @@ void paramTypeCheck(struct tree *node)
     }
     if (exprList->prodrule == expressionList)
     {
-        // too many arguments error
+        typeError("Function call has too many arguments", node);
         return;
     }
     typeCheckExpression(exprList);
     if (!typeEquals(exprList->type, paramList->type))
     {
-        // type error
+        typeError("Paramater type mismatch", node);
     }
 }
 
@@ -494,7 +498,7 @@ void prefixExpression(struct tree *node)
         case CHAR_TYPE:
             node->type = alcType(CHAR_TYPE); // type.c
         default:
-            // type error
+            typeError("Prefex ++ and -- operators can only be applied to types: Int, Double, Char", node);
             break;
         }
         break;
@@ -509,7 +513,7 @@ void prefixExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("- and + prefix operators must have arugment of type Int or Double", node);
             break;
         }
         break;
@@ -521,8 +525,9 @@ void prefixExpression(struct tree *node)
         }
         else
         {
-            // type error
+            typeError("! prefix operators must have arugment of type Boolean", node);
         }
+        break;
     default:
         break;
     }
@@ -573,10 +578,9 @@ void leafExpression(struct tree *node)
                 break;
             }
         }
-        //error
         break;
     default:
-        //error
+        typeError("", node);
         break;
     }
 }
@@ -596,7 +600,7 @@ void binaryExpression(struct tree *node)
     case conj:
         if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[0]->type, booleanType_ptr)))
         {
-            //type error
+            typeError("|| and && operators must have arguments of type Boolean", node);
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
@@ -606,7 +610,7 @@ void binaryExpression(struct tree *node)
     case notEqeqeq: 
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
-            //type error
+            typeError("Equality operators must have arguments of the same type", node);
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
@@ -616,15 +620,15 @@ void binaryExpression(struct tree *node)
     case greaterEqual: 
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
-            if(!(typeEquals(node->kids[0]->type, integerType_ptr) || typeEquals(node->kids[0]->type, booleanType_ptr))
-                    || !(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, booleanType_ptr)))
+            if(!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr))
+                    && !(typeEquals(node->kids[1]->type, integerType_ptr) && typeEquals(node->kids[1]->type, doubleType_ptr)))
             {
-                //type error
+                typeError("Comparison operators must have arguments of the same type or one Int and one Double arugment", node);
             }
         }
         if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, returnUnitType_ptr))
         {
-            //type error
+            typeError("Cannot compare Array or Unit types", node);
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
@@ -650,17 +654,17 @@ void binaryExpression(struct tree *node)
     case postfixArrayAccess:
         if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
         {
-            //type error
+            typeError("Array access must be performed on an array", node);
             break;
         }
         if(!typeEquals(node->kids[1]->type, integerType_ptr))
         {
-            //type error
+            typeError("Must use Int to determine the index of array element", node);
             break;
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
-        //error???
+        typeError("", node);
         break;
     }
 }
@@ -672,39 +676,39 @@ void inExpression(struct tree *node)
     case INT_TYPE:
         if (!typeEquals(node->kids[1]->type, arrayIntegerType_ptr))
         {
-            // type error
+            typeError("Array type must match element type - Int", node);
         }
         break;
     case DOUBLE_TYPE:
         if (!typeEquals(node->kids[1]->type, arrayDoubleType_ptr))
         {
-            // type error
+            typeError("Array type must match element type - Double", node);
         }
         break;
     case CHAR_TYPE:
         if (!typeEquals(node->kids[1]->type, arrayCharType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
         {
-            // type error
+            typeError("Array type must match element type - Char", node);
         }
         break;
     case STRING_TYPE:
         if (!typeEquals(node->kids[1]->type, arrayStringType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
         {
-            // type error
+            typeError("Array type must match element type - String", node);
         }
         break;
     case BOOL_TYPE:
         if (!typeEquals(node->kids[1]->type, arrayBooleanType_ptr))
         {
-            // type error
+            typeError("Array type must match element type - Boolean", node);
         }
         break;
     case ARRAY_TYPE:
     case UNIT_TYPE:
-        // type error
+        typeError("Cannot have the first argument of the in operator be of type Array or Unit", node);
         break;
     default:
-        // type error
+        typeError("", node);
         break;
     }
     node->type = alcType(BOOL_TYPE); // type.c
@@ -724,7 +728,7 @@ void addExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Can only add Int or Double to type Int", node);
             break;
         }
     case DOUBLE_TYPE:
@@ -734,7 +738,7 @@ void addExpression(struct tree *node)
         }
         else
         {
-            // type error
+            typeError("Can only add Int or Double to type Double", node);
         }
         break;
     case CHAR_TYPE:
@@ -747,19 +751,19 @@ void addExpression(struct tree *node)
             node->type = alcType(STRING_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Can only add Char or String to type Char", node);
             break;
         }
         break;
     case STRING_TYPE:
         if (typeEquals(node->kids[1]->type, unitType_ptr))
         {
-            // type error
+            typeError("Cannot add type Unit to type String", node);
         }
         node->type = alcType(STRING_TYPE); // type.c
         break;
     case BOOL_TYPE:
-        // type error
+        typeError("Cannot add type Boolean", node);
         break;
     case ARRAY_TYPE:
         switch (node->kids[1]->type->basicType)
@@ -771,7 +775,7 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add type Int to Array<Int>", node);
             }
             break;
         case DOUBLE_TYPE:
@@ -781,7 +785,7 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add type Double to Array<Double>", node);
             }
             break;
         case CHAR_TYPE:
@@ -791,7 +795,7 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add type Char to Array<Char>", node);
             }
             break;
         case STRING_TYPE:
@@ -801,7 +805,7 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add type String to Array<String>", node);
             }
             break;
         case BOOL_TYPE:
@@ -811,7 +815,7 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add type Boolean to Array<Boolean>", node);
             }
             break;
         case ARRAY_TYPE:
@@ -821,22 +825,22 @@ void addExpression(struct tree *node)
             }
             else
             {
-                // type error
+                typeError("Can only add arrays that have the same subtype", node);
             }
             break;
         case UNIT_TYPE:
-            // type error
+            typeError("Cannot add with Unit type", node);
             break;
         default:
-            // type error
+            typeError("", node);
             break;
         }
         break;
     case UNIT_TYPE:
-        // type error
+        typeError("Cannot add with Unit type", node);
         break;
     default:
-        // type error
+        typeError("", node);
         break;
     }
 }
@@ -855,7 +859,7 @@ void subExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Can only subtract Int or Double from type Int", node);
             break;
         }
         break;
@@ -867,7 +871,7 @@ void subExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Can only subtract Int or Double from type Double", node);
             break;
         }
         break;
@@ -881,12 +885,12 @@ void subExpression(struct tree *node)
             node->type = alcType(INT_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Can only subtract Int or Char from type Char", node);
             break;
         }
         break;
     default:
-        // type error
+        typeError("Subtraction can only be performed on types Int, Double, and Char", node);
         break;
     }
 }
@@ -905,7 +909,7 @@ void multaplicativeExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Multiplication, division, and modulo can only have operators of type Int and Double", node);
             break;
         }
         break;
@@ -917,12 +921,23 @@ void multaplicativeExpression(struct tree *node)
             node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         default:
-            // type error
+            typeError("Multiplication, division, and modulo can only have operators of type Int and Double", node);
             break;
         }
         break;
     default:
-        // type error
+        typeError("Multiplication, division, and modulo can only have operators of type Int and Double", node);
         break;
     }
+}
+
+void typeError(char *message, struct tree *node)
+{
+    while(node->nkids != 0)
+    {
+        node = node->kids[0];
+    }
+
+    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
+    symError = 1;
 }

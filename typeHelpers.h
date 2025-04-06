@@ -24,5 +24,6 @@ void multaplicativeExpression(struct tree *node);
 void subExpression(struct tree *node);
 void addExpression(struct tree *node);
 void inExpression(struct tree *node);
+void typeError(char *message, struct tree *node);
 
 #endif
