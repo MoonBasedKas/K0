@@ -351,6 +351,11 @@ void deleteType(typePtr type)
     free(type);
 }
 
+/**
+ * @brief Recursivly assign types to an expression
+ *
+ * @param node
+ */
 void typeCheckExpression(struct tree *node)
 {
     //base case
@@ -367,55 +372,8 @@ void typeCheckExpression(struct tree *node)
 
     switch (node->prodrule)
     {
-    case prefix:   
-        typeCheckExpression(node->kids[1]);
-        switch (node->kids[0]->prodrule)
-        {
-        case INCR:
-        case DECR:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-                node->type = alcType(INT_TYPE); //type.c
-                break;
-            case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE); //type.c
-                break;
-            case CHAR_TYPE:
-                node->type = alcType(CHAR_TYPE); //type.c
-            default:
-                //type error
-                break;
-            }
-            break;
-        case ADD:
-        case SUB:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-                node->type = alcType(INT_TYPE); //type.c
-                break;
-            case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE); //type.c
-                break;
-            default:
-                //type error
-                break;
-            }
-            break;
-        case EXCL_NO_WS:
-        case EXCL_WS:
-            if(typeEquals(node->kids[1]->type, booleanType_ptr))
-            {
-                node->type = alcType(BOOL_TYPE); //type.c
-            }
-            else
-            {
-                //type error
-            }
-        default:
-            break;
-        }
+    case prefix:
+        prefixExpression(node);
         break;
     case postfixIncr:
     case postfixDecr:
@@ -436,9 +394,15 @@ void typeCheckExpression(struct tree *node)
         }
         break;
     // function call
-    case postfixExpr:
     case postfixNoExpr:
-        
+        struct symEntry *entry = returnType(node);
+        if(entry->type->u.func.numParams !=0)
+        {
+            //not enough arguments error
+        }
+        break;
+    case postfixExpr:
+        paramTypeCheck(node);
         break;
     //built in stuff
     case postfixDotID:
@@ -455,6 +419,120 @@ void typeCheckExpression(struct tree *node)
     }
 }
 
+struct symEntry *returnType(struct tree *node)
+{
+    struct symTab *scope = node->table; //symTab.h
+    struct symEntry *entry;             //symTab.h
+    int found = 0;
+    while(scope->parent != NULL && found == 0)
+    {
+        entry = contains(scope, node->kids[0]->leaf->text); //symTab.h
+        if(entry != NULL)
+        {
+            node->type = entry->type->u.func.returnType;
+            found = 1;
+        }
+    }
+    return entry;
+}
+
+void paramTypeCheck(struct tree *node)
+{
+    struct symEntry *entry = returnType(node);
+    struct tree *exprList = node->kids[1];
+    struct param *paramList = node->type->u.func.parameters;
+    if (entry->type->u.func.numParams == 0)
+    {
+        // too many arguments error
+         return;
+    }
+    if (entry->type->u.func.numParams > 1)
+    {
+        for (int i = 0; i < entry->type->u.func.numParams - 1; i++)
+        {
+            if (exprList->prodrule != expressionList)
+            {
+                // too few arguments error arguments error
+                return;
+            }
+            typeCheckExpression(exprList->kids[0]);
+            if (!typeEquals(exprList->kids[0]->type, paramList->type))
+            {
+                // type error
+            }
+            exprList = exprList->kids[1];
+            paramList = paramList->next;
+        }
+    }
+    if (exprList->prodrule == expressionList)
+    {
+        // too many arguments error
+        return;
+    }
+    typeCheckExpression(exprList);
+    if (!typeEquals(exprList->type, paramList->type))
+    {
+        // type error
+    }
+}
+
+void prefixExpression(struct tree *node)
+{
+    typeCheckExpression(node->kids[1]);
+    switch (node->kids[0]->prodrule)
+    {
+    case INCR:
+    case DECR:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        case CHAR_TYPE:
+            node->type = alcType(CHAR_TYPE); // type.c
+        default:
+            // type error
+            break;
+        }
+        break;
+    case ADD:
+    case SUB:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case EXCL_NO_WS:
+    case EXCL_WS:
+        if (typeEquals(node->kids[1]->type, booleanType_ptr))
+        {
+            node->type = alcType(BOOL_TYPE); // type.c
+        }
+        else
+        {
+            // type error
+        }
+    default:
+        break;
+    }
+}
+
+/**
+ * @brief Assign types to leaf nodes
+ * 
+ * @param node
+ */
 void leafExpression(struct tree *node)
 {
     switch (node->prodrule)
@@ -483,14 +561,31 @@ void leafExpression(struct tree *node)
         break;
 
     //variable base case
-    //will this work as function base case or do we need to seperate that out??
-    //postfixExpr and postfixNoExpr - erik is going to pull out
-    //for funcs check param types
     case IDENTIFIER:
-        //todo
+        struct symTab *scope = node->table; //symTab.h
+        struct symEntry *entry;             //symTab.h
+        while(scope->parent != NULL)
+        {
+            entry = contains(scope, node->leaf->text); //symTab.h
+            if(entry != NULL)
+            {
+                node->type = entry->type;
+                break;
+            }
+        }
+        //error
+        break;
+    default:
+        //error
+        break;
     }
 }
 
+/**
+ * @brief Recursivly (with typeCheckExpression) assigns types to binary expressions
+ * 
+ * @param node
+ */
 void binaryExpression(struct tree *node)
 {
     typeCheckExpression(node->kids[0]);
@@ -533,264 +628,23 @@ void binaryExpression(struct tree *node)
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
-    case in: 
-        switch(node->kids[0]->type->basicType)
-        {
-        case INT_TYPE:
-            if(!typeEquals(node->kids[1]->type, arrayIntegerType_ptr))
-            {
-                //type error
-            }
-            break;
-        case DOUBLE_TYPE:
-            if(!typeEquals(node->kids[1]->type, arrayDoubleType_ptr))
-            {
-                //type error
-            }
-            break;
-        case CHAR_TYPE:
-            if(!typeEquals(node->kids[1]->type, arrayCharType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
-            {
-                //type error
-            }
-            break;
-        case STRING_TYPE:
-            if(!typeEquals(node->kids[1]->type, arrayStringType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
-            {
-                //type error
-            }
-            break;
-        case BOOL_TYPE:
-            if(!typeEquals(node->kids[1]->type, arrayBooleanType_ptr))
-            {
-                //type error
-            }
-            break;
-        case ARRAY_TYPE:
-        case UNIT_TYPE:
-            //type error
-            break;
-        default:
-            //type error
-            break;
-        }
-        node->type = alcType(BOOL_TYPE); //type.c
+    case in:
+        inExpression(node);
+        break;
     case range:
     case rangeUntil:
         //need range types
         break;
     case add:
-        switch (node->kids[0]->type->basicType)
-        {
-        case INT_TYPE:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-                node->type = alcType(INT_TYPE); //type.c
-                break;
-            case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE); //type.c
-                break;
-            default:
-                //type error
-                break;
-            }
-        case DOUBLE_TYPE:
-            if(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr))
-            {
-                node->type = alcType(DOUBLE_TYPE); //type.c
-            }
-            else
-            {
-                //type error
-            }
-            break;
-        case CHAR_TYPE:
-            switch (node->kids[1]->type->basicType)
-            {
-            case CHAR_TYPE:
-                node->type = alcType(CHAR_TYPE); //type.c
-                break;
-            case STRING_TYPE:
-                node->type = alcType(STRING_TYPE); //type.c
-                break;
-            default:
-                //type error
-                break;
-            }
-            break;
-        case STRING_TYPE:
-            if(typeEquals(node->kids[1]->type, unitType_ptr))
-            {
-                //type error
-            }
-            node->type = alcType(STRING_TYPE); //type.c
-            break;
-        case BOOL_TYPE:
-            //type error
-            break;
-        case ARRAY_TYPE:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-                if(typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case DOUBLE_TYPE:
-                if(typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case CHAR_TYPE:
-                if(typeEquals(node->kids[0]->type, arrayCharType_ptr))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case STRING_TYPE:
-                if(typeEquals(node->kids[0]->type, arrayStringType_ptr))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case BOOL_TYPE:
-                if(typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case ARRAY_TYPE:
-                if(typeEquals(node->kids[0]->type, node->kids[1]->type))
-                {
-                    node->type = copyType(node->kids[0]->type);
-                }
-                else
-                {
-                    //type error
-                }
-                break;
-            case UNIT_TYPE:
-                //type error
-                break;
-            default:
-                //type error
-                break;
-            }
-            break;
-        case UNIT_TYPE:
-            //type error
-            break;
-        default:
-            //type error
-            break;
-        }
+        addExpression(node);
         break;
     case sub:
-        switch (node->kids[0]->type->basicType)
-        {
-            case INT_TYPE:
-                switch (node->kids[1]->type->basicType)
-                {
-                case INT_TYPE:
-                    node->type = alcType(INT_TYPE); //type.c
-                    break;
-                case DOUBLE_TYPE:
-                    node->type = alcType(DOUBLE_TYPE); //type.c
-                    break;
-                default:
-                    //type error
-                    break;
-                }
-                break;
-            case DOUBLE_TYPE:
-                switch (node->kids[1]->type->basicType)
-                {
-                case INT_TYPE:
-                case DOUBLE_TYPE:
-                    node->type = alcType(DOUBLE_TYPE); //type.c
-                    break;
-                default:
-                    //type error
-                    break;
-                }
-                break;
-            case CHAR_TYPE:
-                switch (node->kids[1]->type->basicType)
-                {
-                case INT_TYPE:
-                    node->type = alcType(CHAR_TYPE); //type.c
-                    break;
-                case CHAR_TYPE:
-                    node->type = alcType(INT_TYPE); //type.c
-                    break;
-                default:
-                    //type error
-                    break;
-                }
-                break;
-            default:
-                //type error
-                break;
-        }
+        subExpression(node);
         break;
     case mult:
     case div_k:
     case mod:
-        switch (node->kids[0]->type->basicType)
-        {
-        case INT_TYPE:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-                node->type = alcType(INT_TYPE); //type.c
-                break;
-            case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE); //type.c
-                break;
-            default:
-                //type error
-                break;
-            }
-            break;
-        case DOUBLE_TYPE:
-            switch (node->kids[1]->type->basicType)
-            {
-            case INT_TYPE:
-            case DOUBLE_TYPE:
-                node->type = alcType(DOUBLE_TYPE); //type.c
-                break;
-            default:
-                //type error
-                break;
-            }
-            break;
-        default:
-            //type error
-            break;
-        }
+        multaplicativeExpression(node);
         break;
     case arrayAccess:
     case postfixArrayAccess:
@@ -807,6 +661,268 @@ void binaryExpression(struct tree *node)
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
         //error???
+        break;
+    }
+}
+
+void inExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        if (!typeEquals(node->kids[1]->type, arrayIntegerType_ptr))
+        {
+            // type error
+        }
+        break;
+    case DOUBLE_TYPE:
+        if (!typeEquals(node->kids[1]->type, arrayDoubleType_ptr))
+        {
+            // type error
+        }
+        break;
+    case CHAR_TYPE:
+        if (!typeEquals(node->kids[1]->type, arrayCharType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
+        {
+            // type error
+        }
+        break;
+    case STRING_TYPE:
+        if (!typeEquals(node->kids[1]->type, arrayStringType_ptr) && !typeEquals(node->kids[1]->type, stringType_ptr))
+        {
+            // type error
+        }
+        break;
+    case BOOL_TYPE:
+        if (!typeEquals(node->kids[1]->type, arrayBooleanType_ptr))
+        {
+            // type error
+        }
+        break;
+    case ARRAY_TYPE:
+    case UNIT_TYPE:
+        // type error
+        break;
+    default:
+        // type error
+        break;
+    }
+    node->type = alcType(BOOL_TYPE); // type.c
+}
+
+void addExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+    case DOUBLE_TYPE:
+        if (typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr))
+        {
+            node->type = alcType(DOUBLE_TYPE); // type.c
+        }
+        else
+        {
+            // type error
+        }
+        break;
+    case CHAR_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case CHAR_TYPE:
+            node->type = alcType(CHAR_TYPE); // type.c
+            break;
+        case STRING_TYPE:
+            node->type = alcType(STRING_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case STRING_TYPE:
+        if (typeEquals(node->kids[1]->type, unitType_ptr))
+        {
+            // type error
+        }
+        node->type = alcType(STRING_TYPE); // type.c
+        break;
+    case BOOL_TYPE:
+        // type error
+        break;
+    case ARRAY_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case DOUBLE_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case CHAR_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case STRING_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case BOOL_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case ARRAY_TYPE:
+            if (typeEquals(node->kids[0]->type, node->kids[1]->type))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                // type error
+            }
+            break;
+        case UNIT_TYPE:
+            // type error
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case UNIT_TYPE:
+        // type error
+        break;
+    default:
+        // type error
+        break;
+    }
+}
+
+void subExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case DOUBLE_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case CHAR_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(CHAR_TYPE); // type.c
+            break;
+        case CHAR_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    default:
+        // type error
+        break;
+    }
+}
+
+void multaplicativeExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            node->type = alcType(INT_TYPE); // type.c
+            break;
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    case DOUBLE_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+        case DOUBLE_TYPE:
+            node->type = alcType(DOUBLE_TYPE); // type.c
+            break;
+        default:
+            // type error
+            break;
+        }
+        break;
+    default:
+        // type error
         break;
     }
 }

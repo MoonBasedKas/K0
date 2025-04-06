@@ -15,7 +15,14 @@ int typeEquals(typePtr type1, typePtr type2);
 typePtr copyType(typePtr type);
 void deleteType(typePtr type);
 void typeCheckExpression(struct tree *node);
+void paramTypeCheck(struct tree *node);
+void prefixExpression(struct tree *node);
+struct symEntry *returnType(struct tree *node);
 void leafExpression(struct tree *node);
 void binaryExpression(struct tree *node);
+void multaplicativeExpression(struct tree *node);
+void subExpression(struct tree *node);
+void addExpression(struct tree *node);
+void inExpression(struct tree *node);
 
 #endif
