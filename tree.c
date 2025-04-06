@@ -137,7 +137,7 @@ int assignMutability(struct tree *root){
         case propDecAssign:
             temp = root->kids[0];
             id = root->kids[1];
-            if (!(temp->kids == 0 && temp->leaf->category == VAR))
+            if (!(temp->nkids == 0 && temp->leaf->category == VAR))
             makeEntryNonMutable(id->table, id->kids[0]->leaf->text);
             break;
         case arrayDec:

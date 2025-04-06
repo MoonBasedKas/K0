@@ -81,10 +81,8 @@ int main(int argc, char *argv[])
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c
-        // if (symError != 0) return symError; // If something is undeclared.
+        if (symError != 0) return symError; // If something is undeclared.
         
-        
-        // grabTypes(rootScope); Typing is not being grabbed...
 
         if(dot){
             char dotFilename[120];
