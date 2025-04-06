@@ -95,7 +95,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
-                // return 3;
+                return 3;
                 exit(3);
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
@@ -130,7 +130,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
-                // return 3;
+                return 3;
                 exit(3);
             }
             // Create an empty param node
