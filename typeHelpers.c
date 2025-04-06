@@ -395,22 +395,14 @@ void typeCheckExpression(struct tree *node)
         break;
     // function call
     case postfixNoExpr:
-        struct symTab *scope = node->table; //symTab.h
-        struct symEntry *entry;             //symTab.h
-        while(scope->parent != NULL)
+        struct symEntry *entry = returnType(node);
+        if(entry->type->u.func.numParams !=0)
         {
-            entry = contains(scope, node->kids[0]->leaf->text); //symTab.h
-            if(entry != NULL)
-            {
-                node->type = entry->type->u.func.returnType;
-            }
+            //not enough arguments error
         }
+        break;
     case postfixExpr:
-        struct tree *exprList = node->kids[1];
-        for(int i = 0; i < entry->type->u.func.numParams; i++)
-        {
-            
-        }
+        paramTypeCheck(node);
         break;
     //built in stuff
     case postfixDotID:
@@ -424,6 +416,63 @@ void typeCheckExpression(struct tree *node)
     default:
         binaryExpression(node);
         break;
+    }
+}
+
+struct symEntry *returnType(struct tree *node)
+{
+    struct symTab *scope = node->table; //symTab.h
+    struct symEntry *entry;             //symTab.h
+    int found = 0;
+    while(scope->parent != NULL && found == 0)
+    {
+        entry = contains(scope, node->kids[0]->leaf->text); //symTab.h
+        if(entry != NULL)
+        {
+            node->type = entry->type->u.func.returnType;
+            found = 1;
+        }
+    }
+    return entry;
+}
+
+void paramTypeCheck(struct tree *node)
+{
+    struct symEntry *entry = returnType(node);
+    struct tree *exprList = node->kids[1];
+    struct param *paramList = node->type->u.func.parameters;
+    if (entry->type->u.func.numParams == 0)
+    {
+        // too many arguments error
+         return;
+    }
+    if (entry->type->u.func.numParams > 1)
+    {
+        for (int i = 0; i < entry->type->u.func.numParams - 1; i++)
+        {
+            if (exprList->prodrule != expressionList)
+            {
+                // too few arguments error arguments error
+                return;
+            }
+            typeCheckExpression(exprList->kids[0]);
+            if (!typeEquals(exprList->kids[0]->type, paramList->type))
+            {
+                // type error
+            }
+            exprList = exprList->kids[1];
+            paramList = paramList->next;
+        }
+    }
+    if (exprList->prodrule == expressionList)
+    {
+        // too many arguments error
+        return;
+    }
+    typeCheckExpression(exprList);
+    if (!typeEquals(exprList->type, paramList->type))
+    {
+        // type error
     }
 }
 
