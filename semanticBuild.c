@@ -142,6 +142,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
+            printf("Name of bodyType: %s\n", typeName(bodyType));
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
@@ -204,6 +205,51 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 n->type = alcType(RANGE_TYPE);
             } else {
                 typeError("range or rangeUntil requires two Int expressions", n);
+            }
+            break;
+        }
+        case blockEmpty:
+        {
+            // No statements => Unit
+            n->type = alcType(UNIT_TYPE);
+            break;
+        }
+        case blockStmnts:
+        {
+            // { statements }
+            // type if it exists, else default to Unit
+            typePtr stmtsType = n->kids[1]->type;
+            if (!stmtsType) {
+                stmtsType = alcType(UNIT_TYPE);
+            }
+            n->type = stmtsType;
+            break;
+        }
+        case statementsMultiple:
+        {
+            /*
+            statements -> statement SEMICOLON statements
+            kids[0] is the first statement, kids[1] is the rest
+            adopt the type of the last child for expression blocks?
+            or we always do Unit?
+            */
+            typePtr tailType = n->kids[1]->type;
+            if (tailType) {
+                n->type = tailType;
+            } else if (n->kids[0]->type) {
+                n->type = n->kids[0]->type;
+            } else {
+                n->type = alcType(UNIT_TYPE);
+            }
+            break;
+        }
+        case funcBody:
+        {
+            // kids[0] = '=' token, kids[1] = expression
+            if (n->nkids >= 2 && n->kids[1]->type) {
+                n->type = n->kids[1]->type;
+            } else {
+                n->type = alcType(UNIT_TYPE);
             }
             break;
         }
