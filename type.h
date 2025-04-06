@@ -27,6 +27,7 @@ typedef enum {
     ARRAY_TYPE,
     FUNCTION_TYPE,
     UNIT_TYPE, //Void
+    RANGE_TYPE,
     LAST_TYPE
 } basicType;
 
@@ -52,6 +53,9 @@ typedef struct typeInfo {
             int size; // -1 unkown size
             struct typeInfo *elemType;
         } array;
+        struct rangeInfo {
+            struct typeInfo *elemType;
+        } range;
     } u;
 } *typePtr;
 
@@ -71,6 +75,7 @@ extern typePtr charType_ptr;
 extern typePtr stringType_ptr;
 extern typePtr nullType_ptr;
 extern typePtr unitType_ptr;
+extern typePtr rangeType_ptr;
 
 /* Global pointers for premade array types */
 extern typePtr arrayIntegerType_ptr;

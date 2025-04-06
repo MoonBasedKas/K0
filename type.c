@@ -162,6 +162,12 @@ struct typeInfo array_any_type = {
     .u.array = { .size = -1, .elemType = &any_elem_type }
 };
 
+/* Range type */
+struct typeInfo range_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &integer_type }
+};
+
 typePtr arrayIntegerType_ptr = &array_integer_type;
 typePtr arrayByteType_ptr    = &array_byte_type;
 typePtr arrayDoubleType_ptr  = &array_double_type;
