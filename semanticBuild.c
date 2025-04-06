@@ -13,6 +13,41 @@
 
 struct tree *createEmptyParam(void);
 
+static void checkLeafType(struct tree *n)
+{
+    // If it's not a leaf or `leaf` is NULL, do nothing
+    if (n->nkids != 0 || !n->leaf) {
+        return;
+    }
+
+    // Switch on the leaf's category -> This is how we printed leaf types to the syntax tree
+    switch (n->leaf->category) {
+        case INT:
+            n->type = alcType(INT_TYPE);
+            break;
+        case STRING:
+            n->type = alcType(STRING_TYPE);
+            break;
+        case BOOL:
+            n->type = alcType(BOOL_TYPE);
+            break;
+        case CHAR:
+            n->type = alcType(CHAR_TYPE);
+            break;
+        case BYTE:
+            n->type = alcType(BYTE_TYPE);
+            break;
+        case DOUBLE:
+            n->type = alcType(DOUBLE_TYPE);
+            break;
+        case NULL_K:
+            n->type = alcType(NULL_TYPE);
+            break;
+        default:
+            return;
+    }
+}
+
 /**
  * @brief Assigns a type to a node
  *
@@ -25,30 +60,11 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         assignType(n->kids[i], rootScope);
     }
 
+    checkLeafType(n);
+
     switch (n->prodrule){
-        case INT:
-            n->type = alcType(INT_TYPE); //type.c
-            break;
-        case STRING:
-            n->type = alcType(STRING_TYPE); //type.c
-            break;
-        case BOOL:
-            n->type = alcType(BOOL_TYPE); //type.c
-            break;
-        case CHAR:
-            n->type = alcType(CHAR_TYPE); //type.c
-            break;
-        case BYTE:
-            n->type = alcType(BYTE_TYPE); //type.c
-            break;
-        case DOUBLE:
-            n->type = alcType(DOUBLE_TYPE); //type.c
-            break;
-        case NULL_K:
-            n->type = alcType(NULL_TYPE); //type.c
-            break;
         case varDecQuests: // Sets the entry to nullable.
-            
+
             if (n->kids[1]->prodrule == arrayTypeQuests){
                 changeNullable(n->table, n->kids[0]->leaf->text, squareNullable);
             } else {
@@ -58,9 +74,10 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case varDec:
             if (n->kids[1]->prodrule == arrayTypeQuests){
                 changeNullable(n->table, n->kids[0]->leaf->text, indexNullable);
-            } 
-            zaWorldo: 
+            }
+            zaWorldo:
             n->type = n->kids[1]->type;
+            printf("Type of %s: %s\n", n->kids[0]->leaf->text, typeName(n->type));
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
 
@@ -91,7 +108,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             typePtr declaredReturnType = n->kids[3]->type;
             typePtr bodyType = n->kids[4]->type;
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
-                fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
+                fprintf(stderr, "(funcDecAll) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
@@ -126,7 +143,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
-                fprintf(stderr, "Type error in function %s: body type %s does not match the return type %s.\n",
+                fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
@@ -176,14 +193,37 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             n->type = alcArrayType(n->kids[7], n->kids[1]->type); //type.c
             break;
         }
+        case range:
+        case rangeUntil:
+        {
+            typePtr leftType  = n->kids[0]->type;
+            typePtr rightType = n->kids[1]->type;
+
+            if (leftType->basicType == INT_TYPE && rightType->basicType == INT_TYPE) {
+                // n->type = rangeType_ptr;
+                n->type = alcType(RANGE_TYPE);
+            } else {
+                typeError("range or rangeUntil requires two Int expressions", n);
+            }
+            break;
+        }
+        case returnVal:
+        {
+            /*
+              For "return expression", kids[1] is the expression but I need to check
+              for VOID/UNIT_TYPE
+            */
+            if (n->nkids >= 2 && n->kids[1] != NULL) {
+                // "return expression" -> adopt child's type
+                n->type = n->kids[1]->type;
+            } else {
+                // "return" with no expression -> Unit
+                n->type = alcType(UNIT_TYPE);  // from type.c
+            }
+            break;
+        }
         default:
         {
-            
-            if(n->nkids > 0){
-                n->type = n->kids[0]->type;
-            } else {
-                n->type = NULL; //type.c
-            }
             break;
         }
     }
@@ -208,11 +248,11 @@ struct tree *createEmptyParam(void) {
 
 /**
  * @brief Checks if something not nullable is set to null
- * 
+ *
  * TODO: make this cover every sub case.
- * 
- * @param root 
- * @return int 
+ *
+ * @param root
+ * @return int
  */
 int checkNullability(struct tree *root){
     for(int i = 0; i < root->nkids; i++){
@@ -228,7 +268,7 @@ int checkNullability(struct tree *root){
                     fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->text);
                     symError = 1;
                 }
-            } 
+            }
             // else if (root->kids[1]->type->basicType == NULL_K){
             //     val = checkNullable(root->table, root->kids[0]->leaf->text);
             //     if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
@@ -265,7 +305,7 @@ int checkNullability(struct tree *root){
                     fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->kids[0]->leaf->text);
                     symError = 1;
                 }
-            } 
+            }
             // else if (root->kids[1]->type->basicType == NULL_K){
             //     val = checkNullable(root->table, root->kids[0]->kids[0]->leaf->text);
             //     if(!(val == indexNullable || val == squareNullable)){ // Not nullable is BAD
@@ -281,14 +321,14 @@ int checkNullability(struct tree *root){
 
 
 /**
- * @brief Checks if something is mutable. This should be safe and avoid touching 
- * declarations. 
- * 
+ * @brief Checks if something is mutable. This should be safe and avoid touching
+ * declarations.
+ *
  * NOTE: Arrays are weird in that their inner values can be updated but not the
  * array itself.
- * 
- * @param root 
- * @return int 
+ *
+ * @param root
+ * @return int
  */
 int checkMutability(struct tree *root){
     for(int i = 0; i < root->nkids; i++){
@@ -298,7 +338,7 @@ int checkMutability(struct tree *root){
         case assignAdd:
         case assignSub:
         case assignment:
-            if(checkMutable(root->table, root->kids[0]->leaf->text) == 0){ 
+            if(checkMutable(root->table, root->kids[0]->leaf->text) == 0){
                 fprintf(stderr, "Error | %s is not mutable but was changed.\n", root->kids[0]->leaf->text);
                 symError = 1;
             }
@@ -316,5 +356,5 @@ int checkMutability(struct tree *root){
         default:
             break;
     }
-    return 0;    
+    return 0;
 }
