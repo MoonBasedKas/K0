@@ -120,6 +120,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[0] = IDENTIFIER
             kids[1] = type
             */
+        {
             if (n->kids[1]->prodrule == arrayTypeQuests){
                 changeNullable(n->table, n->kids[0]->leaf->text, indexNullable);
             }
@@ -127,13 +128,14 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             n->type = n->kids[1]->type;
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
-
+        }
         case arrayAssignment:
         /*
         kids[0] = arrayIndex
         kids[1] = expression
         */
         {
+            printf("arrayAssignment called\n");
             typeCheckExpression(n->kids[1]);
             typePtr rhsType = n->kids[1]->type;
             n->type = n->kids[0]->type;
@@ -168,7 +170,27 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             break;
         }
+        case arrayIndex:
+            /*
+            kids[0] = IDENTIFIER
+            kids[1] = INTEGER_LITERAL
+            */
+        {
+            printf("arrayIndex called\n");
 
+            typePtr arrayType = lookupType(n->kids[0]);
+            printf("arrayType: %s\n", typeName(arrayType));
+            if (!arrayType || arrayType->basicType != ARRAY_TYPE){
+                typeError("Array index must be an array variable", n);
+                break;
+            }
+            if (arrayType->u.array.elemType == NULL){
+                typeError("Array element type is missing", n);
+                break;
+            }
+            n->type = copyType(arrayType->u.array.elemType);
+            break;
+        }
         case arrayAssignAdd:
         case arrayAssignSub:
         case assignAdd:
@@ -290,6 +312,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[3] = arrayValues
         */
         {   
+            printf("arrayDec called\n");
             if (!n->kids[1]->type) {
                 typeCheckExpression(n->kids[1]);
             }
@@ -298,7 +321,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 break;
             }
             n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
-            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case arrayDecValueless:
@@ -330,6 +353,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[4] = arraySize
             kids[5] = arrayValues
             */
+            printf("arrayDecEqual called\n");
             if (!n->kids[3]->type) {
                 typeCheckExpression(n->kids[3]);
             }
@@ -364,6 +388,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         }
         
         case arrayAccess: {
+            printf("Array access called\n");
             /* How to synthesize this? */
             typeCheckExpression(n->kids[1]);
             if (!n->kids[1]->type || !typeEquals(n->kids[1]->type, integerType_ptr)) {
