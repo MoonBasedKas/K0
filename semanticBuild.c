@@ -78,7 +78,11 @@ static void checkLeafType(struct tree *n)
  * @param rhs
  * @return typePtr
  */
-typePtr coerceAssignment(typePtr lhs, typePtr rhs) {
+typePtr coerceAssignment(struct tree *n, typePtr lhs, typePtr rhs) {
+    if (lhs == NULL) {
+        typeError("Left hand side of assignment is NULL", n);
+        return NULL;
+    }
     if (typeEquals(lhs, rhs))
         return lhs;
     if (lhs->basicType == INT_TYPE && rhs->basicType == DOUBLE_TYPE)
@@ -124,11 +128,51 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
 
-        case assignAdd:
-        case assignSub:
         case arrayAssignment:
+        /*
+        kids[0] = arrayIndex
+        kids[1] = expression
+        */
+        {
+            typeCheckExpression(n->kids[1]);
+            typePtr rhsType = n->kids[1]->type;
+            n->type = n->kids[0]->type;
+
+            if (n->kids[0]->prodrule == arrayIndex || n->kids[0]->prodrule == arrayAccess){
+                struct tree *arrayIndexNode = n->kids[0];
+                typePtr arrayType = lookupType(arrayIndexNode->kids[0]);
+                if (!arrayType || arrayType->basicType != ARRAY_TYPE){
+                    typeError("LHS is not an array variable", n);
+                    break;
+                }
+                if (!arrayType->u.array.elemType){
+                    typeError("Array element type is missing", n);
+                    break;
+                }
+                // We did it \o/
+                typePtr lhsType = arrayType->u.array.elemType;
+                typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
+                if (!coercedType){
+                    typeError("Array assignment type mismatch", n);
+                    break;
+                }
+                n->type = coercedType;
+            } else {
+                typePtr lhsType = lookupType(n->kids[0]);
+                typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
+                if (!coercedType){
+                    typeError("Array assignment type mismatch", n);
+                    break;
+                }
+                n->type = coercedType;
+            }
+            break;
+        }
+
         case arrayAssignAdd:
         case arrayAssignSub:
+        case assignAdd:
+        case assignSub:
         case assignment:
         /*
         kids[0] = IDENTIFIER
@@ -141,7 +185,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             typeCheckExpression(n->kids[1]);
             typePtr rhsType = n->kids[1]->type;
-            typePtr coercedType = coerceAssignment(lhsType, rhsType);
+            typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
             if(!coercedType){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible at line %d\n",
                 typeName(lhsType), typeName(rhsType), n->kids[0]->leaf->lineno); //typeHelpers.c
@@ -239,6 +283,12 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             break;
         }
         case arrayDec:
+        /*
+        kids[0] = variable
+        kids[1] = variableDeclaration
+        kids[2] = arraySize
+        kids[3] = arrayValues
+        */
         {   
             if (!n->kids[1]->type) {
                 typeCheckExpression(n->kids[1]);
@@ -248,9 +298,15 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 break;
             }
             n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
+            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
             break;
         }
         case arrayDecValueless:
+        /*
+        kids[0] = variable
+        kids[1] = variableDeclaration
+        kids[2] = arraySize
+        */
         {
             if (!n->kids[1]->type) {
                 typeCheckExpression(n->kids[1]);
@@ -260,37 +316,82 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 break;
             }
             n->type = alcArrayType(n->kids[2], n->kids[1]->type);
+            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
             break;
         }
 
         case arrayDecEqual:
         {
-            if (!n->kids[1]->type) {
-                typeCheckExpression(n->kids[1]);
+            /*
+            kids[0] = variable
+            kids[1] = variableDeclaration
+            kids[2] = IDENTIFIER
+            kids[3] = primitiveType
+            kids[4] = arraySize
+            kids[5] = arrayValues
+            */
+            if (!n->kids[3]->type) {
+                typeCheckExpression(n->kids[3]);
             }
-            if (!n->kids[1]->type) {
+            if (!n->kids[3]->type) {
                 typeError("Array declaration missing element type", n);
                 break;
             }
-            n->type = alcArrayType(n->kids[7], n->kids[1]->type);
+            n->type = alcArrayType(n->kids[4], n->kids[3]->type);
+            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
             break;
         }
 
         case arrayDecEqualValueless:
+            /*
+            kids[0] = variable
+            kids[1] = variableDeclaration
+            kids[2] = IDENTIFIER
+            kids[3] = primitiveType
+            kids[4] = arraySize
+            */
         {
-            if (!n->kids[1]->type) {
-                typeCheckExpression(n->kids[1]);
+            if (!n->kids[3]->type) {
+                typeCheckExpression(n->kids[3]);
             }
-            if (!n->kids[1]->type) {
+            if (!n->kids[3]->type) {
                 typeError("Array declaration missing element type", n);
                 break;
             }
-            n->type = alcArrayType(n->kids[7], n->kids[1]->type);
+            n->type = alcArrayType(n->kids[4], n->kids[3]->type);
+            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
             break;
         }
         
-        case arrayAccess:
+        case arrayAccess: {
+            // n->kids[0] is the IDENTIFIER token for the array variable.
+            // n->kids[1] is the index expression.
+            // First, ensure the index is type-checked:
+            typeCheckExpression(n->kids[1]);
+            if (!n->kids[1]->type || !typeEquals(n->kids[1]->type, integerType_ptr)) {
+                typeError("Array index must be an integer", n);
+                break;
+            }
+
+            // Look up the array variable's type using its identifier.
+            typePtr arrType = lookupType(n->kids[0]);
+            if (arrType == NULL || arrType->basicType != ARRAY_TYPE) {
+                typeError("Array access must be performed on an array variable", n);
+                break;
+            }
+            if (arrType->u.array.elemType == NULL) {
+                typeError("Array element type is missing", n);
+                break;
+            }
+            
+            // Set the array access node's type to the element type.
+            n->type = copyType(arrType->u.array.elemType);
+            break;
+        }
         case postfixArrayAccess:
+        /*
+        Not sure what to do with these tbh
+        */
         {
             if (!typeEquals(n->kids[0]->type, arrayAnyType_ptr)) {
                 typeError("Array access must be performed on an array", n);
@@ -300,7 +401,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 typeError("Must use Int to determine the index of an array element", n);
                 break;
             }
-            // guard
+
             if (n->kids[0]->type->u.array.elemType == NULL) {
                 typeError("Array element type is missing", n);
                 break;
