@@ -32,16 +32,14 @@ char *typeName(typePtr t){
         "null",
         "byte",
         "int",
-        "short",
-        "long",
-        "float",
         "double",
         "bool",
         "char",
         "string",
         "array",
         "function",
-        "unit"
+        "unit",
+        "range"
     };
     if(!t) return "NULL";
     if(t->basicType < FIRST_TYPE || t->basicType > LAST_TYPE) return "UNKNOWN";

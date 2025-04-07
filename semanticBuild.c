@@ -176,15 +176,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = type
             kids[3] = functionBody
             */
-            assignType(n->kids[3], rootScope);
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
-
-            printf("Name of bodyType: %s\n", n->kids[1]->leaf->text);
-            printf("Name of declaredReturnType: %s\n", typeName(declaredReturnType));
-            printf("Type of bodyType: %s\n", typeName(bodyType));
-            printf("Symbol Table: %s\n", n->table->name);
-            printf("Symbol Table Type: %s\n", getTableType(n->table->tableType));
 
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
@@ -198,8 +191,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
-            printf("\n(funcDecTypeBody) Type of %s: %s\n", n->kids[1]->leaf->text, typeName(n->type));
-            printf("(funcDecTypeBody) Table: %s\n\n", n->table->name);
             break;
         }
         case funcDecType:
@@ -311,24 +302,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         }
         case returnVal:
         {
-            printf("Inside returnVal: n->nkids=%d\n", n->nkids);
             // If we have return expression
             if (n->nkids >= 2) {
-                // what's the child's category?
-                if (n->kids[1]->leaf) {
-                    printf("(returnVal)     Child #1 leaf->category = %d\n", n->kids[1]->leaf->category);
-                    printf("(returnVal)     Child #1 leaf->text = %s\n", n->kids[1]->leaf->text);
-                } else {
-                    // Possibly it's not a leaf, so print its prodrule
-                    printf("(returnVal)     Child #1 prodrule = %d\n", n->kids[1]->prodrule);
-                }
                 typeCheckExpression(n->kids[1]);
-                printf("(returnVal)     Child #1 type after typeCheck: %s\n", typeName(n->kids[1]->type));
                 n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
             } else {
                 n->type = alcType(UNIT_TYPE);
             }
-            printf("(returnVal)     Type of returnVal: %s\n", typeName(n->type));
             break;
         }
         /*
