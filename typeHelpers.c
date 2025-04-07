@@ -362,6 +362,11 @@ void typeCheckExpression(struct tree *node)
         return;
     }
 
+    for(int i = 0; i < node->nkids; i++)
+    {
+        typeCheckExpression(node->kids[i]);
+    }
+
     if(node->nkids == 0)
     {
         leafExpression(node);
@@ -375,7 +380,6 @@ void typeCheckExpression(struct tree *node)
         break;
     case postfixIncr:
     case postfixDecr:
-        typeCheckExpression(node->kids[0]);
         switch (node->kids[0]->type->basicType)
         {
         case INT_TYPE:
@@ -411,12 +415,50 @@ void typeCheckExpression(struct tree *node)
     case postfixSafeDotIDNoExpr:
         //need to add
         break;
+
+    //assigment
+    case assignment:
+    case arrayAssignment:
+        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        node->type = copyType(node->kids[0]->type);
+        break;
+    case assignAdd:
+    case arrayAssignAdd:
+        assignAddExpression(node);
+        break;
+    case assignSub:
+    case arrayAssignSub:
+        assignSubExpression(node);
+        break;
+
+    //structures
+    case forStmntWithVars:
+    case forStmnt:
+    case whileStmntCtrlBody:
+    case whileStmnt:
+    case doWhileStmnt:
+    case whenSubExp:
+    case whenSubVar:
+    case whenEntries: //might not need??
+    case whenEntryConds:
+    case whenConds: //might not need??
+
+        break;
+
     default:
         binaryExpression(node);
         break;
     }
 }
 
+/**
+ * @brief Assigns return type to a fucntion call expression
+ *
+ * @param node
+ */
 struct symEntry *returnType(struct tree *node)
 {
     struct symTab *scope = node->table; //symTab.h
@@ -438,6 +480,11 @@ struct symEntry *returnType(struct tree *node)
     return entry;
 }
 
+/**
+ * @brief Assigns return type and checks the parameters of a function call expression
+ *
+ * @param node
+ */
 void paramTypeCheck(struct tree *node)
 {
     struct symEntry *entry = returnType(node);
@@ -457,7 +504,6 @@ void paramTypeCheck(struct tree *node)
                 typeError("Function call missing arguments", node);
                 return;
             }
-            typeCheckExpression(exprList->kids[0]);
             if (!typeEquals(exprList->kids[0]->type, paramList->type))
             {
                 typeError("Paramater type mismatch", node);
@@ -471,16 +517,19 @@ void paramTypeCheck(struct tree *node)
         typeError("Function call has too many arguments", node);
         return;
     }
-    typeCheckExpression(exprList);
     if (!typeEquals(exprList->type, paramList->type))
     {
         typeError("Paramater type mismatch", node);
     }
 }
 
+/**
+ * @brief Recursivly (with typeCheckExpression) assigns types to prefix expressions
+ * 
+ * @param node
+ */
 void prefixExpression(struct tree *node)
 {
-    typeCheckExpression(node->kids[1]);
     switch (node->kids[0]->prodrule)
     {
     case INCR:
@@ -578,20 +627,163 @@ void leafExpression(struct tree *node)
         }
         break;
     default:
-        typeError("", node);
         break;
     }
 }
 
 /**
- * @brief Recursivly (with typeCheckExpression) assigns types to binary expressions
+ * @brief Assign types to add assigment expressions
+ * 
+ * @param node
+ */
+void assignAddExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Int += x, x must be type Int", node);
+        }
+        node->type = alcType(INT_TYPE); //type.c
+        break;
+    case DOUBLE_TYPE:
+        if (!(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr)))
+        {
+            typeError("Double += x, x must be type Int or Double", node);
+        }
+        node->type = alcType(DOUBLE_TYPE); //type.c
+        break;
+    case CHAR_TYPE:
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Char += x, x must be type Int", node);
+        }
+        node->type = alcType(CHAR_TYPE); //type.c
+        break;
+    case STRING_TYPE:
+        node->type = alcType(STRING_TYPE); //type.c
+        break;
+    case ARRAY_TYPE:
+        switch (node->kids[1]->type->basicType)
+        {
+        case INT_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += type Int to Array<Int>", node);
+            }
+            break;
+        case DOUBLE_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += type Double to Array<Double>", node);
+            }
+            break;
+        case CHAR_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += type Char to Array<Char>", node);
+            }
+            break;
+        case STRING_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += type String to Array<String>", node);
+            }
+            break;
+        case BOOL_TYPE:
+            if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += type Boolean to Array<Boolean>", node);
+            }
+            break;
+        case ARRAY_TYPE:
+            if (typeEquals(node->kids[0]->type, node->kids[1]->type))
+            {
+                node->type = copyType(node->kids[0]->type);
+            }
+            else
+            {
+                typeError("Can only += arrays that have the same subtype", node);
+            }
+            break;
+        case UNIT_TYPE:
+            typeError("Cannot add with Unit type", node);
+            break;
+        default:
+            typeError("", node);
+            break;
+        }
+        break;
+    default:
+        typeError("The += operator cannot be used with types Boolean or Unit", node);
+        break;
+    }
+}
+
+/**
+ * @brief Assign types sub assignment expressions
+ * 
+ * @param node
+ */
+void assignSubExpression(struct tree *node)
+{
+    switch (node->kids[0]->type->basicType)
+    {
+    case INT_TYPE:
+        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Int -= x, x must be type Int", node);
+        }
+        node->type = alcType(INT_TYPE); //type.c
+        break;
+    case DOUBLE_TYPE:
+        if (!(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr)))
+        {
+            typeError("Double -= x, x must be type Int or Double", node);
+        }
+        node->type = alcType(DOUBLE_TYPE); //type.c
+        break;
+    case CHAR_TYPE:
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Char += x, x must be type Int", node);
+        }
+        node->type = alcType(CHAR_TYPE); //type.c
+        break;
+    default:
+        typeError("The -= operator can only be used with types Int, Double, and Char", node);
+        break;
+    }
+}
+
+/**
+ * @brief Assigns types to binary expressions
  * 
  * @param node
  */
 void binaryExpression(struct tree *node)
 {
-    typeCheckExpression(node->kids[0]);
-    typeCheckExpression(node->kids[1]);
     switch (node->prodrule)
     {
     case disj:
@@ -650,6 +842,7 @@ void binaryExpression(struct tree *node)
         break;
     case arrayAccess:
     case postfixArrayAccess:
+    case arrayIndex:
         if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
         {
             typeError("Array access must be performed on an array", node);
@@ -662,11 +855,15 @@ void binaryExpression(struct tree *node)
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
-        typeError("", node);
         break;
     }
 }
 
+/**
+ * @brief Assigns types to in expressions
+ * 
+ * @param node
+ */
 void inExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -712,6 +909,11 @@ void inExpression(struct tree *node)
     node->type = alcType(BOOL_TYPE); // type.c
 }
 
+/**
+ * @brief Assigns types to add expressions
+ * 
+ * @param node
+ */
 void addExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -754,10 +956,6 @@ void addExpression(struct tree *node)
         }
         break;
     case STRING_TYPE:
-        if (typeEquals(node->kids[1]->type, unitType_ptr))
-        {
-            typeError("Cannot add type Unit to type String", node);
-        }
         node->type = alcType(STRING_TYPE); // type.c
         break;
     case BOOL_TYPE:
@@ -843,6 +1041,11 @@ void addExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns types to sub expressions
+ * 
+ * @param node
+ */
 void subExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -893,6 +1096,11 @@ void subExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns types to multaplicative expressions
+ * 
+ * @param node
+ */
 void multaplicativeExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -929,6 +1137,11 @@ void multaplicativeExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Prints type error message and sets symError to 1
+ * 
+ * @param node
+ */
 void typeError(char *message, struct tree *node)
 {
     while(node->nkids != 0)
