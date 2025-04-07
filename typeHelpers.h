@@ -19,6 +19,8 @@ void paramTypeCheck(struct tree *node);
 void prefixExpression(struct tree *node);
 struct symEntry *returnType(struct tree *node);
 void leafExpression(struct tree *node);
+void assignAddExpression(struct tree *node);
+void assignSubExpression(struct tree *node);
 void binaryExpression(struct tree *node);
 void multaplicativeExpression(struct tree *node);
 void subExpression(struct tree *node);
