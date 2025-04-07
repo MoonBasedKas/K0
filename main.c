@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
         root = NULL;
         rootScope = createTable(NULL, "global", PACKAGE);
         //populateTypes();
-        //populateStdlib(); //symTabHelper.c
+        populateStdlib(); //symTabHelper.c
 
         //checks that the file name is legal and opens the file
         openFile(fileNames[i]);
