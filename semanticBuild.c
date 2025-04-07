@@ -110,6 +110,10 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case arrayAssignAdd:
         case arrayAssignSub:
         case assignment:
+        /*
+        kids[0] = IDENTIFIER
+        kids[1] = expression
+        */
         {
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
@@ -127,9 +131,14 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             /*
             FUN IDENTIFIER functionValueParameters COLON type functionBody
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = functionValueParameters
+            kids[3] = type
+            kids[4] = functionBody
             */
-            typePtr declaredReturnType = n->kids[3]->type;
-            typePtr bodyType = n->kids[4]->type;
+            typePtr declaredReturnType = n->kids[4]->type;
+            typePtr bodyType = n->kids[5]->type;
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecAll) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
@@ -245,6 +254,16 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             break;
         }
+        case funcBody:
+        {
+            // kids[0] = '=' token, kids[1] = expression
+            if (n->nkids >= 2 && n->kids[1]->type) {
+                n->type = n->kids[1]->type;
+            } else {
+                n->type = alcType(UNIT_TYPE);
+            }
+            break;
+        }
         case blockEmpty:
         {
             // No statements => Unit
@@ -280,12 +299,12 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             break;
         }
-        case funcBody:
+        case statement:
         {
-            // kids[0] = '=' token, kids[1] = expression
-            if (n->nkids >= 2 && n->kids[1]->type) {
-                n->type = n->kids[1]->type;
+            if (n->nkids > 0 && n->kids[0]->type != NULL) {
+                n->type = n->kids[0]->type;
             } else {
+                // loops and declarations are allowed to be Unit
                 n->type = alcType(UNIT_TYPE);
             }
             break;

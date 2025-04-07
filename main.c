@@ -74,7 +74,6 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
-                    printTable(rootScope);
         struct symEntry *x = NULL;
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
