@@ -454,6 +454,11 @@ void typeCheckExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns return type to a fucntion call expression
+ *
+ * @param node
+ */
 struct symEntry *returnType(struct tree *node)
 {
     struct symTab *scope = node->table; //symTab.h
@@ -475,6 +480,11 @@ struct symEntry *returnType(struct tree *node)
     return entry;
 }
 
+/**
+ * @brief Assigns return type and checks the parameters of a function call expression
+ *
+ * @param node
+ */
 void paramTypeCheck(struct tree *node)
 {
     struct symEntry *entry = returnType(node);
@@ -513,6 +523,11 @@ void paramTypeCheck(struct tree *node)
     }
 }
 
+/**
+ * @brief Recursivly (with typeCheckExpression) assigns types to prefix expressions
+ * 
+ * @param node
+ */
 void prefixExpression(struct tree *node)
 {
     switch (node->kids[0]->prodrule)
@@ -616,6 +631,11 @@ void leafExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assign types to add assigment expressions
+ * 
+ * @param node
+ */
 void assignAddExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -721,6 +741,11 @@ void assignAddExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assign types sub assignment expressions
+ * 
+ * @param node
+ */
 void assignSubExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -753,7 +778,7 @@ void assignSubExpression(struct tree *node)
 }
 
 /**
- * @brief Recursivly (with typeCheckExpression) assigns types to binary expressions
+ * @brief Assigns types to binary expressions
  * 
  * @param node
  */
@@ -834,6 +859,11 @@ void binaryExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns types to in expressions
+ * 
+ * @param node
+ */
 void inExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -879,6 +909,11 @@ void inExpression(struct tree *node)
     node->type = alcType(BOOL_TYPE); // type.c
 }
 
+/**
+ * @brief Assigns types to add expressions
+ * 
+ * @param node
+ */
 void addExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -1006,6 +1041,11 @@ void addExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns types to sub expressions
+ * 
+ * @param node
+ */
 void subExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -1056,6 +1096,11 @@ void subExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns types to multaplicative expressions
+ * 
+ * @param node
+ */
 void multaplicativeExpression(struct tree *node)
 {
     switch (node->kids[0]->type->basicType)
@@ -1092,6 +1137,11 @@ void multaplicativeExpression(struct tree *node)
     }
 }
 
+/**
+ * @brief Prints type error message and sets symError to 1
+ * 
+ * @param node
+ */
 void typeError(char *message, struct tree *node)
 {
     while(node->nkids != 0)
