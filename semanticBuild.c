@@ -140,8 +140,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
-            typePtr declaredReturnType = n->kids[4]->type;
-            typePtr bodyType = n->kids[5]->type;
+            typePtr declaredReturnType = n->kids[3]->type;
+            typePtr bodyType = n->kids[4]->type;
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecAll) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
@@ -183,12 +183,14 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             typePtr bodyType = n->kids[3]->type;
 
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
-                fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
-                n->kids[1]->leaf->text, typeName(bodyType),
-                typeName(declaredReturnType)); //typeHelpers.c
-                symError = 3;
-                //return ;
-                // exit(3);
+                if (bodyType->basicType == UNIT_TYPE) {
+                    bodyType = declaredReturnType;
+                } else {
+                    fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
+                    n->kids[1]->leaf->text, typeName(bodyType),
+                    typeName(declaredReturnType)); //typeHelpers.c
+                    symError = 3;
+                }
             }
             // Create an empty param node
             struct tree *emptyParam = createEmptyParam();
