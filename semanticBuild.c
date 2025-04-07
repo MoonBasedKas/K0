@@ -43,6 +43,9 @@ static void checkLeafType(struct tree *n)
         case NULL_K:
             n->type = alcType(NULL_TYPE);
             break;
+        case VOID:
+            n->type = alcType(UNIT_TYPE);
+            break;
         /* inc sus code */
         // case IDENTIFIER:
         //     printf("Identifier: %s\n",
