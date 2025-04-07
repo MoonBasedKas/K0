@@ -364,16 +364,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         }
         
         case arrayAccess: {
-            // n->kids[0] is the IDENTIFIER token for the array variable.
-            // n->kids[1] is the index expression.
-            // First, ensure the index is type-checked:
+            /* How to synthesize this? */
             typeCheckExpression(n->kids[1]);
             if (!n->kids[1]->type || !typeEquals(n->kids[1]->type, integerType_ptr)) {
                 typeError("Array index must be an integer", n);
                 break;
             }
 
-            // Look up the array variable's type using its identifier.
             typePtr arrType = lookupType(n->kids[0]);
             if (arrType == NULL || arrType->basicType != ARRAY_TYPE) {
                 typeError("Array access must be performed on an array variable", n);
