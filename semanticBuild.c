@@ -104,6 +104,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             zaWorldo:
             n->type = n->kids[1]->type;
+            printf("varDec: %s: %s -> line %d\n", n->kids[0]->leaf->text, typeName(n->type), n->kids[0]->leaf->lineno);
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
 
@@ -120,9 +121,10 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
+            printf("lhsType: %s: %s -> line %d\n", n->kids[0]->leaf->text, typeName(lhsType), n->kids[0]->leaf->lineno);
             if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
-                fprintf(stderr, "Type error: %s and %s are not compatible\n",
-                typeName(lhsType), typeName(rhsType)); //typeHelpers.c
+                fprintf(stderr, "Type error: %s and %s are not compatible at line %d\n",
+                typeName(lhsType), typeName(rhsType), n->kids[0]->leaf->lineno); //typeHelpers.c
                 symError = 3;
                 return ;
                 // exit(3);
