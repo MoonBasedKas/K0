@@ -92,13 +92,15 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             goto zaWorldo; // This is probably a bad idea.
         case varDec:
+            /*
+            kids[0] = IDENTIFIER
+            kids[1] = type
+            */
             if (n->kids[1]->prodrule == arrayTypeQuests){
                 changeNullable(n->table, n->kids[0]->leaf->text, indexNullable);
             }
             zaWorldo:
             n->type = n->kids[1]->type;
-            printf("(varDec)    Type of %s: %s\n", n->kids[0]->leaf->text, typeName(n->type));
-            printf("(varDec)    Table: %s\n", n->table->name);
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
 
@@ -109,7 +111,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case arrayAssignSub:
         case assignment:
         {
-            typeCheckExpression(n->kids[1]);
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
             if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
@@ -161,13 +162,21 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             /*
             FUN IDENTIFIER LPAREN RPAREN COLON type functionBody
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = type
+            kids[3] = functionBody
             */
+            assignType(n->kids[3], rootScope);
             typePtr declaredReturnType = n->kids[2]->type;
             typePtr bodyType = n->kids[3]->type;
+
             printf("Name of bodyType: %s\n", n->kids[1]->leaf->text);
+            printf("Name of declaredReturnType: %s\n", typeName(declaredReturnType));
             printf("Type of bodyType: %s\n", typeName(bodyType));
             printf("Symbol Table: %s\n", n->table->name);
             printf("Symbol Table Type: %s\n", getTableType(n->table->tableType));
+
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
