@@ -43,6 +43,26 @@ static void checkLeafType(struct tree *n)
         case NULL_K:
             n->type = alcType(NULL_TYPE);
             break;
+        /* inc sus code */
+        // case IDENTIFIER:
+        //     printf("Identifier: %s\n",
+        //             n->leaf->text ? n->leaf->text : "null");
+        //     printf("Table: %s\n", n->table->name);
+        //     struct symTab *scope = n->table;
+        //     struct symEntry *entry = NULL;
+        //     while (scope && !entry) {
+        //         printf("Current scope: %s\n", scope->name);
+        //         entry = contains(scope, n->leaf->text);
+        //         scope = scope->parent;
+        //     }
+        //     if (entry) {
+        //         n->type = entry->type;
+        //         printf("Type of %s: %s\n", n->leaf->text, typeName(n->type));
+        //     } else {
+        //         fprintf(stderr, "Error | %s is not declared.\n", n->leaf->text);
+        //         symError = 1;
+        //     }
+        //     break;
         default:
             return;
     }
@@ -61,7 +81,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
     }
 
     checkLeafType(n);
-
+    
     switch (n->prodrule){
         case varDecQuests: // Sets the entry to nullable.
 
@@ -77,7 +97,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             zaWorldo:
             n->type = n->kids[1]->type;
-            printf("Type of %s: %s\n", n->kids[0]->leaf->text, typeName(n->type));
+            printf("(varDec)    Type of %s: %s\n", n->kids[0]->leaf->text, typeName(n->type));
+            printf("(varDec)    Table: %s\n", n->table->name);
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
 
@@ -88,6 +109,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case arrayAssignSub:
         case assignment:
         {
+            typeCheckExpression(n->kids[1]);
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
             typePtr rhsType = n->kids[1]->type;
             if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
@@ -144,17 +166,22 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             typePtr bodyType = n->kids[3]->type;
             printf("Name of bodyType: %s\n", n->kids[1]->leaf->text);
             printf("Type of bodyType: %s\n", typeName(bodyType));
+            printf("Symbol Table: %s\n", n->table->name);
+            printf("Symbol Table Type: %s\n", getTableType(n->table->tableType));
             if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
                 fprintf(stderr, "(funcDecTypeBody) Type error in function %s: body type %s does not match the return type %s.\n",
                 n->kids[1]->leaf->text, typeName(bodyType),
                 typeName(declaredReturnType)); //typeHelpers.c
                 symError = 3;
-                return ;
+                //return ;
                 // exit(3);
             }
             // Create an empty param node
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+            printf("\n(funcDecTypeBody) Type of %s: %s\n", n->kids[1]->leaf->text, typeName(n->type));
+            printf("(funcDecTypeBody) Table: %s\n\n", n->table->name);
             break;
         }
         case funcDecType:
@@ -256,25 +283,24 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         }
         case returnVal:
         {
-            /*
-              For "return expression", kids[1] is the expression but I need to check
-              for VOID/UNIT_TYPE
-            */
             printf("Inside returnVal: n->nkids=%d\n", n->nkids);
+            // If we have return expression
             if (n->nkids >= 2) {
-                if (n->kids[1]) {
-                    printf("Child #1 prodrule = %d\n", n->kids[1]->prodrule);
-                    printf("Child #1 type currently = %s\n", typeName(n->kids[1]->type));
+                // what's the child's category?
+                if (n->kids[1]->leaf) {
+                    printf("(returnVal)     Child #1 leaf->category = %d\n", n->kids[1]->leaf->category);
+                    printf("(returnVal)     Child #1 leaf->text = %s\n", n->kids[1]->leaf->text);
+                } else {
+                    // Possibly it's not a leaf, so print its prodrule
+                    printf("(returnVal)     Child #1 prodrule = %d\n", n->kids[1]->prodrule);
                 }
-            }
-            if (n->nkids >= 2 && n->kids[1] != NULL) {
-                // "return expression" -> adopt child's type
-                n->type = n->kids[1]->type;
+                typeCheckExpression(n->kids[1]);
+                printf("(returnVal)     Child #1 type after typeCheck: %s\n", typeName(n->kids[1]->type));
+                n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
             } else {
-                // "return" with no expression -> Unit
-                n->type = alcType(UNIT_TYPE);  // from type.c
+                n->type = alcType(UNIT_TYPE);
             }
-            printf("Type of returnVal: %s\n", typeName(n->type));
+            printf("(returnVal)     Type of returnVal: %s\n", typeName(n->type));
             break;
         }
         /*
