@@ -72,6 +72,23 @@ static void checkLeafType(struct tree *n)
 }
 
 /**
+ * @brief Coerces an assignment to a type
+ *
+ * @param lhs
+ * @param rhs
+ * @return typePtr
+ */
+typePtr coerceAssignment(typePtr lhs, typePtr rhs) {
+    if (typeEquals(lhs, rhs))
+        return lhs;
+    if (lhs->basicType == INT_TYPE && rhs->basicType == DOUBLE_TYPE)
+        return rhs;
+    if (rhs->basicType == UNIT_TYPE)
+        return lhs;
+    return NULL;
+}
+
+/**
  * @brief Assigns a type to a node
  *
  * @param node
@@ -120,16 +137,24 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         */
         {
             typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
+            if (n->kids[1] == NULL) {
+                printf("%d\n", n->kids[1]->prodrule);
+            }
+            typeCheckExpression(n->kids[1]);
             typePtr rhsType = n->kids[1]->type;
             printf("lhsType: %s: %s -> line %d\n", n->kids[0]->leaf->text, typeName(lhsType), n->kids[0]->leaf->lineno);
-            if(!typeEquals(lhsType, rhsType)){ //typeHelpers.c
+            typePtr coercedType = coerceAssignment(lhsType, rhsType);
+            if(!coercedType){ //typeHelpers.c
                 fprintf(stderr, "Type error: %s and %s are not compatible at line %d\n",
                 typeName(lhsType), typeName(rhsType), n->kids[0]->leaf->lineno); //typeHelpers.c
                 symError = 3;
                 return ;
                 // exit(3);
             }
-            n->type = alcType(lhsType->basicType); // TODO: Check if this is correct - type.c
+            n->type = coercedType; // TODO: Check if this is correct - type.c
+            if (!typeEquals(lhsType, coercedType)) {
+                assignEntrytype(n->table, n->kids[0]->leaf->text, coercedType);
+            }
             break;
         }
         case funcDecAll:
