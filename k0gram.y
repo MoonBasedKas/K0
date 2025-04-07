@@ -91,6 +91,7 @@
 %token <treeptr> LONG
 %token <treeptr> FLOAT
 %token <treeptr> DOUBLE
+%token <treeptr> VOID
 %token <treeptr> CHAR
 %token <treeptr> STRING
 %token <treeptr> BOOL
@@ -297,6 +298,7 @@ primitiveType:
     | CHAR    {$$ = $1;}
     | STRING  {$$ = $1;}
     | NULL_K  {$$ = $1;}
+    | VOID    {$$ = $1;}
     ;
     
 userType:

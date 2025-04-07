@@ -86,6 +86,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "Boolean"										{ return leaf(BOOL); }
 "Char"											{ return leaf(CHAR); }
 "String"										{ return leaf(STRING); }
+"Void"											{ return leaf(VOID); }
 "="												{ return leaf(ASSIGNMENT); }
 "+="											{ return leaf(ADD_ASSIGNMENT); }
 "-="											{ return leaf(SUB_ASSIGNMENT); }
