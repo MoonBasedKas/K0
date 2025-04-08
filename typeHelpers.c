@@ -437,9 +437,15 @@ void typeCheckExpression(struct tree *node)
     //structures
     case forStmntWithVars:
     case forStmnt:
+        forStatement(node);
+        break;
     case whileStmntCtrlBody:
     case whileStmnt:
+        
+        break;
     case doWhileStmnt:
+
+        break;
     case whenSubExp:
     case whenSubVar:
     case whenEntries: //might not need??
@@ -773,6 +779,51 @@ void assignSubExpression(struct tree *node)
         break;
     default:
         typeError("The -= operator can only be used with types Int, Double, and Char", node);
+        break;
+    }
+}
+
+/**
+ * @brief Type checks for statments
+ * 
+ * @param node
+ */
+void forStatement(struct tree *node)
+{
+    switch (node->kids[1]->type->basicType)
+    {
+    case INT_TYPE:
+        if (!(typeEquals(node->kids[2]->type, arrayIntegerType_ptr) || typeEquals(node->kids[2]->type, rangeIntegerType_ptr)))
+        {
+            typeError("Expression in four statment must be itterable over Ints", node);
+        }
+        break;
+    case DOUBLE_TYPE:
+        if (!(typeEquals(node->kids[2]->type, arrayDoubleType_ptr) || typeEquals(node->kids[2]->type, rangeDoubleType_ptr)))
+        {
+            typeError("Expression in four statment must be itterable over Doubles", node);
+        }
+        break;
+    case CHAR_TYPE:
+        if (!(typeEquals(node->kids[2]->type, arrayCharType_ptr) || typeEquals(node->kids[2]->type, rangeCharType_ptr) || typeEquals(node->kids[2]->type, stringType_ptr)))
+        {
+            typeError("Expression in four statment must be itterable over Chars", node);
+        }
+        break;
+    case STRING_TYPE:
+        if (!(typeEquals(node->kids[2]->type, arrayStringType_ptr) || typeEquals(node->kids[2]->type, rangeStringType_ptr)))
+        {
+            typeError("Expression in four statment must be itterable over Strings", node);
+        }
+        break;
+    case BOOL_TYPE:
+        if (!typeEquals(node->kids[2]->type, arrayBooleanType_ptr))
+        {
+            typeError("Expression in four statment must be itterable over Booleans", node);
+        }
+        break;
+    default:
+        typeError("For loop - Invalid variable type", node);
         break;
     }
 }
