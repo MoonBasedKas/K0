@@ -44,29 +44,6 @@ static void checkLeafType(struct tree *n)
         case NULL_K:
             n->type = alcType(NULL_TYPE);
             break;
-        case VOID:
-            n->type = alcType(UNIT_TYPE);
-            break;
-        /* inc sus code */
-        // case IDENTIFIER:
-        //     printf("Identifier: %s\n",
-        //             n->leaf->text ? n->leaf->text : "null");
-        //     printf("Table: %s\n", n->table->name);
-        //     struct symTab *scope = n->table;
-        //     struct symEntry *entry = NULL;
-        //     while (scope && !entry) {
-        //         printf("Current scope: %s\n", scope->name);
-        //         entry = contains(scope, n->leaf->text);
-        //         scope = scope->parent;
-        //     }
-        //     if (entry) {
-        //         n->type = entry->type;
-        //         printf("Type of %s: %s\n", n->leaf->text, typeName(n->type));
-        //     } else {
-        //         fprintf(stderr, "Error | %s is not declared.\n", n->leaf->text);
-        //         symError = 1;
-        //     }
-        //     break;
         default:
             return;
     }
@@ -130,97 +107,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type); // very nice!
             break;
         }
-        case arrayAssignment:
-        /*
-        kids[0] = arrayIndex
-        kids[1] = expression
-        */
-        {
-            typeCheck(n->kids[1]);
-            typePtr rhsType = n->kids[1]->type;
-            n->type = n->kids[0]->type;
-
-            if (n->kids[0]->prodrule == arrayIndex || n->kids[0]->prodrule == arrayAccess){
-                struct tree *arrayIndexNode = n->kids[0];
-                typePtr arrayType = lookupType(arrayIndexNode->kids[0]);
-                if (!arrayType || arrayType->basicType != ARRAY_TYPE){
-                    typeError("LHS is not an array variable", n);
-                    break;
-                }
-                if (!arrayType->u.array.elemType){
-                    typeError("Array element type is missing", n);
-                    break;
-                }
-                // We did it \o/
-                typePtr lhsType = arrayType->u.array.elemType;
-                typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
-                if (!coercedType){
-                    typeError("Array assignment type mismatch", n);
-                    break;
-                }
-                n->type = coercedType;
-            } else {
-                typePtr lhsType = lookupType(n->kids[0]);
-                typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
-                if (!coercedType){
-                    typeError("Array assignment type mismatch", n);
-                    break;
-                }
-                n->type = coercedType;
-            }
-            break;
-        }
-        case arrayIndex:
-            /*
-            kids[0] = IDENTIFIER
-            kids[1] = INTEGER_LITERAL
-            */
-        {
-            printf("arrayIndex called\n");
-
-            typePtr arrayType = lookupType(n->kids[0]);
-            printf("arrayType: %s\n", typeName(arrayType));
-            if (!arrayType || arrayType->basicType != ARRAY_TYPE){
-                typeError("Array index must be an array variable", n);
-                break;
-            }
-            if (arrayType->u.array.elemType == NULL){
-                typeError("Array element type is missing", n);
-                break;
-            }
-            n->type = copyType(arrayType->u.array.elemType);
-            break;
-        }
-        case arrayAssignAdd:
-        case arrayAssignSub:
-        case assignAdd:
-        case assignSub:
-        case assignment:
-        /*
-        kids[0] = IDENTIFIER
-        kids[1] = expression
-        */
-        {
-            typePtr lhsType = lookupType(n->kids[0]); //typeHelpers.c
-            if (n->kids[1] == NULL) {
-                printf("%d\n", n->kids[1]->prodrule);
-            }
-            typeCheck(n->kids[1]);
-            typePtr rhsType = n->kids[1]->type;
-            typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
-            if(!coercedType){ //typeHelpers.c
-                fprintf(stderr, "Type error: %s and %s are not compatible at line %d\n",
-                typeName(lhsType), typeName(rhsType), n->kids[0]->leaf->lineno); //typeHelpers.c
-                symError = 3;
-                return ;
-                // exit(3);
-            }
-            n->type = coercedType; // TODO: Check if this is correct - type.c
-            if (!typeEquals(lhsType, coercedType)) {
-                assignEntrytype(n->table, n->kids[0]->leaf->text, coercedType);
-            }
-            break;
-        }
         case funcDecAll:
         {
             /*
@@ -233,13 +119,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             typePtr declaredReturnType = n->kids[3]->type;
             typePtr bodyType = n->kids[4]->type;
-            if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
-                fprintf(stderr, "(funcDecAll) Type error in function %s: body type %s does not match the return type %s.\n",
-                n->kids[1]->leaf->text, typeName(bodyType),
-                typeName(declaredReturnType)); //typeHelpers.c
-                symError = 3;
-                return ;
-                // exit(3);
+            if (!typeEquals(declaredReturnType, bodyType)) { //typeHelpers.c
+                typeError("Type error in function", n);
             }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
@@ -248,6 +129,10 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             /*
             FUN IDENTIFIER functionValueParameters COLON type
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = functionValueParameters
+            kids[3] = type
             */
             rootScope = contains(rootScope, n->kids[1]->leaf->text)->scope;
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
@@ -257,6 +142,10 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             /*
             FUN IDENTIFIER functionValueParameters functionBody
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = functionValueParameters
+            kids[3] = functionBody
             */
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
@@ -384,120 +273,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             n->type = alcArrayType(n->kids[4], n->kids[3]->type);
             assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
-            break;
-        }
-        
-        case arrayAccess: {
-            printf("Array access called\n");
-            /* How to synthesize this? */
-            typeCheck(n->kids[1]);
-            if (!n->kids[1]->type || !typeEquals(n->kids[1]->type, integerType_ptr)) {
-                typeError("Array index must be an integer", n);
-                break;
-            }
-
-            typePtr arrType = lookupType(n->kids[0]);
-            if (arrType == NULL || arrType->basicType != ARRAY_TYPE) {
-                typeError("Array access must be performed on an array variable", n);
-                break;
-            }
-            if (arrType->u.array.elemType == NULL) {
-                typeError("Array element type is missing", n);
-                break;
-            }
-            
-            // Set the array access node's type to the element type.
-            n->type = copyType(arrType->u.array.elemType);
-            break;
-        }
-        case postfixArrayAccess:
-        /*
-        Not sure what to do with these tbh
-        */
-        {
-            if (!typeEquals(n->kids[0]->type, arrayAnyType_ptr)) {
-                typeError("Array access must be performed on an array", n);
-                break;
-            }
-            if (!typeEquals(n->kids[1]->type, integerType_ptr)) {
-                typeError("Must use Int to determine the index of an array element", n);
-                break;
-            }
-
-            if (n->kids[0]->type->u.array.elemType == NULL) {
-                typeError("Array element type is missing", n);
-                break;
-            }
-            n->type = alcType(n->kids[0]->type->u.array.elemType->basicType);
-            break;
-        }
-        case range:
-        case rangeUntil:
-        {
-            typePtr leftType  = n->kids[0]->type;
-            typePtr rightType = n->kids[1]->type;
-
-            if (leftType->basicType == INT_TYPE && rightType->basicType == INT_TYPE) {
-                // n->type = rangeType_ptr;
-                n->type = alcType(RANGE_TYPE);
-            } else {
-                typeError("range or rangeUntil requires two Int expressions", n);
-            }
-            break;
-        }
-        case funcBody:
-        {
-            // kids[0] = '=' token, kids[1] = expression
-            if (n->nkids >= 2 && n->kids[1]->type) {
-                n->type = n->kids[1]->type;
-            } else {
-                n->type = alcType(UNIT_TYPE);
-            }
-            break;
-        }
-        case blockEmpty:
-        {
-            // No statements => Unit
-            n->type = alcType(UNIT_TYPE);
-            break;
-        }
-        case blockStmnts:
-        {
-            // { statements }
-            // type if it exists, else default to Unit
-            typePtr stmtsType = n->kids[1]->type;
-            if (!stmtsType) {
-                stmtsType = alcType(UNIT_TYPE);
-            }
-            n->type = stmtsType;
-            break;
-        }
-        case statementsMultiple:
-        {
-            /*
-            statements -> statement SEMICOLON statements
-            kids[0] is the first statement, kids[1] is the rest
-            adopt the type of the last child for expression blocks?
-            or we always do Unit?
-            */
-            typePtr tailType = n->kids[1]->type;
-            if (tailType) {
-                n->type = tailType;
-            } else if (n->kids[0]->type) {
-                n->type = n->kids[0]->type;
-            } else {
-                n->type = alcType(UNIT_TYPE);
-            }
-            break;
-        }
-        case statement:
-        {
-            if (n->nkids > 0 && n->kids[0]->type != NULL) {
-                n->type = n->kids[0]->type;
-            } else {
-                // loops and declarations are allowed to be Unit
-                n->type = alcType(UNIT_TYPE);
-            }
             break;
         }
         case returnVal:
