@@ -6,6 +6,7 @@
 #include "type.h"
 #include "symTab.h"
 #include "typeHelpers.h"
+#include "typeCheck.h"
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
 #include "lex.h"
@@ -135,8 +136,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[1] = expression
         */
         {
-            printf("arrayAssignment called\n");
-            typeCheckExpression(n->kids[1]);
+            typeCheck(n->kids[1]);
             typePtr rhsType = n->kids[1]->type;
             n->type = n->kids[0]->type;
 
@@ -205,7 +205,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             if (n->kids[1] == NULL) {
                 printf("%d\n", n->kids[1]->prodrule);
             }
-            typeCheckExpression(n->kids[1]);
+            typeCheck(n->kids[1]);
             typePtr rhsType = n->kids[1]->type;
             typePtr coercedType = coerceAssignment(n, lhsType, rhsType);
             if(!coercedType){ //typeHelpers.c
@@ -314,7 +314,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {   
             printf("arrayDec called\n");
             if (!n->kids[1]->type) {
-                typeCheckExpression(n->kids[1]);
+                typeCheck(n->kids[1]);
             }
             if (!n->kids[1]->type) {
                 typeError("Array type must be specified", n);
@@ -332,7 +332,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         */
         {
             if (!n->kids[1]->type) {
-                typeCheckExpression(n->kids[1]);
+                typeCheck(n->kids[1]);
             }
             if (!n->kids[1]->type) {
                 typeError("Array declaration missing element type", n);
@@ -355,7 +355,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             printf("arrayDecEqual called\n");
             if (!n->kids[3]->type) {
-                typeCheckExpression(n->kids[3]);
+                typeCheck(n->kids[3]);
             }
             if (!n->kids[3]->type) {
                 typeError("Array declaration missing element type", n);
@@ -376,7 +376,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
         {
             if (!n->kids[3]->type) {
-                typeCheckExpression(n->kids[3]);
+                typeCheck(n->kids[3]);
             }
             if (!n->kids[3]->type) {
                 typeError("Array declaration missing element type", n);
@@ -390,7 +390,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case arrayAccess: {
             printf("Array access called\n");
             /* How to synthesize this? */
-            typeCheckExpression(n->kids[1]);
+            typeCheck(n->kids[1]);
             if (!n->kids[1]->type || !typeEquals(n->kids[1]->type, integerType_ptr)) {
                 typeError("Array index must be an integer", n);
                 break;
@@ -504,7 +504,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             // If we have return expression
             if (n->nkids >= 2) {
-                typeCheckExpression(n->kids[1]);
+                typeCheck(n->kids[1]);
                 n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
             } else {
                 n->type = alcType(UNIT_TYPE);
