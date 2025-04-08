@@ -135,7 +135,7 @@ typePtr determineReturnType(struct tree *r) {
         if (r->type != NULL)
             return r->type;
         else {
-            fprintf(stderr, "Function return type not found\n");
+            fprintf(stderr, "Function return type not found at string\n");
             symError = 3;
         }
     }

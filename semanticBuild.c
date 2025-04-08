@@ -117,11 +117,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
-            typePtr declaredReturnType = n->kids[3]->type;
-            typePtr bodyType = n->kids[4]->type;
-            if (!typeEquals(declaredReturnType, bodyType)) { //typeHelpers.c
-                typeError("Type error in function", n);
-            }
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
@@ -159,16 +154,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = type
             kids[3] = functionBody
             */
-            typePtr declaredReturnType = n->kids[2]->type;
-            typePtr bodyType = n->kids[3]->type;
 
-            if(!typeEquals(declaredReturnType, bodyType)){ //typeHelpers.c
-                if (bodyType->basicType == UNIT_TYPE) {
-                    bodyType = declaredReturnType;
-                } else {
-                    typeError("Body type does not match declared return type.\n", n);
-                }
-            }
             // Create an empty param node
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
@@ -201,7 +187,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[3] = arrayValues
         */
         {   
-            printf("arrayDec called\n");
+       
             if (!n->kids[1]->type) {
                 typeCheck(n->kids[1]);
             }
@@ -286,12 +272,25 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             }
             break;
         }
+        case arrayType:
         /*
-        Need IFelse stuff
-        If can be a statement or an expression => check children?
-        Statement = Unit
-        Expression = Type of the expression
+        kids[0] = IDENTIFIER
+        kids[1] = type
         */
+        {
+            n->type = n->kids[1]->type;
+            break;
+        }
+        case arrayTypeQuests:
+        /*
+        kids[0] = IDENTIFIER
+        kids[1] = type
+        kids[2] = quests
+        */
+        {
+            n->type = alcArrayType(n->kids[1], n->kids[2]->type);
+            break;
+        }
         default:
         {
             break;
