@@ -434,17 +434,24 @@ void typeCheckExpression(struct tree *node)
         assignSubExpression(node);
         break;
 
-    //structures
+    //statments
     case forStmntWithVars:
+        //might need something different here??? Not sure
     case forStmnt:
         forStatement(node);
         break;
     case whileStmntCtrlBody:
     case whileStmnt:
-        
+        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        {
+            typeError("While condition must be of type Boolean", node);
+        }
         break;
     case doWhileStmnt:
-
+        if(!typeEquals(node->kids[3]->type, booleanType_ptr))
+        {
+            typeError("While condition must be of type Boolean", node);
+        }
         break;
     case whenSubExp:
     case whenSubVar:
@@ -452,6 +459,21 @@ void typeCheckExpression(struct tree *node)
     case whenEntryConds:
     case whenConds: //might not need??
 
+        break;
+
+    //need ifs
+    case emptyIf:
+    case if_k:
+    case ifElse:
+    case ifElseIf:
+        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        {
+            typeError("If condition must be of type Boolean", node);
+        }
+        //NOT DONE, need to check types match?? and give type
+        //might need to have if assignment as own grammer rule????
+        //otherwise how to tell that it is an expression or not
+        //idk
         break;
 
     default:
