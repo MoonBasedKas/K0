@@ -826,8 +826,38 @@ void binaryExpression(struct tree *node)
         inExpression(node);
         break;
     case range:
+        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
+            || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
+        {
+            typeError("Range operators cannot be of type Array or Unit", node);
+        }
+        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        {
+            typeError("Range operators must be of same type", node);
+        }
+        node->type = alcType(RANGE_TYPE);
+        node->type->u.range.elemType = node->kids[0]->type;
+        node->type->u.range.open = 0;
     case rangeUntil:
-        //need range types
+        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
+            || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
+        {
+            typeError("Range operators cannot be of type Array or Unit", node);
+        }
+        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        {
+            typeError("Range operators must be of same type", node);
+        }
+        node->type = alcType(RANGE_TYPE);
+        node->type->u.range.elemType = node->kids[0]->type;
+        if(typeEquals(node->kids[0]->type, doubleType_ptr))
+        {
+            node->type->u.range.open = 1;
+        }
+        else
+        {
+            node->type->u.range.open = 0;
+        }
         break;
     case add:
         addExpression(node);
