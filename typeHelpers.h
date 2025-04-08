@@ -15,6 +15,7 @@ int typeEquals(typePtr type1, typePtr type2);
 typePtr copyType(typePtr type);
 void deleteType(typePtr type);
 void typeCheckExpression(struct tree *node);
+void forStatement(struct tree * node);
 void paramTypeCheck(struct tree *node);
 void prefixExpression(struct tree *node);
 struct symEntry *returnType(struct tree *node);
