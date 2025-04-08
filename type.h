@@ -55,6 +55,7 @@ typedef struct typeInfo {
         } array;
         struct rangeInfo {
             struct typeInfo *elemType;
+            int open;
         } range;
     } u;
 } *typePtr;
