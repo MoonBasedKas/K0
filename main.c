@@ -12,7 +12,7 @@
 #include "symTab.h"
 #include "type.h"
 #include "semanticBuild.h"
-
+#include "typeCheck.h"
 #include "symTabHelper.h"
 
 char *filename;
@@ -78,6 +78,7 @@ int main(int argc, char *argv[])
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
+        //typeCheck(root);
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c

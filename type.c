@@ -123,7 +123,11 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     rv->u.array.elemType = elemType;
 
     // Size of array
-    rv->u.array.size = extractArraySize(size); //typeHelpers.c
+    if (size == NULL) {
+        rv->u.array.size = -1; // array as a return type
+    } else {
+        rv->u.array.size = extractArraySize(size); //typeHelpers.c
+    }
     return rv;
 }
 

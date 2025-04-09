@@ -7,8 +7,7 @@ fun play() {
    if (choice == 1) {
       println("Fetch, eh")
       happy = happy+10
-   }
-   else {
+   } else {
       if (choice == 2) {
          println("Roll over?  Really?")
          hunger=hunger+ 1

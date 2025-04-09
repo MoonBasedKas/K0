@@ -22,7 +22,7 @@ static void checkLeafType(struct tree *n)
     }
 
     // Switch on the leaf's category -> This is how we printed leaf types to the syntax tree
-    switch (n->leaf->category) {
+    switch (n->prodrule) {
         case INT:
             n->type = alcType(INT_TYPE);
             break;
@@ -49,26 +49,26 @@ static void checkLeafType(struct tree *n)
     }
 }
 
-/**
- * @brief Coerces an assignment to a type
- *
- * @param lhs
- * @param rhs
- * @return typePtr
- */
-typePtr coerceAssignment(struct tree *n, typePtr lhs, typePtr rhs) {
-    if (lhs == NULL) {
-        typeError("Left hand side of assignment is NULL", n);
-        return NULL;
-    }
-    if (typeEquals(lhs, rhs))
-        return lhs;
-    if (lhs->basicType == INT_TYPE && rhs->basicType == DOUBLE_TYPE)
-        return rhs;
-    if (rhs->basicType == UNIT_TYPE)
-        return lhs;
-    return NULL;
-}
+// /**
+//  * @brief Coerces an assignment to a type
+//  *
+//  * @param lhs
+//  * @param rhs
+//  * @return typePtr
+//  */
+// typePtr coerceAssignment(struct tree *n, typePtr lhs, typePtr rhs) {
+//     if (lhs == NULL) {
+//         typeError("Left hand side of assignment is NULL", n);
+//         return NULL;
+//     }
+//     if (typeEquals(lhs, rhs))
+//         return lhs;
+//     if (lhs->basicType == INT_TYPE && rhs->basicType == DOUBLE_TYPE)
+//         return rhs;
+//     if (rhs->basicType == UNIT_TYPE)
+//         return lhs;
+//     return NULL;
+// }
 
 /**
  * @brief Assigns a type to a node
@@ -117,6 +117,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
+            rootScope = contains(rootScope, n->kids[1]->leaf->text)->scope;
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             break;
         }
