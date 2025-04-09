@@ -570,7 +570,7 @@ parenthesizedExpression:
 
 ifExpression:
     IF parenthesizedExpression statement SEMICOLON                                 {$$ = alctoken(emptyIf, "emptyIf", 3, $1, $2, $3); freeTokens(1, $4);}
-    | IF parenthesizedExpression block                                               {$$ = alctoken(if_k, "if", 3, $1, $2, $3);}
+    | IF parenthesizedExpression block                                             {$$ = alctoken(if_k, "if", 3, $1, $2, $3);}
     | IF parenthesizedExpression SEMICOLON block                                   {$$ = alctoken(if_k, "if", 3, $1, $2, $4); freeTokens(1, $3);}
     | IF parenthesizedExpression block ELSE block                                  {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $3, $4, $5);}
     | IF parenthesizedExpression SEMICOLON block ELSE block                        {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $5, $6); freeTokens(1, $3);}
