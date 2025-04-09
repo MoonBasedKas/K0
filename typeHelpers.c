@@ -89,21 +89,16 @@ struct param* createParamFromTree(struct tree *paramNode) {
     char *paramName = NULL;
 
     // Extract parameter type
-    if (paramNode->nkids >= 1) {
-        if (paramNode->kids[0]->type != NULL)
-            paramType = paramNode->kids[0]->type;
-        else {
-            typeError("Parameter type not found on\n", paramNode);
-        }
-    } else {
-        paramType = nullType_ptr;
-    }
-
-    // Extract parameter name
     if (paramNode->nkids >= 2) {
-        paramName = paramNode->kids[1]->symbolname;
-    } else {
-        paramName = strdup("unknown"); // Duplicate to ensure proper memory handling
+        if (paramNode->kids[1]->type != NULL)
+            paramType = paramNode->kids[1]->type;
+        else {
+            typeError("Parameter type not found on paramNode\n", paramNode);
+        }
+        if (paramNode->kids[0] && paramNode->kids[0]->leaf)
+            paramName = paramNode->kids[0]->leaf->text;
+    } else { 
+        return NULL;
     }
 
     // Allocate and initialize the parameter struct
@@ -115,11 +110,6 @@ struct param* createParamFromTree(struct tree *paramNode) {
     newParam->name = strdup(paramName);
     newParam->type = paramType;
     newParam->next = NULL;
-
-    // If paramName was strdup-ed because of missing symbolname, free our temporary copy
-    if (paramNode->nkids < 2) {
-        free(paramName);
-    }
 
     return newParam;
 }
