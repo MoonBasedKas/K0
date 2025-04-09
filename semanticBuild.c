@@ -218,7 +218,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[5] = arrayValues
             */
             n->type = alcArrayType(n->kids[4], n->kids[3]->type);
-            assignEntrytype(n->table, n->kids[2]->leaf->text, n->type);
+            assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
 
@@ -226,14 +226,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             /*
             kids[0] = variable
             kids[1] = variableDeclaration
-            kids[2] = IDENTIFIER
-            kids[3] = primitiveType
-            kids[4] = arraySize
+            kids[2] = arrayType
+            kids[3] = arraySize
             */
         {
 
-            n->type = alcArrayType(n->kids[4], n->kids[3]->type);
-            assignEntrytype(n->table, n->kids[2]->leaf->text, n->type);
+            n->type = alcArrayType(n->kids[3], n->kids[2]->type);
+            assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
         case returnVal:
