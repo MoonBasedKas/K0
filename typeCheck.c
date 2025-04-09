@@ -574,6 +574,7 @@ void binaryExpression(struct tree *node)
         node->type = alcType(RANGE_TYPE);
         node->type->u.range.elemType = node->kids[0]->type;
         node->type->u.range.open = 0;
+        break;
     case rangeUntil:
         if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
             || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
