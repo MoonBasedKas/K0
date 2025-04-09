@@ -14,6 +14,18 @@
 
 struct tree *createEmptyParam(void);
 
+struct tree *createUnitTypeNode(void) {
+    struct tree *unitNode = malloc(sizeof(struct tree));
+    if (unitNode == NULL) {
+        fprintf(stderr, "Failed to allocate memory for unit type node. \n");
+        exit(EXIT_FAILURE);
+    }
+    unitNode->nkids = 0;
+    unitNode->type = alcType(UNIT_TYPE);
+    unitNode->leaf = NULL;
+    return unitNode;
+}
+
 static void checkLeafType(struct tree *n)
 {
     // If it's not a leaf or `leaf` is NULL, do nothing
@@ -48,27 +60,6 @@ static void checkLeafType(struct tree *n)
             return;
     }
 }
-
-// /**
-//  * @brief Coerces an assignment to a type
-//  *
-//  * @param lhs
-//  * @param rhs
-//  * @return typePtr
-//  */
-// typePtr coerceAssignment(struct tree *n, typePtr lhs, typePtr rhs) {
-//     if (lhs == NULL) {
-//         typeError("Left hand side of assignment is NULL", n);
-//         return NULL;
-//     }
-//     if (typeEquals(lhs, rhs))
-//         return lhs;
-//     if (lhs->basicType == INT_TYPE && rhs->basicType == DOUBLE_TYPE)
-//         return rhs;
-//     if (rhs->basicType == UNIT_TYPE)
-//         return lhs;
-//     return NULL;
-// }
 
 /**
  * @brief Assigns a type to a node
@@ -117,8 +108,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
-            rootScope = contains(rootScope, n->kids[1]->leaf->text)->scope;
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case funcDecParamType:
@@ -130,8 +121,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = type
             */
-            rootScope = contains(rootScope, n->kids[1]->leaf->text)->scope;
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case funcDecParamBody:
@@ -143,7 +134,9 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = functionBody
             */
-            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
+            struct tree *unitTypeNode = createUnitTypeNode();
+            n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case funcDecTypeBody:
@@ -166,18 +159,27 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         {
             /*
             FUN IDENTIFIER LPAREN RPAREN COLON type
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = type
             */
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case funcDecBody:
         {
             /*
             FUN IDENTIFIER functionValueParameters functionBody
-            */
-            struct tree *emptyParam = createEmptyParam();
-            n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
+            kids[0] = FUN
+            kids[1] = IDENTIFIER
+            kids[2] = functionValueParameters
+            kids[3] = functionBody
+            */  
+            struct tree *unitTypeNode = createUnitTypeNode();
+            n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
         case arrayDec:
@@ -188,14 +190,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[3] = arrayValues
         */
         {   
-       
-            if (!n->kids[1]->type) {
-                typeCheck(n->kids[1]);
-            }
-            if (!n->kids[1]->type) {
-                typeError("Array type must be specified", n);
-                break;
-            }
+
             n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -207,15 +202,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[2] = arraySize
         */
         {
-            if (!n->kids[1]->type) {
-                typeCheck(n->kids[1]);
-            }
-            if (!n->kids[1]->type) {
-                typeError("Array declaration missing element type", n);
-                break;
-            }
             n->type = alcArrayType(n->kids[2], n->kids[1]->type);
-            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
+            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
 
@@ -229,16 +217,8 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[4] = arraySize
             kids[5] = arrayValues
             */
-            printf("arrayDecEqual called\n");
-            if (!n->kids[3]->type) {
-                typeCheck(n->kids[3]);
-            }
-            if (!n->kids[3]->type) {
-                typeError("Array declaration missing element type", n);
-                break;
-            }
             n->type = alcArrayType(n->kids[4], n->kids[3]->type);
-            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
+            assignEntrytype(n->table, n->kids[2]->leaf->text, n->type);
             break;
         }
 
@@ -251,15 +231,9 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[4] = arraySize
             */
         {
-            if (!n->kids[3]->type) {
-                typeCheck(n->kids[3]);
-            }
-            if (!n->kids[3]->type) {
-                typeError("Array declaration missing element type", n);
-                break;
-            }
+
             n->type = alcArrayType(n->kids[4], n->kids[3]->type);
-            assignEntrytype(n->table, n->kids[0]->leaf->text, n->type);
+            assignEntrytype(n->table, n->kids[2]->leaf->text, n->type);
             break;
         }
         case returnVal:
