@@ -335,7 +335,6 @@ int addSemi(){
         case TRUE:
         case FALSE:
         case NULL_K:
-        case VOID:
         case VAL:
         case VAR:
             yytext = ";";

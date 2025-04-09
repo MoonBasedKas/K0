@@ -123,7 +123,11 @@ typePtr alcArrayType(struct tree *size, struct typeInfo *elemType) {
     rv->u.array.elemType = elemType;
 
     // Size of array
-    rv->u.array.size = extractArraySize(size); //typeHelpers.c
+    if (size == NULL) {
+        rv->u.array.size = -1; // array as a return type
+    } else {
+        rv->u.array.size = extractArraySize(size); //typeHelpers.c
+    }
     return rv;
 }
 
@@ -165,14 +169,58 @@ struct typeInfo array_any_type = {
     .u.array = { .size = -1, .elemType = &any_elem_type }
 };
 
-/* Range type */
+/* Range types */
 struct typeInfo range_type = {
     .basicType = RANGE_TYPE,
     .u.range = { .elemType = &integer_type }
 };
 
-typePtr rangeType_ptr = &range_type;
+struct typeInfo range_integer_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &integer_type }
+};
 
+struct typeInfo range_byte_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &byte_type }
+};
+
+struct typeInfo range_double_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &double_type }
+};
+
+struct typeInfo range_boolean_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &boolean_type }
+};
+
+struct typeInfo range_char_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &char_type }
+};
+
+struct typeInfo range_string_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &string_type }
+};
+
+struct typeInfo range_any_type = {
+    .basicType = RANGE_TYPE,
+    .u.range = { .elemType = &any_elem_type }
+};
+
+/* Global range type pointers */
+typePtr rangeType_ptr = &range_type;
+typePtr rangeIntegerType_ptr = &range_integer_type;
+typePtr rangeByteType_ptr = &range_byte_type;
+typePtr rangeDoubleType_ptr = &range_double_type;
+typePtr rangeBooleanType_ptr = &range_boolean_type;
+typePtr rangeCharType_ptr = &range_char_type;
+typePtr rangeStringType_ptr = &range_string_type;
+typePtr rangeAnyType_ptr = &range_any_type;
+
+/* Global array type pointers */
 typePtr arrayIntegerType_ptr = &array_integer_type;
 typePtr arrayByteType_ptr    = &array_byte_type;
 typePtr arrayDoubleType_ptr  = &array_double_type;
