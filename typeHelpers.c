@@ -12,6 +12,7 @@ Type helpers for the semantic analysis phase.
 #include "tree.h"
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
+#include "typeCheck.h"
 
 // Bingo
 // struct symTab *globalSymTab = rootScope;
@@ -92,8 +93,7 @@ struct param* createParamFromTree(struct tree *paramNode) {
         if (paramNode->kids[0]->type != NULL)
             paramType = paramNode->kids[0]->type;
         else {
-            fprintf(stderr, "Parameter type not found\n");
-            exit(3);
+            typeError("Parameter type not found on\n", paramNode);
         }
     } else {
         paramType = nullType_ptr;
