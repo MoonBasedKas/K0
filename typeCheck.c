@@ -86,7 +86,7 @@ void typeCheck(struct tree *node)
         {
             typeError("Types must match for assigmnet", node);
         }
-        node->type = copyType(node->kids[0]->type);
+        node->type = copyType(node->kids[0]->type); //typeHelpers.c
         break;
     case assignAdd:
     case arrayAssignAdd:
@@ -116,29 +116,50 @@ void typeCheck(struct tree *node)
             typeError("While condition must be of type Boolean", node);
         }
         break;
-    case whenSubExp:
-    case whenSubVar:
-    case whenEntries: //might not need??
-    case whenEntryConds:
-    case whenConds: //might not need??
-
-        break;
 
     //need ifs
     case emptyIf:
     case if_k:
-    case ifElse:
-    case ifElseIf:
+        if(ifAssigned(node))
+        {
+            if(node->kids[2]->type == NULL)
+            {
+                typeError("When assigned if statment bodies must be expressions", node);
+            }
+            node->type = copyType(node->kids[2]->type); //typeHelpers.c
+        }
         if(!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
         }
-        //NOT DONE, need to check types match?? and give type
-        //might need to have if assignment as own grammer rule????
-        //otherwise how to tell that it is an expression or not
-        //idk
         break;
-    
+    case ifElse:
+    case ifElseIf:
+        if(ifAssigned(node))
+        {
+            if(node->kids[2]->type == NULL)
+            {
+                typeError("When assigned if statment bodies must be expressions", node);
+            }
+            if(node->kids[4]->type == NULL)
+            {
+                typeError("When assigned if statment bodies must be expressions", node);
+            }
+            if(!typeEquals(node->kids[2]->type, node->kids[4]->type))
+            {
+                typeError("When assigned if statment bodies must have matching types", node);
+            }
+            node->type = copyType(node->kids[2]->type); //typeHelpers.c
+        }
+        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        {
+            typeError("If condition must be of type Boolean", node);
+        }
+        break;
+    case blockStmnts:
+    case statement:
+        node->type = copyType(node->kids[0]->type); //typeHelpers.c
+        break;
     case disj:
     case conj: // Changed kids[0] && kids[0] to kids[0] && kids[1]
         if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
@@ -230,6 +251,33 @@ void typeCheck(struct tree *node)
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
+        break;
+    }
+}
+
+/**
+ * @brief Returns true if the parent of the node is an assigment. (Or great-great ... grandparent for else if)
+ *
+ * @return boolean
+ * @param node
+ */
+int ifAssigned(struct tree *node)
+{
+    switch (node->parent->prodrule)
+    {
+    case ifElseIf:
+        return ifAssigned(node->parent);
+        break;
+    case assignment:
+    case arrayAssignment:
+    case assignAdd:
+    case arrayAssignAdd:
+    case assignSub:
+    case arrayAssignSub:
+        return 1;
+        break;
+    default:
+        return 0;
         break;
     }
 }
@@ -461,7 +509,7 @@ void assignAddExpression(struct tree *node)
         case INT_TYPE:
             if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -471,7 +519,7 @@ void assignAddExpression(struct tree *node)
         case DOUBLE_TYPE:
             if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -481,7 +529,7 @@ void assignAddExpression(struct tree *node)
         case CHAR_TYPE:
             if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -491,7 +539,7 @@ void assignAddExpression(struct tree *node)
         case STRING_TYPE:
             if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -501,7 +549,7 @@ void assignAddExpression(struct tree *node)
         case BOOL_TYPE:
             if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -511,7 +559,7 @@ void assignAddExpression(struct tree *node)
         case ARRAY_TYPE:
             if (typeEquals(node->kids[0]->type, node->kids[1]->type))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -721,7 +769,7 @@ void addExpression(struct tree *node)
         case INT_TYPE:
             if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -731,7 +779,7 @@ void addExpression(struct tree *node)
         case DOUBLE_TYPE:
             if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -741,7 +789,7 @@ void addExpression(struct tree *node)
         case CHAR_TYPE:
             if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -751,7 +799,7 @@ void addExpression(struct tree *node)
         case STRING_TYPE:
             if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -761,7 +809,7 @@ void addExpression(struct tree *node)
         case BOOL_TYPE:
             if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
@@ -771,7 +819,7 @@ void addExpression(struct tree *node)
         case ARRAY_TYPE:
             if (typeEquals(node->kids[0]->type, node->kids[1]->type))
             {
-                node->type = copyType(node->kids[0]->type);
+                node->type = copyType(node->kids[0]->type); //typeHelpers.c
             }
             else
             {
