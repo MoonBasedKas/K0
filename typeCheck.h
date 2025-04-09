@@ -2,6 +2,7 @@
 #define TYPE_CHECK_H
 
 void typeCheck(struct tree *node);
+int ifAssigned(struct tree *node);
 void paramTypeCheck(struct tree *node);
 void prefixExpression(struct tree *node);
 struct symEntry *returnType(struct tree *node);
