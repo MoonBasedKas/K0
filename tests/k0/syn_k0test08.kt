@@ -1,4 +1,5 @@
 fun allTrue(flags: Array<Boolean>): Boolean {
+    var i : Int
     for (i in 0..2) {
         if (!flags[i]) {
             return false
