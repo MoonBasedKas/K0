@@ -138,9 +138,98 @@ void typeCheck(struct tree *node)
         //otherwise how to tell that it is an expression or not
         //idk
         break;
-
+    
+    case disj:
+    case conj: // Changed kids[0] && kids[0] to kids[0] && kids[1]
+        if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
+        {
+            typeError("|| and && operators must have arguments of type Boolean", node);
+        }
+        node->type = alcType(BOOL_TYPE); //type.c
+        break;
+    case equal:
+    case notEqual:
+    case eqeqeq:
+    case notEqeqeq:
+        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        {
+            typeError("Equality operators must have arguments of the same type", node);
+        }
+        node->type = alcType(BOOL_TYPE); //type.c
+        break;
+    case less:
+    case greater:
+    case lessEqual:
+    case greaterEqual:
+        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        {
+            if(!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr))
+                    && !(typeEquals(node->kids[1]->type, integerType_ptr) && typeEquals(node->kids[1]->type, doubleType_ptr)))
+            {
+                typeError("Comparison operators must have arguments of the same type or one Int and one Double arugment", node);
+            }
+        }
+        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, returnUnitType_ptr))
+        {
+            typeError("Cannot compare Array or Unit types", node);
+        }
+        node->type = alcType(BOOL_TYPE); //type.c
+        break;
+    case in:
+        inExpression(node);
+        break;
+    case range:
+        if(!typeEquals(node->kids[0]->type, integerType_ptr))
+        {
+            typeError("Range must be of type Int", node);
+        }
+        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Range types must match", node);
+        }
+        node->type = alcType(RANGE_TYPE);
+        node->type->u.range.elemType = alcType(INT_TYPE);
+        node->type->u.range.until = 0;
+        break;
+    case rangeUntil:
+        if(!typeEquals(node->kids[0]->type, integerType_ptr))
+        {
+            typeError("Range must be of type Int", node);
+        }
+        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Range types must match", node);
+        }
+        node->type = alcType(RANGE_TYPE);
+        node->type->u.range.elemType = alcType(INT_TYPE);
+        node->type->u.range.until = 1;
+        break;
+    case add:
+        addExpression(node);
+        break;
+    case sub:
+        subExpression(node);
+        break;
+    case mult:
+    case div_k:
+    case mod:
+        multaplicativeExpression(node);
+        break;
+    case arrayAccess:
+    case postfixArrayAccess:
+    case arrayIndex:
+        if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
+        {
+            typeError("Array access must be performed on an array", node);
+            break;
+        }
+        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Must use Int to determine the index of array element", node);
+            break;
+        }
+        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
     default:
-        binaryExpression(node);
         break;
     }
 }
@@ -308,6 +397,11 @@ void leafExpression(struct tree *node)
     case IDENTIFIER:
         // If table is NULL it shouldn't need to be checked
         // ie if it is a function call IDENTIFIER
+
+        //if this is in the function declaratoin it should be looking in the scope that the function was declared in
+        //so the node should point to that table
+        //ask erik if thats not how it works
+        //tho i guess it doesn't really matter since the declaration won't be checked
         if (node->table == NULL) {
             break;
         }
@@ -490,19 +584,19 @@ void forStatement(struct tree *node)
         }
         break;
     case DOUBLE_TYPE:
-        if (!(typeEquals(node->kids[2]->type, arrayDoubleType_ptr) || typeEquals(node->kids[2]->type, rangeDoubleType_ptr)))
+        if (!typeEquals(node->kids[2]->type, arrayDoubleType_ptr))
         {
             typeError("Expression in four statment must be itterable over Doubles", node);
         }
         break;
     case CHAR_TYPE:
-        if (!(typeEquals(node->kids[2]->type, arrayCharType_ptr) || typeEquals(node->kids[2]->type, rangeCharType_ptr) || typeEquals(node->kids[2]->type, stringType_ptr)))
+        if (!(typeEquals(node->kids[2]->type, arrayCharType_ptr) || typeEquals(node->kids[2]->type, stringType_ptr)))
         {
             typeError("Expression in four statment must be itterable over Chars", node);
         }
         break;
     case STRING_TYPE:
-        if (!(typeEquals(node->kids[2]->type, arrayStringType_ptr) || typeEquals(node->kids[2]->type, rangeStringType_ptr)))
+        if (!typeEquals(node->kids[2]->type, arrayStringType_ptr))
         {
             typeError("Expression in four statment must be itterable over Strings", node);
         }
@@ -515,119 +609,6 @@ void forStatement(struct tree *node)
         break;
     default:
         typeError("For loop - Invalid variable type", node);
-        break;
-    }
-}
-
-/**
- * @brief Assigns types to binary expressions
- *
- * @param node
- */
-void binaryExpression(struct tree *node)
-{
-    switch (node->prodrule)
-    {
-    case disj:
-    case conj: // Changed kids[0] && kids[0] to kids[0] && kids[1]
-        if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
-        {
-            typeError("|| and && operators must have arguments of type Boolean", node);
-        }
-        node->type = alcType(BOOL_TYPE); //type.c
-        break;
-    case equal:
-    case notEqual:
-    case eqeqeq:
-    case notEqeqeq:
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
-        {
-            typeError("Equality operators must have arguments of the same type", node);
-        }
-        node->type = alcType(BOOL_TYPE); //type.c
-        break;
-    case less:
-    case greater:
-    case lessEqual:
-    case greaterEqual:
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
-        {
-            if(!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr))
-                    && !(typeEquals(node->kids[1]->type, integerType_ptr) && typeEquals(node->kids[1]->type, doubleType_ptr)))
-            {
-                typeError("Comparison operators must have arguments of the same type or one Int and one Double arugment", node);
-            }
-        }
-        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, returnUnitType_ptr))
-        {
-            typeError("Cannot compare Array or Unit types", node);
-        }
-        node->type = alcType(BOOL_TYPE); //type.c
-        break;
-    case in:
-        inExpression(node);
-        break;
-    case range:
-        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
-            || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
-        {
-            typeError("Range operators cannot be of type Array or Unit", node);
-        }
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
-        {
-            typeError("Range operators must be of same type", node);
-        }
-        node->type = alcType(RANGE_TYPE);
-        node->type->u.range.elemType = node->kids[0]->type;
-        node->type->u.range.open = 0;
-        break;
-    case rangeUntil:
-        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
-            || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
-        {
-            typeError("Range operators cannot be of type Array or Unit", node);
-        }
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
-        {
-            typeError("Range operators must be of same type", node);
-        }
-        node->type = alcType(RANGE_TYPE);
-        node->type->u.range.elemType = node->kids[0]->type;
-        if(typeEquals(node->kids[0]->type, doubleType_ptr))
-        {
-            node->type->u.range.open = 1;
-        }
-        else
-        {
-            node->type->u.range.open = 0;
-        }
-        break;
-    case add:
-        addExpression(node);
-        break;
-    case sub:
-        subExpression(node);
-        break;
-    case mult:
-    case div_k:
-    case mod:
-        multaplicativeExpression(node);
-        break;
-    case arrayAccess:
-    case postfixArrayAccess:
-    case arrayIndex:
-        if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
-        {
-            typeError("Array access must be performed on an array", node);
-            break;
-        }
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
-        {
-            typeError("Must use Int to determine the index of array element", node);
-            break;
-        }
-        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
-    default:
         break;
     }
 }

@@ -55,7 +55,7 @@ typedef struct typeInfo {
         } array;
         struct rangeInfo {
             struct typeInfo *elemType;
-            int open;
+            int until;
         } range;
     } u;
 } *typePtr;
@@ -89,12 +89,6 @@ extern typePtr arrayAnyType_ptr;
 
 /* Global pointers for premade range types */
 extern typePtr rangeIntegerType_ptr;
-extern typePtr rangeByteType_ptr;
-extern typePtr rangeDoubleType_ptr;
-extern typePtr rangeBooleanType_ptr;
-extern typePtr rangeCharType_ptr;
-extern typePtr rangeStringType_ptr;
-extern typePtr rangeAnyType_ptr;
 
 /* Global pointers for return types */
 extern typePtr returnIntegerType_ptr;
