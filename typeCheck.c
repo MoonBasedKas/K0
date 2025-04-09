@@ -156,7 +156,8 @@ struct symEntry *returnType(struct tree *node)
     struct symEntry *entry;             //symTab.h
     int found = 0;
     while(scope->parent != NULL && found == 0)
-    {
+    {   
+        printf("scope: %s\n", scope->name);
         entry = contains(scope, node->kids[0]->leaf->text); //symTab.h
         if(entry != NULL)
         {
@@ -216,7 +217,7 @@ void paramTypeCheck(struct tree *node)
 
 /**
  * @brief Recursivly (with typeCheck) assigns types to prefix expressions
- * 
+ *
  * @param node
  */
 void prefixExpression(struct tree *node)
@@ -273,7 +274,7 @@ void prefixExpression(struct tree *node)
 
 /**
  * @brief Assign types to leaf nodes
- * 
+ *
  * @param node
  */
 void leafExpression(struct tree *node)
@@ -305,6 +306,11 @@ void leafExpression(struct tree *node)
 
     //variable base case
     case IDENTIFIER:
+        // If table is NULL it shouldn't need to be checked
+        // ie if it is a function call IDENTIFIER
+        if (node->table == NULL) {
+            break;
+        }
         struct symTab *scope = node->table; //symTab.h
         struct symEntry *entry;             //symTab.h
         while(scope->parent != NULL)
@@ -324,7 +330,7 @@ void leafExpression(struct tree *node)
 
 /**
  * @brief Assign types to add assigment expressions
- * 
+ *
  * @param node
  */
 void assignAddExpression(struct tree *node)
@@ -434,7 +440,7 @@ void assignAddExpression(struct tree *node)
 
 /**
  * @brief Assign types sub assignment expressions
- * 
+ *
  * @param node
  */
 void assignSubExpression(struct tree *node)
@@ -470,7 +476,7 @@ void assignSubExpression(struct tree *node)
 
 /**
  * @brief Type checks for statments
- * 
+ *
  * @param node
  */
 void forStatement(struct tree *node)
@@ -515,7 +521,7 @@ void forStatement(struct tree *node)
 
 /**
  * @brief Assigns types to binary expressions
- * 
+ *
  * @param node
  */
 void binaryExpression(struct tree *node)
@@ -523,27 +529,27 @@ void binaryExpression(struct tree *node)
     switch (node->prodrule)
     {
     case disj:
-    case conj:
-        if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[0]->type, booleanType_ptr)))
+    case conj: // Changed kids[0] && kids[0] to kids[0] && kids[1]
+        if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
         {
             typeError("|| and && operators must have arguments of type Boolean", node);
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
-    case equal: 
-    case notEqual: 
-    case eqeqeq: 
-    case notEqeqeq: 
+    case equal:
+    case notEqual:
+    case eqeqeq:
+    case notEqeqeq:
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Equality operators must have arguments of the same type", node);
         }
         node->type = alcType(BOOL_TYPE); //type.c
         break;
-    case less: 
-    case greater: 
-    case lessEqual: 
-    case greaterEqual: 
+    case less:
+    case greater:
+    case lessEqual:
+    case greaterEqual:
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             if(!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr))
@@ -574,6 +580,7 @@ void binaryExpression(struct tree *node)
         node->type = alcType(RANGE_TYPE);
         node->type->u.range.elemType = node->kids[0]->type;
         node->type->u.range.open = 0;
+        break;
     case rangeUntil:
         if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, unitType_ptr)
             || typeEquals(node->kids[1]->type, arrayAnyType_ptr) || typeEquals(node->kids[1]->type, unitType_ptr))
@@ -627,7 +634,7 @@ void binaryExpression(struct tree *node)
 
 /**
  * @brief Assigns types to in expressions
- * 
+ *
  * @param node
  */
 void inExpression(struct tree *node)
@@ -677,7 +684,7 @@ void inExpression(struct tree *node)
 
 /**
  * @brief Assigns types to add expressions
- * 
+ *
  * @param node
  */
 void addExpression(struct tree *node)
@@ -809,7 +816,7 @@ void addExpression(struct tree *node)
 
 /**
  * @brief Assigns types to sub expressions
- * 
+ *
  * @param node
  */
 void subExpression(struct tree *node)
@@ -864,7 +871,7 @@ void subExpression(struct tree *node)
 
 /**
  * @brief Assigns types to multaplicative expressions
- * 
+ *
  * @param node
  */
 void multaplicativeExpression(struct tree *node)
@@ -905,7 +912,7 @@ void multaplicativeExpression(struct tree *node)
 
 /**
  * @brief Prints type error message and sets symError to 1
- * 
+ *
  * @param node
  */
 void typeError(char *message, struct tree *node)
