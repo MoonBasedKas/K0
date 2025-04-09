@@ -74,7 +74,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
     }
 
     checkLeafType(n);
-    
+
     switch (n->prodrule){
         case varDecQuests: // Sets the entry to nullable.
 
@@ -108,6 +108,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
+            printf("funcDecAll\n");
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -121,6 +122,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = type
             */
+            printf("funcDecParamType\n");
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -134,6 +136,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = functionBody
             */
+            printf("funcDecParamBody\n");
             struct tree *unitTypeNode = createUnitTypeNode();
             n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
@@ -174,11 +177,11 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             FUN IDENTIFIER functionValueParameters functionBody
             kids[0] = FUN
             kids[1] = IDENTIFIER
-            kids[2] = functionValueParameters
-            kids[3] = functionBody
-            */  
+            kids[2] = functionBody
+            */
             struct tree *unitTypeNode = createUnitTypeNode();
-            n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
+            struct tree *emptyParam = createEmptyParam();
+            n->type = alcFuncType(unitTypeNode, emptyParam, rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
@@ -189,7 +192,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         kids[2] = arraySize
         kids[3] = arrayValues
         */
-        {   
+        {
 
             n->type = alcArrayType(n->kids[2], n->kids[1]->type); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
