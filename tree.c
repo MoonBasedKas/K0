@@ -88,6 +88,7 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     }
     node->leaf = NULL;
     node->id = serial++;
+    node->parent = NULL;
 
     va_list args;
     va_start(args, nkids);
@@ -95,6 +96,13 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
         node->kids[i] = va_arg(args, struct tree *);
     }
     va_end(args);
+
+    for (int i = 0; i < nkids; i++) {
+        if (node->kids[i] != NULL) {
+            node->kids[i]->parent = node;
+        }
+    }
+
     node->table = NULL;  // Done for debugging
     return node;
 }

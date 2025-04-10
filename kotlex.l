@@ -162,7 +162,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "true"                                          { return leaf(TRUE); }
 "val"											{ return leaf(VAL); }
 "var"											{ return leaf(VAR); }
-"when"											{ return leaf(WHEN); }
+
 "while"											{ return leaf(WHILE);}
 
 "import"										{ return leaf(IMPORT); }
@@ -229,9 +229,9 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "tailrec"										{ unsupportedKeyword(); }
 "vararg"										{ unsupportedKeyword(); }
 
-"interface"										{ return leaf(INTERFACE); }
-"override"										{ return leaf(OVERRIDE); }
-
+"interface"										{ unsupportedKeyword(); }
+"override"										{ unsupportedKeyword(); }
+"when"											{ unsupportedKeyword(); }
 {integer_literal}								{ return intLiteral(INTEGER_LITERAL); }
 {long_literal}									{ return longLiteral(INTEGER_LITERAL); }
 {hex_literal}									{ return hexLiteral(HEX_LITERAL); }

@@ -10,6 +10,7 @@ struct tree
     int prodrule;
     char *symbolname;
     int nkids;
+    struct tree *parent;
     struct tree *kids[10];
     struct token *leaf;
     struct typeInfo *type;
