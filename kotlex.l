@@ -232,6 +232,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "interface"										{ unsupportedKeyword(); }
 "override"										{ unsupportedKeyword(); }
 "when"											{ unsupportedKeyword(); }
+
 {integer_literal}								{ return intLiteral(INTEGER_LITERAL); }
 {long_literal}									{ return longLiteral(INTEGER_LITERAL); }
 {hex_literal}									{ return hexLiteral(HEX_LITERAL); }

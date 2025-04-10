@@ -233,19 +233,10 @@ int addMathModule(){
 }
 
 /**
- * @brief Preloads the standard library.
+ * @brief Removed everything except for Array.
  *
  */
 void populateTypes(){
-    // Types
-    addSymTab(rootScope, "Int", VARIABLE); //symTab.c
-    addSymTab(rootScope, "String", VARIABLE);
-    addSymTab(rootScope, "Byte", VARIABLE);
-    addSymTab(rootScope, "Short", VARIABLE);
-    addSymTab(rootScope, "Long", VARIABLE);
-    addSymTab(rootScope, "Float", VARIABLE);
-    addSymTab(rootScope, "Boolean", VARIABLE);
-    addSymTab(rootScope, "Double", VARIABLE);
     addSymTab(rootScope, "Array", VARIABLE);
 }
 
