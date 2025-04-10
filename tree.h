@@ -9,8 +9,8 @@ struct tree
     int id; // id for dot.
     int prodrule;
     char *symbolname;
-    struct tree parent;
     int nkids;
+    struct tree *parent;
     struct tree *kids[10];
     struct token *leaf;
     struct typeInfo *type;

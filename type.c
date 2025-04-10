@@ -17,7 +17,7 @@ struct typeInfo boolean_type = {BOOL_TYPE};
 struct typeInfo char_type = {CHAR_TYPE};
 struct typeInfo string_type = {STRING_TYPE};
 struct typeInfo unit_type = {UNIT_TYPE};
-
+struct typeInfo range_type = {RANGE_TYPE};
 extern struct symTab *rootScope;
 
 typePtr nullType_ptr = &null_type;
@@ -28,7 +28,7 @@ typePtr booleanType_ptr = &boolean_type;
 typePtr charType_ptr = &char_type;
 typePtr stringType_ptr = &string_type;
 typePtr unitType_ptr = &unit_type;
-
+typePtr rangeType_ptr = &range_type;
 
 typePtr alcType(int baseType) {
 

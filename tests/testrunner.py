@@ -74,7 +74,8 @@ class test:
     runs tests
     """
     def executeTests(self):
-        for tar in self.targets:
+        for tar in self.targets: 
+            print(tar.file)
             tar.execute(self.executable, self.subArgs)
         
         print("Test results")
@@ -95,7 +96,7 @@ class test:
                 self.syntax += 1
 
             elif tar.result == 3:
-                printColor(color.LIGHT_PURPLE, f"{tar.file} | SEMATNIC ERROR with return code 3")
+                printColor(color.LIGHT_PURPLE, f"{tar.file} | SEMANTIC ERROR with return code 3")
                 self.semantic += 1
                 print(tar.resultData.stderr.decode("ASCII"))
             else:
