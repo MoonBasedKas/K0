@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
         assignType(root, rootScope); //semanticBuild.c
         varTypeTheft(root);
         typeTheft(root);
-        // typeCheck(root);
+        typeCheck(root);
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c

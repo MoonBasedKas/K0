@@ -383,7 +383,7 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
     struct symTab *scope = node->table; //symTab.h
     struct symEntry *entry;             //symTab.h
     int found = 0;
-    while(scope->parent != NULL && found == 0)
+    while(scope->parent != rootScope && found == 0)
     {   
         printf("scope: %s\n", scope->name);
         entry = contains(scope, node->leaf->text); //symTab.h
@@ -393,6 +393,14 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
             found = 1;
         }
     }
+
+    entry = contains(rootScope, node->leaf->text); //symTab.h
+    if(entry != NULL)
+    {
+        node->parent->type = entry->type->u.func.returnType;
+        found = 1;
+    }
+    printf("IVE ESCAPED!\n");
     if(found == 0)
     {
         typeError("Function not found", node);
@@ -545,28 +553,28 @@ void leafExpression(struct tree *node)
 
     //variable base case
     case IDENTIFIER:
-        // If table is NULL it shouldn't need to be checked
-        // ie if it is a function call IDENTIFIER
+        // // If table is NULL it shouldn't need to be checked
+        // // ie if it is a function call IDENTIFIER
 
-        //if this is in the function declaratoin it should be looking in the scope that the function was declared in
-        //so the node should point to that table
-        //ask erik if thats not how it works
-        //tho i guess it doesn't really matter since the declaration won't be checked
-        if (node->table == NULL) {
-            break;
-        }
-        struct symTab *scope = node->table; //symTab.h
-        struct symEntry *entry;             //symTab.h
-        while(scope->parent != NULL)
-        {
-            entry = contains(scope, node->leaf->text); //symTab.h
-            if(entry != NULL)
-            {
-                node->type = entry->type;
-                break;
-            }
-        }
-        break;
+        // //if this is in the function declaratoin it should be looking in the scope that the function was declared in
+        // //so the node should point to that table
+        // //ask erik if thats not how it works
+        // //tho i guess it doesn't really matter since the declaration won't be checked
+        // if (node->table == NULL) {
+        //     break;
+        // }
+        // struct symTab *scope = node->table; //symTab.h
+        // struct symEntry *entry;             //symTab.h
+        // while(scope->parent != NULL)
+        // {
+        //     entry = contains(scope, node->leaf->text); //symTab.h
+        //     if(entry != NULL)
+        //     {
+        //         node->type = entry->type;
+        //         break;
+        //     }
+        // }
+        // break;
     default:
         break;
     }
