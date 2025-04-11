@@ -283,6 +283,10 @@ void typeCheck(struct tree *node)
     case funcBody:
 
     case returnVal:
+        returnCheck(node, node->kids[1]->type);
+        break;
+    case RETURN:
+        returnCheck(node, unitType_ptr);    
 
     case arrayDecValueless:
         if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
@@ -1008,6 +1012,33 @@ void multaplicativeExpression(struct tree *node)
         typeError("Multiplication, division, and modulo can only have operators of type Int and Double", node);
         break;
     }
+}
+
+/**
+ * @brief Type checks returns
+ *
+ * @param node
+ */
+void returnCheck(struct tree *node, struct typeInfo *type)
+{
+    while(node->parent != NULL)
+    {
+        switch (node->prodrule)
+        {
+        case funcDecAll:
+        case funcDecParamBody:
+        case funcDecTypeBody:
+        case funcDecBody:
+            if(!typeEquals(node->kids[1]->type->u.func.returnType, type))
+            {
+                typeError("Return type does not match", node);
+            }
+            return;
+        default:
+            break;
+        }
+    }
+    typeError("Non-function blocks cannot return", node);
 }
 
 /**

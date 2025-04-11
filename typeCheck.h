@@ -16,6 +16,7 @@ void multaplicativeExpression(struct tree *node);
 void subExpression(struct tree *node);
 void addExpression(struct tree *node);
 void inExpression(struct tree *node);
+void returnCheck(struct tree *node, struct typeInfo *type);
 void arrayDeclaration(struct tree *ident, struct tree *exprList);
 void typeError(char *message, struct tree *node);
 
