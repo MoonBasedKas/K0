@@ -60,23 +60,46 @@ void typeCheck(struct tree *node)
         break;
     // function call
     case postfixNoExpr:
-        struct symEntry *entry = returnType(node);
+        struct symEntry *entry = returnType(node->kids[0]);
         if(entry->type->u.func.numParams !=0)
         {
             typeError("Function call missing arguments", node);
         }
         break;
     case postfixExpr:
-        paramTypeCheck(node);
+        paramTypeCheck(node->kids[0], node->kids[1]);
         break;
-    //built in stuff
+    //built in stuff, don't deal with safety here
     case postfixDotID:
-    case postfixDotIDExpr:
-    case postfixDotIDNoExpr:
+        checkImport(node->kids[0], node->kids[2]);
+        node->type = copyType(node->kids[2]->type);
+        break;
     case postfixSafeDotID:
+        checkImport(node->kids[0], node->kids[3]);
+        node->type = copyType(node->kids[3]->type);
+        break;
+    case postfixDotIDExpr:
+        checkImport(node->kids[0], node->kids[2]);
+        paramTypeCheck(node->kids[2], node->kids[3]); 
     case postfixSafeDotIDExpr:
+        checkImport(node->kids[0], node->kids[3]);
+        paramTypeCheck(node->kids[3], node->kids[4]); 
+        break;
+    case postfixDotIDNoExpr:
+        checkImport(node->kids[0], node->kids[2]);
+        struct symEntry *entry = returnType(node->kids[2]);
+        if(entry->type->u.func.numParams !=0)
+        {
+            typeError("Function call missing arguments", node);
+        }
+        break;
     case postfixSafeDotIDNoExpr:
-        //need to add
+        checkImport(node->kids[0], node->kids[3]);
+        struct symEntry *entry = returnType(node->kids[3]);
+        if(entry->type->u.func.numParams !=0)
+        {
+            typeError("Function call missing arguments", node);
+        }
         break;
 
     //assigment
@@ -287,7 +310,7 @@ int ifAssigned(struct tree *node)
  *
  * @param node
  */
-struct symEntry *returnType(struct tree *node)
+struct symEntry *returnType(struct tree *node) //change to identifier node
 {
     struct symTab *scope = node->table; //symTab.h
     struct symEntry *entry;             //symTab.h
@@ -295,10 +318,10 @@ struct symEntry *returnType(struct tree *node)
     while(scope->parent != NULL && found == 0)
     {   
         printf("scope: %s\n", scope->name);
-        entry = contains(scope, node->kids[0]->leaf->text); //symTab.h
+        entry = contains(scope, node->leaf->text); //symTab.h
         if(entry != NULL)
         {
-            node->type = entry->type->u.func.returnType;
+            node->parent->type = entry->type->u.func.returnType;
             found = 1;
         }
     }
@@ -314,14 +337,14 @@ struct symEntry *returnType(struct tree *node)
  *
  * @param node
  */
-void paramTypeCheck(struct tree *node)
+void paramTypeCheck(struct tree *id, struct tree *exprList)
 {
-    struct symEntry *entry = returnType(node);
-    struct tree *exprList = node->kids[1];
-    struct param *paramList = node->type->u.func.parameters;
+    struct symEntry *entry = returnType(id);
+    // struct tree *exprList = node->kids[1];
+    struct param *paramList = id->type->u.func.parameters;
     if (entry->type->u.func.numParams == 0)
     {
-        typeError("Function call has too many arguments", node);
+        typeError("Function call has too many arguments", id->parent);
         return;
     }
     if (entry->type->u.func.numParams > 1)
@@ -330,12 +353,12 @@ void paramTypeCheck(struct tree *node)
         {
             if (exprList->prodrule != expressionList)
             {
-                typeError("Function call missing arguments", node);
+                typeError("Function call missing arguments", id->parent);
                 return;
             }
             if (!typeEquals(exprList->kids[0]->type, paramList->type))
             {
-                typeError("Paramater type mismatch", node);
+                typeError("Paramater type mismatch", id->parent);
             }
             exprList = exprList->kids[1];
             paramList = paramList->next;
@@ -343,13 +366,24 @@ void paramTypeCheck(struct tree *node)
     }
     if (exprList->prodrule == expressionList)
     {
-        typeError("Function call has too many arguments", node);
+        typeError("Function call has too many arguments", id->parent);
         return;
     }
     if (!typeEquals(exprList->type, paramList->type))
     {
-        typeError("Paramater type mismatch", node);
+        typeError("Paramater type mismatch", id->parent);
     }
+}
+
+/**
+ * @brief Checks that an imported function or variable exists and has been imported
+ * 
+ * @param import
+ * @param name
+ */
+void checkImport(struct tree *import, struct tree *element)
+{
+
 }
 
 /**

@@ -3,9 +3,10 @@
 
 void typeCheck(struct tree *node);
 int ifAssigned(struct tree *node);
-void paramTypeCheck(struct tree *node);
 void prefixExpression(struct tree *node);
 struct symEntry *returnType(struct tree *node);
+void paramTypeCheck(struct tree *node);
+void checkImport(struct tree *import, struct tree *element);
 void leafExpression(struct tree *node);
 void assignAddExpression(struct tree *node);
 void assignSubExpression(struct tree *node);
