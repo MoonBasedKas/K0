@@ -273,6 +273,43 @@ void typeCheck(struct tree *node)
             break;
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
+
+    case propDecAssign:
+    case propDecReceiverAssign:
+    case propDecTypeParamsAssign:
+    case propDecAll:
+
+    case funcValParamAssign:
+    case funcBody:
+
+    case returnVal:
+
+    case arrayDecValueless:
+        if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
+        {
+            typeError("Cannot assign Array to non-Array variable", node);
+        }
+        break;
+    case arrayDecEqualValueless:
+        if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
+        {
+            typeError("Cannot assign Array to non-Array variable", node);
+        }
+        break;
+    case arrayDec:
+        arrayDeclaration(node->kids[1]->kids[0], node->kids[3]->kids[1]);
+        break;
+    case arrayDecEqual: 
+        arrayDeclaration(node->kids[1]->kids[0], node->kids[5]->kids[1]);
+        break;
+    
+    case arraySizeIdent: 
+        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        {
+            typeError("Array size must be of type Int", node);
+        }
+        break;
+
     default:
         break;
     }
@@ -970,6 +1007,46 @@ void multaplicativeExpression(struct tree *node)
     default:
         typeError("Multiplication, division, and modulo can only have operators of type Int and Double", node);
         break;
+    }
+}
+
+/**
+ * @brief Type checks array declarations
+ *
+ * @param node
+ */
+void arrayDeclaration(struct tree *ident, struct tree *exprList)
+{
+    if(!typeEquals(ident->type, arrayAnyType_ptr))
+    {
+        typeError("Cannot assign Array to non-Array variable", ident);
+    }
+
+    if(exprList->prodrule != expressionList)
+    {
+        if(!typeEquals(ident->type->u.array.elemType, exprList->type))
+        {
+            typeError("Array elements must match array type", ident);
+        }
+    }
+    else
+    {
+        while(1)
+        {
+            if(!typeEquals(ident->type->u.array.elemType, exprList->kids[0]->type))
+            {
+                typeError("Array elements must match array type", ident);
+            }
+            exprList = exprList->kids[1];
+            if(exprList->prodrule != expressionList)
+            {
+                if(!typeEquals(ident->type->u.array.elemType, exprList->type))
+                {
+                    typeError("Array elements must match array type", ident);
+                }
+                break;
+            }
+        }
     }
 }
 
