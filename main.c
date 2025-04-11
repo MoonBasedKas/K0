@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
-        // varTypeTheft(root);
-        // typeTheft(root);
+        varTypeTheft(root);
+        typeTheft(root);
         // typeCheck(root);
         checkNullability(root);
         checkMutability(root);

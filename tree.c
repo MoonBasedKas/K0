@@ -178,12 +178,14 @@ int typeTheft(struct tree *root){
     for(int i = 0; i < root->nkids; i++) typeTheft(root->kids[i]);
     int assigned = 0;
     if (root->type == NULL && root->nkids!= 0){
-        for (int i = 0; i < root->nkids; i++)
-        if (root->kids[i]->type->basicType != UNIT_TYPE){
-            root->type = root->kids[0]->type;
-            assigned = 1;
-            break;
-        } 
+        for (int i = 0; i < root->nkids; i++){
+            if (root->kids[i]->type->basicType != UNIT_TYPE){
+                root->type = root->kids[0]->type;
+                assigned = 1;
+                break;
+            } 
+        }
+        if (!assigned) root->type = alcType(UNIT_TYPE);
     } else if (root->type == NULL){
         switch (root->leaf->category)
         {
@@ -212,11 +214,11 @@ int typeTheft(struct tree *root){
         case MULTILINE_STRING:
             root->type=alcType(STRING_TYPE);
             break;
-
+        
         case IDENTIFIER:
-            if (root->table == NULL) root->table = rootScope;
-            root->type = contains(root->table, root->leaf->text)->type;
-            break;
+            struct symEntry *temp = contains(root->table, root->leaf->text);
+                if (temp != NULL)
+                    root->type = alcType(temp->type->basicType);
 
 
         default:
@@ -225,7 +227,6 @@ int typeTheft(struct tree *root){
         }
         return 0;
     }
-    if (!assigned) root->type = alcType(UNIT_TYPE);
     return 0;
 }
 
