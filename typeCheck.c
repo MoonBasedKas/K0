@@ -19,6 +19,8 @@ extern int symError;
  */
 void typeCheck(struct tree *node)
 {
+    struct symEntry *entry;
+
     //base case
     if(node == NULL)
     {
@@ -60,7 +62,7 @@ void typeCheck(struct tree *node)
         break;
     // function call
     case postfixNoExpr:
-        struct symEntry *entry = returnType(node->kids[0]);
+        entry = returnType(node->kids[0]);
         if(entry->type->u.func.numParams !=0)
         {
             typeError("Function call missing arguments", node);
@@ -87,7 +89,7 @@ void typeCheck(struct tree *node)
         break;
     case postfixDotIDNoExpr:
         checkImport(node->kids[0], node->kids[2]);
-        struct symEntry *entry = returnType(node->kids[2]);
+        entry = returnType(node->kids[2]);
         if(entry->type->u.func.numParams !=0)
         {
             typeError("Function call missing arguments", node);
@@ -95,7 +97,7 @@ void typeCheck(struct tree *node)
         break;
     case postfixSafeDotIDNoExpr:
         checkImport(node->kids[0], node->kids[3]);
-        struct symEntry *entry = returnType(node->kids[3]);
+        entry = returnType(node->kids[3]);
         if(entry->type->u.func.numParams !=0)
         {
             typeError("Function call missing arguments", node);
