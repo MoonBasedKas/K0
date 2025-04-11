@@ -213,7 +213,7 @@ declaration:
 
 propertyDeclaration:
     variable variableDeclaration                                                        {$$ = alctoken(propDecEmpty, "propDecEmpty", 2, $1, $2);}
-    | variable IDENTIFIER ASSIGNMENT expression                                         {$$ = alctoken(propDecTypeless, "propDecTypeless", 3, $1, $2, $4); freeTokens(1, $3);}
+    /* | variable IDENTIFIER ASSIGNMENT expression                                         {$$ = alctoken(propDecTypeless, "propDecTypeless", 3, $1, $2, $4); freeTokens(1, $3);} */
     | variable variableDeclaration ASSIGNMENT expression                                {$$ = alctoken(propDecAssign, "propDecAssign", 3, $1, $2, $4); freeTokens(1, $3);}
     | variable reciverType variableDeclaration                                          {$$ = alctoken(propDecReceiver, "propDecReceiver", 3, $1, $2, $3);}
     | variable reciverType variableDeclaration ASSIGNMENT expression                    {$$ = alctoken(propDecReceiverAssign, "propDecReceiverAssign", 4, $1, $2, $3, $5); freeTokens(1, $4);}

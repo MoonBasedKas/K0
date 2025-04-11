@@ -275,12 +275,37 @@ void typeCheck(struct tree *node)
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
 
     case propDecAssign:
+        if(!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        break;
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
+        if(!typeEquals(node->kids[2]->kids[0]->type, node->kids[3]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        break;
     case propDecAll:
-
+        if(!typeEquals(node->kids[3]->kids[0]->type, node->kids[4]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        break;
     case funcValParamAssign:
+        if(!typeEquals(node->kids[0]->kids[0]->type, node->kids[1]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        break;
+
     case funcBody:
+        if(!typeEquals(node->parent->kids[1]->type->u.func.returnType, node->kids[1]->type))
+        {
+            typeError("Types must match for assigmnet", node);
+        }
+        break;
 
     case returnVal:
         returnCheck(node, node->kids[1]->type);
