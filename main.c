@@ -74,11 +74,15 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
+        giveTables(root);
+        findNullTables(root);
         struct symEntry *x = NULL;
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
-        //typeCheck(root);
+        // varTypeTheft(root);
+        // typeTheft(root);
+        // typeCheck(root);
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c

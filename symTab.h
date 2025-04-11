@@ -1,5 +1,6 @@
 #ifndef symTab_H
 #define symTAB_H
+#include "tree.h"
 
 
 struct symTab{
@@ -46,4 +47,5 @@ int changeNullable(struct symTab *table, char *string, int mode);
 int makeEntryNonMutable(struct symTab *table, char *string);
 int checkNullable(struct symTab *table, char *string);
 int checkMutable(struct symTab *table, char *string);
+int findNullTables(struct tree *root);
 #endif

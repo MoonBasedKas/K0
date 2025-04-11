@@ -25,6 +25,8 @@ int printNode(nodeptr t);
 int printTree(nodeptr root, int depth);
 struct tree *alctoken(int prodrule, char *symbolname, int nkids, ...);
 int assignMutability(struct tree *root);
+int typeTheft(struct tree *root);
+int varTypeTheft(struct tree *root);
 extern int serial;
 
 

@@ -273,3 +273,11 @@ int makeEntryNonMutable(struct symTab *table, char *string){
     return 0;
 }
 
+
+int findNullTables(struct tree *root){
+    if (root->table == NULL) printf("%s\n", root->symbolname);
+    for(int i = 0; i < root->nkids; i++){
+        findNullTables(root->kids[i]);
+    }
+    return 0;
+}
