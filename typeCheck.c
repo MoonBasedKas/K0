@@ -105,8 +105,10 @@ void typeCheck(struct tree *node)
         break;
 
     //assigment
+    // TODO: Need to check Double = Int and Int = Double
     case assignment:
     case arrayAssignment:
+        typeMagicAssign(node->kids[0], node->kids[1]);
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
@@ -550,29 +552,8 @@ void leafExpression(struct tree *node)
         node->type = alcType(STRING_TYPE); //type.c
         break;
 
-    //variable base case
+    //variable base case, Moved to another function this would infinitely loop.
     case IDENTIFIER:
-        // // If table is NULL it shouldn't need to be checked
-        // // ie if it is a function call IDENTIFIER
-
-        // //if this is in the function declaratoin it should be looking in the scope that the function was declared in
-        // //so the node should point to that table
-        // //ask erik if thats not how it works
-        // //tho i guess it doesn't really matter since the declaration won't be checked
-        // if (node->table == NULL) {
-        //     break;
-        // }
-        // struct symTab *scope = node->table; //symTab.h
-        // struct symEntry *entry;             //symTab.h
-        // while(scope->parent != NULL)
-        // {
-        //     entry = contains(scope, node->leaf->text); //symTab.h
-        //     if(entry != NULL)
-        //     {
-        //         node->type = entry->type;
-        //         break;
-        //     }
-        // }
         // break;
     default:
         break;
@@ -1130,4 +1111,24 @@ void typeError(char *message, struct tree *node)
 
     fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
     symError = 1;
+}
+
+/**
+ * @brief Does type check handling assignments.
+ * 
+ * Works like a wizard of type comparisons forced inside a compiler. With 
+ * extra memory leaks
+ * 
+ * @param left
+ * @param right
+ * @return int 
+ */
+int typeMagicAssign(struct tree *left, struct tree *right){
+    if (left->type->basicType == INT_TYPE && right->type->basicType == DOUBLE_TYPE){
+        right->type = alcType(INT_TYPE);
+    } else if(left->type->basicType == DOUBLE_TYPE && right->type->basicType == INT_TYPE){
+        right->type = alcType(DOUBLE_TYPE);
+    }
+
+    return 0;
 }

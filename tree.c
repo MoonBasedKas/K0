@@ -245,8 +245,13 @@ int varTypeTheft(struct tree *root){
         struct symEntry *temp;
         if (root->leaf->category == IDENTIFIER){
             temp = contains(root->table, root->leaf->text);
-            if (temp != NULL)
-                root->type = alcType(temp->type->basicType);
+            if (temp != NULL){
+                if (typeEquals(temp->type, arrayAnyType_ptr)){
+                    root->type = temp->type;
+                } else {
+                    root->type = alcType(temp->type->basicType);
+                }
+            }
         }
     }
     return 0;
