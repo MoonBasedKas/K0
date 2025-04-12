@@ -8,6 +8,7 @@
 #include "lex.h"
 #include "tree.h"
 #include "k0gram.tab.h"
+#include "errorHandling.h"
 
 //prints error for unsupported keywords
 void unsupportedKeyword()
@@ -301,12 +302,6 @@ char * removeUnderscores()
     }
     nextCharLit[i] = '\0';
     return nextCharLit;
-}
-
-void yyerror (char const *s) {
-
-    fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
-    exit(2);
 }
 
 int addSemi(){

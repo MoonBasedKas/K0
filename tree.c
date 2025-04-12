@@ -6,6 +6,7 @@
 #include "type.h"
 #include "typeHelpers.h"
 #include "symTabHelper.h"
+#include "errorHandling.h"
 
 #include <stdlib.h>
 #include <stdarg.h>

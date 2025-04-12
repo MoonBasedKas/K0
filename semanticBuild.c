@@ -11,6 +11,7 @@
 #include "symNonTerminals.h"
 #include "lex.h"
 #include "semanticBuild.h"
+#include "errorHandling.h"
 
 struct tree *createEmptyParam(void);
 
@@ -91,6 +92,17 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                 struct tree* importList = n->kids[2];
                 parseImportList(importList, rootScope);
             }
+            break;
+        }
+        case expandingImportID:
+        {
+            /*
+            kids[0] = IDENTIFIER
+            kids[1] = DOT
+            kids[2] = IDENTIFIER
+            */
+            struct tree* importIdentifier = n->kids[2];
+            processImport(importIdentifier, rootScope);
             break;
         }
         case varDecQuests: // Sets the entry to nullable.

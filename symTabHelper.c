@@ -6,6 +6,7 @@
 #include "typeHelpers.h"
 #include "k0gram.tab.h"
 #include "symTabHelper.h"
+#include "errorHandling.h"
 
 #include <stdlib.h>
 #include <stdio.h>

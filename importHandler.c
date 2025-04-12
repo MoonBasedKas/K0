@@ -7,10 +7,11 @@
 #include "lex.h"
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
+#include "errorHandling.h"
 
 /**
  * @brief supported imports to check against
- * 
+ *
  */
 static char *supportedImports[] = {
     "String.get",
@@ -33,9 +34,9 @@ static int numSupportedImports = sizeof(supportedImports) / sizeof(supportedImpo
 
 /**
  * @brief check if import is supported
- * 
- * @param fullPath 
- * @return int 
+ *
+ * @param fullPath
+ * @return int
  */
 static int isImportSupported(char *fullPath)
 {
@@ -49,10 +50,10 @@ static int isImportSupported(char *fullPath)
 
 /**
  * @brief gather import segments
- * 
- * @param node 
- * @param seg 
- * @param segCount 
+ *
+ * @param node
+ * @param seg
+ * @param segCount
  */
 static void gatherImportSegments(struct tree *node, char **seg, int *segCount)
 {
@@ -73,6 +74,7 @@ static void gatherImportSegments(struct tree *node, char **seg, int *segCount)
         case IDENTIFIER:
             if (node->leaf && node->leaf->text) {
                 seg[*segCount] = strdup(node->leaf->text);
+                printf("Grabbed %s\n", seg[*segCount]);
                 (*segCount)++;
             }
             break;
@@ -92,9 +94,9 @@ static void gatherImportSegments(struct tree *node, char **seg, int *segCount)
 
 /**
  * @brief build full import path
- * 
- * @param segments 
- * @param segCount 
+ *
+ * @param segments
+ * @param segCount
  */
 static char* buildFullImportPath(char **segments, int segCount)
 {
@@ -126,10 +128,10 @@ static char* buildFullImportPath(char **segments, int segCount)
 
 /**
  * @brief add segments to symbol table
- * 
- * @param segments 
- * @param segCount 
- * @param rootScope 
+ *
+ * @param segments
+ * @param segCount
+ * @param rootScope
  */
 static void addSegmentsToSymbolTable(char **segments, int segCount, struct symTab *rootScope)
 {
@@ -137,15 +139,21 @@ static void addSegmentsToSymbolTable(char **segments, int segCount, struct symTa
         char *seg = segments[i];
         struct typeInfo *funcType = alcType(FUNCTION_TYPE);
         addSymTab(rootScope, seg, FUNCTION);
+        if(contains(rootScope, seg)) {
+            printf("Successfully added %s to symbol table\n", seg);
+        } else {
+            printf("Failed to add %s to symbol table\n", seg);
+        }
+        
         assignEntrytype(rootScope, seg, funcType);
     }
 }
 
 /**
  * @brief process import identifier
- * 
- * @param importIdNode 
- * @param rootScope 
+ *
+ * @param importIdNode
+ * @param rootScope
  */
 void processImport(struct tree *importIdNode, struct symTab *rootScope)
 {
@@ -185,9 +193,9 @@ void processImport(struct tree *importIdNode, struct symTab *rootScope)
 
 /**
  * @brief parse import list
- * 
- * @param importListNode 
- * @param rootScope 
+ *
+ * @param importListNode
+ * @param rootScope
  */
 void parseImportList(struct tree* importListNode, struct symTab* rootScope)
 {

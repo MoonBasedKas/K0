@@ -9,6 +9,7 @@
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
 #include "typeCheck.h"
+#include "errorHandling.h"
 
 extern int symError;
 
@@ -1108,18 +1109,3 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
     }
 }
 
-/**
- * @brief Prints type error message and sets symError to 1
- *
- * @param node
- */
-void typeError(char *message, struct tree *node)
-{
-    while(node->nkids != 0)
-    {
-        node = node->kids[0];
-    }
-
-    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
-    symError = 1;
-}
