@@ -105,10 +105,9 @@ void typeCheck(struct tree *node)
         break;
 
     //assigment
-    // TODO: Need to check Double = Int and Int = Double
     case assignment:
     case arrayAssignment:
-        typeMagicAssign(node->kids[0], node->kids[1]);
+        // typeMagicAssign(node->kids[0], node->kids[1]);
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
