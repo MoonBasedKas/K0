@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     int tree = 0;
     int symtab = 0;
     int fileCount = 0;
+    int debug = 0;
 
     char **fileNames = malloc(sizeof(char *) * argc);
     if(fileNames == NULL) {
@@ -49,7 +50,9 @@ int main(int argc, char *argv[])
             tree = 1;
         } else if (!strcmp(argv[i], "-symtab")){
             symtab = 1;
-        } else {
+        } else if(!strcmp(argv[i], "-symtab")){
+            debug = 1;
+        } {
             // Treat non-flag arguments as file names.
             fileNames[fileCount++] = argv[i];
         }
@@ -86,7 +89,7 @@ int main(int argc, char *argv[])
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c
-        if (symError != 0) return symError; // If something is undeclared.
+        if (symError != 0 || debug) return symError; // If something is undeclared.
         
 
         if(dot){

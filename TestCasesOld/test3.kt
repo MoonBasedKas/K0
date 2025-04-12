@@ -1,5 +1,5 @@
-import qemu.emulator
-import java.lang.Math.*
+// import qemu.emulator
+// import java.lang.Math.*
 
 // fun f() : Int {
 //    val threadlocal : Int = 5
