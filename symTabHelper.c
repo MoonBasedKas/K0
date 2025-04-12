@@ -206,32 +206,32 @@ int checkExistance(struct tree *node, struct symTab *scope){
  *
  * @return int
  */
-int addMathModule(){
-    struct symEntry *temp = NULL;
-    addSymTab(rootScope, "abs", FUNCTION); //symTab.c
-    temp = contains(rootScope, "abs");
-    temp->type = alcType(INT_TYPE);
-    addSymTab(rootScope, "max", FUNCTION);
-    temp = contains(rootScope, "max");
-    temp->type = alcType(INT_TYPE);
-    addSymTab(rootScope, "min", FUNCTION);
-    temp = contains(rootScope, "min");
-    temp->type = alcType(INT_TYPE);
-    addSymTab(rootScope, "pow", FUNCTION);
-    temp = contains(rootScope, "pow");
-    temp->type = alcType(INT_TYPE);
-    addSymTab(rootScope, "cos", FUNCTION);
-    temp = contains(rootScope, "cos");
-    temp->type = alcType(DOUBLE_TYPE);
-    addSymTab(rootScope, "sin", FUNCTION);
-    temp = contains(rootScope, "sin");
-    temp->type = alcType(DOUBLE_TYPE);
-    addSymTab(rootScope, "tan", FUNCTION);
-    temp = contains(rootScope, "tan");
-    temp->type = alcType(DOUBLE_TYPE);
+// int addMathModule(){
+//     struct symEntry *temp = NULL;
+//     addSymTab(rootScope, "abs", FUNCTION); //symTab.c
+//     temp = contains(rootScope, "abs");
+//     temp->type = alcType(INT_TYPE);
+//     addSymTab(rootScope, "max", FUNCTION);
+//     temp = contains(rootScope, "max");
+//     temp->type = alcType(INT_TYPE);
+//     addSymTab(rootScope, "min", FUNCTION);
+//     temp = contains(rootScope, "min");
+//     temp->type = alcType(INT_TYPE);
+//     addSymTab(rootScope, "pow", FUNCTION);
+//     temp = contains(rootScope, "pow");
+//     temp->type = alcType(INT_TYPE);
+//     addSymTab(rootScope, "cos", FUNCTION);
+//     temp = contains(rootScope, "cos");
+//     temp->type = alcType(DOUBLE_TYPE);
+//     addSymTab(rootScope, "sin", FUNCTION);
+//     temp = contains(rootScope, "sin");
+//     temp->type = alcType(DOUBLE_TYPE);
+//     addSymTab(rootScope, "tan", FUNCTION);
+//     temp = contains(rootScope, "tan");
+//     temp->type = alcType(DOUBLE_TYPE);
 
-    return 0;
-}
+//     return 0;
+// }
 
 /**
  * @brief Removed everything except for Array.
@@ -254,24 +254,24 @@ void populateStdlib(){
     addSymTab(rootScope, "println", VARIABLE);
     temp = contains(rootScope, "println");
     temp->type = alcType(UNIT_TYPE);
-    addSymTab(rootScope, "get", VARIABLE);
-    temp = contains(rootScope, "get");
-    temp->type = alcType(CHAR_TYPE);
-    addSymTab(rootScope, "equals", VARIABLE);
-    temp = contains(rootScope, "equals");
-    temp->type = alcType(BOOL_TYPE);
-    addSymTab(rootScope, "length", VARIABLE);
-    temp = contains(rootScope, "length");
-    temp->type = alcType(INT_TYPE);
-    addSymTab(rootScope, "toString", VARIABLE);
-    temp = contains(rootScope, "toString");
-    temp->type = alcType(STRING_TYPE);
-    addSymTab(rootScope, "valueOf", VARIABLE);
-    temp = contains(rootScope, "valueOf");
-    temp->type = alcType(STRING_TYPE);
-    addSymTab(rootScope, "substring", VARIABLE);
-    temp = contains(rootScope, "substring");
-    temp->type = alcType(STRING_TYPE);
+    // addSymTab(rootScope, "get", VARIABLE);
+    // temp = contains(rootScope, "get");
+    // temp->type = alcType(CHAR_TYPE);
+    // addSymTab(rootScope, "equals", VARIABLE);
+    // temp = contains(rootScope, "equals");
+    // temp->type = alcType(BOOL_TYPE);
+    // addSymTab(rootScope, "length", VARIABLE);
+    // temp = contains(rootScope, "length");
+    // temp->type = alcType(INT_TYPE);
+    // addSymTab(rootScope, "toString", VARIABLE);
+    // temp = contains(rootScope, "toString");
+    // temp->type = alcType(STRING_TYPE);
+    // addSymTab(rootScope, "valueOf", VARIABLE);
+    // temp = contains(rootScope, "valueOf");
+    // temp->type = alcType(STRING_TYPE);
+    // addSymTab(rootScope, "substring", VARIABLE);
+    // temp = contains(rootScope, "substring");
+    // temp->type = alcType(STRING_TYPE);
     addSymTab(rootScope, "readln", VARIABLE);
     temp = contains(rootScope, "readln");
     temp->type = alcType(STRING_TYPE);
@@ -282,24 +282,24 @@ void populateStdlib(){
  * @brief Pre adds all libraries in k0
  *
  */
-void populateLibraries(){
-    //Predefined libraries
-    addSymTab(rootScope, "java", PACKAGE); //symTab.c
-    addSymTab(rootScope, "util", PACKAGE);
-    addSymTab(rootScope, "lang", PACKAGE);
-    addSymTab(rootScope, "math", PACKAGE);
-    addSymTab(rootScope, "Random", PACKAGE);
+// void populateLibraries(){
+//     //Predefined libraries
+//     addSymTab(rootScope, "java", PACKAGE); //symTab.c
+//     addSymTab(rootScope, "util", PACKAGE);
+//     addSymTab(rootScope, "lang", PACKAGE);
+//     addSymTab(rootScope, "math", PACKAGE);
+//     addSymTab(rootScope, "Random", PACKAGE);
 
-    // Functions within predfined libraries.
-    addSymTab(rootScope, "nextInt", VARIABLE); //symTab.c
-    addSymTab(rootScope, "abs", VARIABLE);
-    addSymTab(rootScope, "max", VARIABLE);
-    addSymTab(rootScope, "min", VARIABLE);
-    addSymTab(rootScope, "pow", VARIABLE);
-    addSymTab(rootScope, "cos", VARIABLE);
-    addSymTab(rootScope, "sin", VARIABLE);
-    addSymTab(rootScope, "tan", VARIABLE);
-}
+//     // Functions within predfined libraries.
+//     addSymTab(rootScope, "nextInt", VARIABLE); //symTab.c
+//     addSymTab(rootScope, "abs", VARIABLE);
+//     addSymTab(rootScope, "max", VARIABLE);
+//     addSymTab(rootScope, "min", VARIABLE);
+//     addSymTab(rootScope, "pow", VARIABLE);
+//     addSymTab(rootScope, "cos", VARIABLE);
+//     addSymTab(rootScope, "sin", VARIABLE);
+//     addSymTab(rootScope, "tan", VARIABLE);
+// }
 
 /**
  * @brief Gets the string of a given table type.

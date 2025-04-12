@@ -136,15 +136,16 @@ static void addSegmentsToSymbolTable(char **segments, int segCount, struct symTa
 {
     for (int i = 0; i < segCount; i++) {
         char *seg = segments[i];
-        struct typeInfo *funcType = alcType(FUNCTION_TYPE);
-        addSymTab(rootScope, seg, FUNCTION);
-        // if(contains(rootScope, seg)) {
-        //     printf("Successfully added %s to symbol table\n", seg);
-        // } else {
-        //     printf("Failed to add %s to symbol table\n", seg);
-        // }
-
-        assignEntrytype(rootScope, seg, funcType);
+        if(!contains(rootScope, seg)) {
+            struct typeInfo *funcType = alcType(FUNCTION_TYPE);
+            addSymTab(rootScope, seg, FUNCTION);
+            assignEntrytype(rootScope, seg, funcType);
+            if(contains(rootScope, seg)) {
+                printf("Successfully added %s to symbol table\n", seg);
+            } else {
+                printf("Failed to add %s to symbol table\n", seg);
+            }
+        }
     }
 }
 

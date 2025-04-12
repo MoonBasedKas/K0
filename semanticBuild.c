@@ -103,8 +103,16 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             struct tree* importIdentifier = n->kids[2];
             processImport(importIdentifier, rootScope);
+
             break;
         }
+        case expandingImportID:
+        {
+            /*
+            kids[0] = IDENTIFIER
+            kids[1] = DOT
+            kids[2] = IDENTIFIER
+            */
         case varDecQuests: // Sets the entry to nullable.
 
             if (n->kids[1]->prodrule == arrayTypeQuests){
