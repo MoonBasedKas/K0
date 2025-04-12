@@ -74,7 +74,6 @@ static void gatherImportSegments(struct tree *node, char **seg, int *segCount)
         case IDENTIFIER:
             if (node->leaf && node->leaf->text) {
                 seg[*segCount] = strdup(node->leaf->text);
-                printf("Grabbed %s\n", seg[*segCount]);
                 (*segCount)++;
             }
             break;
@@ -139,12 +138,12 @@ static void addSegmentsToSymbolTable(char **segments, int segCount, struct symTa
         char *seg = segments[i];
         struct typeInfo *funcType = alcType(FUNCTION_TYPE);
         addSymTab(rootScope, seg, FUNCTION);
-        if(contains(rootScope, seg)) {
-            printf("Successfully added %s to symbol table\n", seg);
-        } else {
-            printf("Failed to add %s to symbol table\n", seg);
-        }
-        
+        // if(contains(rootScope, seg)) {
+        //     printf("Successfully added %s to symbol table\n", seg);
+        // } else {
+        //     printf("Failed to add %s to symbol table\n", seg);
+        // }
+
         assignEntrytype(rootScope, seg, funcType);
     }
 }
