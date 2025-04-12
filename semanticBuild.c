@@ -76,6 +76,18 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
     checkLeafType(n);
 
     switch (n->prodrule){
+        case collapsedImport:
+        case expandingImport:
+        {
+            /*
+            kids[0] = IMPORT
+            kids[1] = importIdentifier
+            kids[2] = importList (optional)
+            */
+            printf("Import\n");
+            char *path = getImportPath(n->kids[1]);
+            break;
+        }
         case varDecQuests: // Sets the entry to nullable.
 
             if (n->kids[1]->prodrule == arrayTypeQuests){
