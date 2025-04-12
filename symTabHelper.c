@@ -36,40 +36,40 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
             break;
 
-        // Import chains
-        case expandingImportID:
-            // Is it there?
-            if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
-            scope = addSymTab(rootScope, node->kids[0]->leaf->text, PACKAGE); //symTab.c
+        // // Import chains
+        // case expandingImportID:
+        //     // Is it there?
+        //     if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
+        //     scope = addSymTab(rootScope, node->kids[0]->leaf->text, PACKAGE); //symTab.c
 
-            // So we need to check if the next leaf is a *...
+        //     // So we need to check if the next leaf is a *...
 
-            if (node->kids[2]->nkids != 0) {
-                buildSymTabs(node->kids[2], scope);
-            } else {
-                if (strcmp(node->kids[2]->leaf->text, "*")) {
-                    scope = addSymTab(rootScope, node->kids[2]->leaf->text, PACKAGE);
-                } else {
-                    if (contains(rootScope, "Math")) addMathModule();
-                }
-            }
+        //     if (node->kids[2]->nkids != 0) {
+        //         buildSymTabs(node->kids[2], scope);
+        //     } else {
+        //         if (strcmp(node->kids[2]->leaf->text, "*")) {
+        //             scope = addSymTab(rootScope, node->kids[2]->leaf->text, PACKAGE);
+        //         } else {
+        //             if (contains(rootScope, "Math")) addMathModule();
+        //         }
+        //     }
 
-            // Check if next is valid.
-            break;
+        //     // Check if next is valid.
+        //     break;
 
-        // Singular imports.
-        case collapsedImport:
-            if(node->kids[1]->nkids == 0){
-                if (strcmp(node->kids[1]->leaf->text, "*")){
-                    addSymTab(scope, node->kids[1]->leaf->text, VARIABLE); //symTab.c
-                } else {
-                    fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
-                    symError = 3;
-                }
-            } else {
-                buildSymTabs(node->kids[1], scope);
-            }
-            break;
+        // // Singular imports.
+        // case collapsedImport:
+        //     if(node->kids[1]->nkids == 0){
+        //         if (strcmp(node->kids[1]->leaf->text, "*")){
+        //             addSymTab(scope, node->kids[1]->leaf->text, VARIABLE); //symTab.c
+        //         } else {
+        //             fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
+        //             symError = 3;
+        //         }
+        //     } else {
+        //         buildSymTabs(node->kids[1], scope);
+        //     }
+        //     break;
 
         //function declarations
         case funcDecAll:
