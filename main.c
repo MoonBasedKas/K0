@@ -52,7 +52,15 @@ int main(int argc, char *argv[])
             symtab = 1;
         } else if(!strcmp(argv[i], "-debug")){
             debug = 1;
-        } {
+        } else if(!strcmp(argv[i], "-help")){
+            printf("Usage ./k0 [option]|[file] ...\n");
+            printf("Options:\n");
+            printf("-help: Prints out this command interface.\n");
+            printf("-dot: Generates a dot file, needs to be compiled.\n");
+            printf("-tree: View the syntax tree of the program.\n");
+            printf("-symtab: View the symbol tables.\n");
+            printf("-debug: One does not reveal what their debug command does.\n");
+        } else{
             // Treat non-flag arguments as file names.
             fileNames[fileCount++] = argv[i];
         }
@@ -83,6 +91,7 @@ int main(int argc, char *argv[])
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
+        // The bottom two could probably be one function, but more tree traversals is better!
         varTypeTheft(root);
         typeTheft(root);
         typeCheck(root);

@@ -246,9 +246,11 @@ int varTypeTheft(struct tree *root){
         if (root->leaf->category == IDENTIFIER){
             temp = contains(root->table, root->leaf->text);
             if (temp != NULL){
-                if (typeEquals(temp->type, arrayAnyType_ptr)){
+                if (temp->type->basicType == FUNCTION_TYPE){
                     root->type = temp->type;
-                } else {
+                } else if (temp->type->basicType == ARRAY_TYPE) {
+                    root->type = temp->type;
+                }else {
                     root->type = alcType(temp->type->basicType);
                 }
             }
