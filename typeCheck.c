@@ -400,7 +400,6 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
         node->parent->type = entry->type->u.func.returnType;
         found = 1;
     }
-    printf("IVE ESCAPED!\n");
     if(found == 0)
     {
         typeError("Function not found", node);
@@ -1057,7 +1056,7 @@ void multaplicativeExpression(struct tree *node)
 void returnCheck(struct tree *node, struct typeInfo *type)
 {
     while(node->parent != NULL)
-    {
+    {   
         switch (node->prodrule)
         {
         case funcDecAll:
@@ -1072,6 +1071,7 @@ void returnCheck(struct tree *node, struct typeInfo *type)
         default:
             break;
         }
+        node = node->parent;
     }
     typeError("Non-function blocks cannot return", node);
 }
