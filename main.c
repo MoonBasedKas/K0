@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
             tree = 1;
         } else if (!strcmp(argv[i], "-symtab")){
             symtab = 1;
-        } else if(!strcmp(argv[i], "-symtab")){
+        } else if(!strcmp(argv[i], "-debug")){
             debug = 1;
         } {
             // Treat non-flag arguments as file names.
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c
-        if (symError != 0 || debug) return symError; // If something is undeclared.
+        if (symError != 0 && debug == 0) return symError; // If something is undeclared.
         
 
         if(dot){
