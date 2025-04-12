@@ -13,6 +13,7 @@ Type helpers for the semantic analysis phase.
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
 #include "typeCheck.h"
+#include "errorHandling.h"
 
 // Bingo
 // struct symTab *globalSymTab = rootScope;

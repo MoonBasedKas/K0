@@ -7,6 +7,8 @@
 			#include "k0gram.tab.h"
             #include "tree.h"
             #include "lex.h"
+            #include "errorHandling.h"
+
 			int rows = 1;
             struct token *nextToken;
             struct token *prevToken = NULL;
