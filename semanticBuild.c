@@ -84,8 +84,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[1] = importIdentifier
             kids[2] = importList (optional)
             */
-            printf("Import\n");
-            char *path = getImportPath(n->kids[1]);
+            struct tree* importIdentifier = n->kids[1];
+            processImport(importIdentifier, rootScope);
+
+            if (n->nkids == 3){
+                struct tree* importList = n->kids[2];
+                parseImportList(importList, rootScope);
+            }
             break;
         }
         case varDecQuests: // Sets the entry to nullable.
