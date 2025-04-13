@@ -235,6 +235,8 @@ int typeTheft(struct tree *root){
  * @brief Grabs variables types and assigns them in all places where they appear in the tree.
  * The other version of digging for guns in kotlin! -H.S.
  * 
+ * TODO: GLOBAL SCOPING!!!!
+ * 
  * @param root 
  * @return int 
  */
@@ -245,8 +247,12 @@ int varTypeTheft(struct tree *root){
     if (root->nkids == 0){
         struct symEntry *temp;
         if (root->leaf->category == IDENTIFIER){
-            temp = contains(root->table, root->leaf->text);
-            if (temp != NULL){
+            
+            temp = inZaWorldo(root->table, root->leaf->text);
+            if (!strcmp(root->leaf->text, "Array")){
+                // The array type, my mortal enemy...
+                root->type = arrayAnyType_ptr;
+            } else if (temp != NULL){
                 if (temp->type->basicType == FUNCTION_TYPE){
                     root->type = temp->type;
                 } else if (temp->type->basicType == ARRAY_TYPE) {
@@ -254,9 +260,7 @@ int varTypeTheft(struct tree *root){
                 }else {
                     root->type = alcType(temp->type->basicType);
                 }
-            } else if (!strcmp(root->leaf->text, "Array")){
-                root->type = arrayAnyType_ptr;
-            }
+            } 
         }
     }
     return 0;

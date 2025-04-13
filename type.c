@@ -93,22 +93,49 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     rv->u.func.numParams = p->nkids;
     rv->u.func.parameters = NULL;
     struct param *lastParam = NULL;
+    // Okay so, I think we are traversing this incorrectly, it doesnt seem like the code considers the datatype.
+    if (p->nkids == 0 && p->type == NULL){
+        return rv;
+    };     
+    if (p->kids[0]->prodrule == varDec || p->kids[0]->prodrule == funcValParamAssign){
+        rv->u.func.numParams = 1;
+        rv->u.func.parameters = createParamFromTree(p->kids[0]);
+        return rv;
+    }
 
-        for (int i = 0; i < p->nkids; i++) {
-        struct tree *paramNode = p->kids[i];
-        // Use the new helper to create a new parameter node.
-        struct param *newParam = createParamFromTree(paramNode); //typeHelpers.c
+    rv->u.func.numParams = 0;
+    struct tree *temp = p->kids[0];
+    struct param *newParam = NULL;
 
-        // Add to the end of the list.
-        if (rv->u.func.parameters == NULL) {
+    while(temp->prodrule == funcValParamList){
+        newParam = createParamFromTree(temp->kids[0]);
+        if(rv->u.func.parameters == NULL){
             rv->u.func.parameters = newParam;
+            lastParam = newParam;
         } else {
             lastParam->next = newParam;
         }
-        lastParam = newParam;
+
+        rv->u.func.numParams++;
+        temp = temp->kids[1];
     }
 
     return rv;
+    // for (int i = 0; i < p->nkids; i++) {
+    //     struct tree *paramNode = p->kids[i];
+    //     // Use the new helper to create a new parameter node.
+    //     struct param *newParam = createParamFromTree(paramNode); //typeHelpers.c
+
+    //     // Add to the end of the list.
+    //     if (rv->u.func.parameters == NULL) {
+    //         rv->u.func.parameters = newParam;
+    //     } else {
+    //         lastParam->next = newParam;
+    //     }
+    //     lastParam = newParam;
+    // }
+
+    // return rv;
 }
 
 /**
