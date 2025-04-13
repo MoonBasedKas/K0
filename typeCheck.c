@@ -1103,22 +1103,6 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
 
 
 /**
- * @brief Prints type error message and sets symError to 1
- *
- * @param node
- */
-void typeError(char *message, struct tree *node)
-{
-    while(node->nkids != 0)
-    {
-        node = node->kids[0];
-    }
-
-    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
-    symError = 1;
-}
-
-/**
  * @brief Does type check handling assignments.
  * 
  * Works like a wizard of type comparisons forced inside a compiler. With 
