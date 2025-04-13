@@ -5,10 +5,10 @@ FLEX=flex
 BISON=bison
 HFLAG=-d
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o importHandler.o errorHandling.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h 
+main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
 	$(CC) $(OBJFLAGS) $<
 
 lex.o: lex.c lex.h
@@ -51,9 +51,6 @@ typeCheck.o: typeCheck.c typeCheck.h typeHelpers.h type.h
 	$(CC) $(OBJFLAGS) $<
 
 symTabHelper.o: symTabHelper.c symTabHelper.h symTab.h tree.h type.h typeHelpers.h
-	$(CC) $(OBJFLAGS) $<
-
-importHandler.o: importHandler.c importHandler.h symTab.h tree.h type.h typeHelpers.h symNonTerminals.h lex.h k0gram.tab.h
 	$(CC) $(OBJFLAGS) $<
 
 errorHandling.o: errorHandling.c errorHandling.h

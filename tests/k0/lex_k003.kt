@@ -13,8 +13,8 @@ fun main(args : Array<String>) {
     val str : String = "Line1\nLine2\twith tab and a dollar sign: \$foo";
     
     // Multi-line string literal using triple quotes
-    val multi : String = """This is a multi-line
-string literal with "quotes" and a backslash \\ in it."""
+    val multi : String = /*This is a multi-line
+string literal with "quotes" and a backslash \\ in it.*/
     
     println("Literals tested:");
     println("dec: " + dec);

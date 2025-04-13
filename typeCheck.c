@@ -417,6 +417,9 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
  */
 void paramTypeCheck(struct tree *id, struct tree *exprList)
 {
+    if (strcmp(id->leaf->text, "print") == 0 || strcmp(id->leaf->text, "println") == 0) {
+        return;
+    }
     struct symEntry *entry = returnType(id);
     // struct tree *exprList = node->kids[1];
     struct param *paramList = id->type->u.func.parameters;
@@ -461,7 +464,22 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
  */
 void checkImport(struct tree *import, struct tree *element)
 {
+    // if(!import->leaf || !element->leaf) {
+    //     typeError("Function call must be a leaf", (import?import:element));
+    // }
 
+    char *importName = import->leaf->text;
+    char *elementName = element->leaf->text;
+
+    if(!contains(rootScope, importName)) {
+        typeError("Imported function not found", import);
+        return;
+    }
+
+    if(!contains(rootScope, elementName)) {
+        typeError("Imported function not found", element);
+        return;
+    }
 }
 
 /**
@@ -1099,23 +1117,6 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
             }
         }
     }
-}
-
-
-/**
- * @brief Prints type error message and sets symError to 1
- *
- * @param node
- */
-void typeError(char *message, struct tree *node)
-{
-    while(node->nkids != 0)
-    {
-        node = node->kids[0];
-    }
-
-    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
-    symError = 1;
 }
 
 /**
