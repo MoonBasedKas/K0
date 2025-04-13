@@ -253,6 +253,8 @@ int varTypeTheft(struct tree *root){
                 }else {
                     root->type = alcType(temp->type->basicType);
                 }
+            } else if (!strcmp(root->leaf->text, "Array")){
+                root->type = arrayAnyType_ptr;
             }
         }
     }
