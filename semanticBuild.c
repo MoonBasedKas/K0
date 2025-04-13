@@ -86,7 +86,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
             printf("Collapsed import\n");
             struct tree *temp = n->kids[1]->kids[0];
-            printf("Importing function: %s\n", temp->leaf->text);
+            printf("Name check: %s\n", temp->leaf->text);
             temp->type = alcType(FUNCTION_TYPE);
             assignEntrytype(n->table, temp->leaf->text, temp->type);
             break;
@@ -98,10 +98,18 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[1] = DOT
             kids[2] = importIdentifier
             */
-            struct tree *temp = n->kids[0];
-                printf("Importing function: %s\n", temp->leaf->text);
-                temp->type = alcType(FUNCTION_TYPE);
-                assignEntrytype(n->table, temp->leaf->text, temp->type);
+            struct tree *LHS = n->kids[0];
+            LHS->type = alcType(FUNCTION_TYPE);
+            assignEntrytype(n->table, LHS->leaf->text, LHS->type);
+
+            struct tree *RHS = n->kids[2];
+            if(RHS->nkids == 0 && RHS->leaf) {
+                if(strcmp(RHS->leaf->text, "*") != 0) {
+                    RHS->type = alcType(FUNCTION_TYPE);
+                    assignEntrytype(n->table, RHS->leaf->text, RHS->type);
+                }
+            }
+
             break;
         }
         case varDecQuests: // Sets the entry to nullable.
