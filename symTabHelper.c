@@ -76,7 +76,7 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
                 return;
             }
             if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
-                addSymTab(rootScope, node->kids[0]->leaf->text, VARIABLE); //symTab.c
+            addSymTab(rootScope, node->kids[0]->leaf->text, VARIABLE); //symTab.c
 
             // So we need to check if the next leaf is a *...
 
@@ -85,13 +85,8 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
             } else {
                 if (strcmp(node->kids[2]->leaf->text, "*")) {
                     addSymTab(rootScope, node->kids[2]->leaf->text, VARIABLE);
-                } 
-                // else {
-                //     if (contains(rootScope, "Math")) addMathModule();
-                // }
+                }
             }
-
-            // Check if next is valid.
             break;
 
         // Singular imports.
