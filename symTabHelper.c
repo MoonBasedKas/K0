@@ -355,3 +355,18 @@ char *getTableType(int type){
             return "UNKNOWN";
     }
 }
+
+/**
+ * @brief The savior of null table issues. Fixes an issue where some nodes wouldn't
+ * get a symbol table assigned. 
+ * 
+ * @param root 
+ * @return int 
+ */
+int giveTables(struct tree *root){
+    if (root->table == NULL){
+        root->table = root->parent->table;
+    }
+    for(int i = 0; i < root->nkids; i++) giveTables(root->kids[i]);
+    return 0;
+}

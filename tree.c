@@ -163,3 +163,101 @@ int assignMutability(struct tree *root){
     }
     return 0;
 }
+
+
+/**
+ * @brief A C hacker type method of pushing types up the tree. We just 
+ * smash and dash everything that isn't a type after its been assigned
+ * and forcibly take the type of the first element or leaf.
+ * 
+ * The digging for guns of kotlin! -H.S.
+ * 
+ * @param root 
+ * @return int 
+ */
+int typeTheft(struct tree *root){
+    for(int i = 0; i < root->nkids; i++) typeTheft(root->kids[i]);
+    int assigned = 0;
+    if (root->type == NULL && root->nkids!= 0){
+        for (int i = 0; i < root->nkids; i++){
+            if (root->kids[i]->type->basicType != UNIT_TYPE){
+                root->type = root->kids[0]->type;
+                assigned = 1;
+                break;
+            } 
+        }
+        if (!assigned) root->type = alcType(UNIT_TYPE);
+    } else if (root->type == NULL){
+        switch (root->leaf->category)
+        {
+        case INTEGER_LITERAL:
+            root->type = alcType(INT_TYPE);
+            break;
+
+        case CHARACTER_LITERAL:
+            root->type=alcType(CHARACTER_LITERAL);
+            break;
+
+        case REAL_LITERAL:
+            root->type=alcType(DOUBLE_TYPE);
+            break;
+
+        case FALSE:
+        case TRUE:
+            root->type=alcType(BOOL_TYPE);
+            break;
+
+        case NULL_K:
+            root->type=alcType(NULL_TYPE);
+            break;
+
+        case LINE_STRING:
+        case MULTILINE_STRING:
+            root->type=alcType(STRING_TYPE);
+            break;
+        
+        case IDENTIFIER:
+            struct symEntry *temp = contains(root->table, root->leaf->text);
+                if (temp != NULL)
+                    root->type = alcType(temp->type->basicType);
+
+
+        default:
+            root->type = alcType(UNIT_TYPE);
+            break;
+        }
+        return 0;
+    }
+    return 0;
+}
+
+/**
+ * @brief Grabs variables types and assigns them in all places where they appear in the tree.
+ * The other version of digging for guns in kotlin! -H.S.
+ * 
+ * @param root 
+ * @return int 
+ */
+int varTypeTheft(struct tree *root){
+    for (int i = 0; i < root->nkids; i++){
+        varTypeTheft(root->kids[i]);
+    }
+    if (root->nkids == 0){
+        struct symEntry *temp;
+        if (root->leaf->category == IDENTIFIER){
+            temp = contains(root->table, root->leaf->text);
+            if (temp != NULL){
+                if (temp->type->basicType == FUNCTION_TYPE){
+                    root->type = temp->type;
+                } else if (temp->type->basicType == ARRAY_TYPE) {
+                    root->type = temp->type;
+                }else {
+                    root->type = alcType(temp->type->basicType);
+                }
+            } else if (!strcmp(root->leaf->text, "Array")){
+                root->type = arrayAnyType_ptr;
+            }
+        }
+    }
+    return 0;
+}

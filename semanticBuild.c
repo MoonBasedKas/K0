@@ -262,7 +262,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
         {
 
-            n->type = alcArrayType(n->kids[3], n->kids[2]->type);
+            n->type = alcArrayType(n->kids[4], n->kids[3]->type);
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
@@ -339,17 +339,17 @@ int checkNullability(struct tree *root){
             if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
                 val = checkNullable(root->table, root->kids[0]->leaf->text);
                 if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
-                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->text);
+                    fprintf(stderr, "Error line %d | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->lineno, root->kids[0]->leaf->text);
                     symError = 1;
                 }
             }
-            // else if (root->kids[1]->type->basicType == NULL_K){
-            //     val = checkNullable(root->table, root->kids[0]->leaf->text);
-            //     if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
-            //         fprintf(stderr, "Error | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->text);
-            //         symError = 1;
-            //     }
-            // }
+            else if (root->kids[1]->type->basicType == NULL_K){
+                val = checkNullable(root->table, root->kids[0]->leaf->text);
+                if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
+                    fprintf(stderr, "Error line %d | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->lineno, root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
             break;
         // Arrays
         case propDecAssign:
@@ -358,17 +358,17 @@ int checkNullability(struct tree *root){
             if (root->kids[2]->nkids == 0 && root->kids[2]->leaf->category == NULL_K) {
                 val = checkNullable(root->table, root->kids[0]->leaf->text);
                 if( !(val == nullable || val == squareNullable)){ // Not nullable is BAD
-                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", temp->leaf->text);
+                    fprintf(stderr, "Error line %d | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->lineno, temp->leaf->text);
                     symError = 1;
                 }
             }
-            //  else if (root->kids[1]->type->basicType == NULL_K){
-            //     val = checkNullable(root->table, root->kids[0]->leaf->text);
-            //     if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
-            //         fprintf(stderr, "Error | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->text);
-            //         symError = 1;
-            //     }
-            // }
+             else if (root->kids[1]->type->basicType == NULL_K){
+                val = checkNullable(root->table, root->kids[0]->leaf->text);
+                if(!(val == nullable || val == squareNullable)){ // Not nullable is BAD
+                    fprintf(stderr, "Error line %d | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->lineno, root->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
             break;
         case arrayAssignment:
         case arrayAssignAdd:
@@ -376,17 +376,17 @@ int checkNullability(struct tree *root){
             if (root->kids[1]->nkids == 0 && root->kids[1]->leaf->category == NULL_K) {
                 val = checkNullable(root->table, root->kids[0]->kids[0]->leaf->text);
                 if( !(val == indexNullable || val == squareNullable)){ // Not nullable is BAD
-                    fprintf(stderr, "Error | %s is not nullable but was assigned to null.\n", root->kids[0]->kids[0]->leaf->text);
+                    fprintf(stderr, "Error line %d | %s is not nullable but was assigned to null.\n", root->kids[0]->leaf->lineno, root->kids[0]->kids[0]->leaf->text);
                     symError = 1;
                 }
             }
-            // else if (root->kids[1]->type->basicType == NULL_K){
-            //     val = checkNullable(root->table, root->kids[0]->kids[0]->leaf->text);
-            //     if(!(val == indexNullable || val == squareNullable)){ // Not nullable is BAD
-            //         fprintf(stderr, "Error | %s is not index nullable but the expression computed null.\n", root->kids[0]->kids[0]->leaf->text);
-            //         symError = 1;
-            //     }
-            // }
+            else if (root->kids[1]->type->basicType == NULL_K){
+                val = checkNullable(root->table, root->kids[0]->kids[0]->leaf->text);
+                if(!(val == indexNullable || val == squareNullable)){ // Not nullable is BAD
+                    fprintf(stderr, "Error line %d | %s is not index nullable but the expression computed null.\n", root->kids[0]->leaf->lineno, root->kids[0]->kids[0]->leaf->text);
+                    symError = 1;
+                }
+            }
         default:
             break;
     }

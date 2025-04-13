@@ -108,6 +108,7 @@ void typeCheck(struct tree *node)
     //assigment
     case assignment:
     case arrayAssignment:
+        typeMagicAssign(node->kids[0], node->kids[1]);
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
@@ -265,7 +266,7 @@ void typeCheck(struct tree *node)
     case arrayAccess:
     case postfixArrayAccess:
     case arrayIndex:
-        if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
+        if(node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
         {
             typeError("Array access must be performed on an array", node);
             break;
@@ -276,7 +277,7 @@ void typeCheck(struct tree *node)
             break;
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
-
+        break;
     case propDecAssign:
         if(!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type))
         {
@@ -323,16 +324,17 @@ void typeCheck(struct tree *node)
         }
         break;
     case arrayDecEqualValueless:
-        if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
-        {
-            typeError("Cannot assign Array to non-Array variable", node);
+        if (node->kids[1]->kids[0]->type->u.array.elemType->basicType != node->kids[3]->type->basicType){
+            typeError("Arrays are assigned to conflicting types of arrays.", node);
+        } else if (strcmp(node->kids[2]->leaf->text, "Array")){
+            typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", node); // TODO Fix this
         }
         break;
     case arrayDec:
-        arrayDeclaration(node->kids[1]->kids[0], node->kids[3]->kids[1]);
+        arrayDeclaration(node, node->kids[3]->kids[1]);
         break;
     case arrayDecEqual: 
-        arrayDeclaration(node->kids[1]->kids[0], node->kids[5]->kids[1]);
+        arrayDeclaration(node, node->kids[5]->kids[1]);
         break;
     
     case arraySizeIdent: 
@@ -384,7 +386,7 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
     struct symTab *scope = node->table; //symTab.h
     struct symEntry *entry;             //symTab.h
     int found = 0;
-    while(scope->parent != NULL && found == 0)
+    while(scope->parent != rootScope && found == 0)
     {   
         printf("scope: %s\n", scope->name);
         entry = contains(scope, node->leaf->text); //symTab.h
@@ -393,6 +395,13 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
             node->parent->type = entry->type->u.func.returnType;
             found = 1;
         }
+    }
+
+    entry = contains(rootScope, node->leaf->text); //symTab.h
+    if(entry != NULL)
+    {
+        node->parent->type = entry->type->u.func.returnType;
+        found = 1;
     }
     if(found == 0)
     {
@@ -544,30 +553,9 @@ void leafExpression(struct tree *node)
         node->type = alcType(STRING_TYPE); //type.c
         break;
 
-    //variable base case
+    //variable base case, Moved to another function this would infinitely loop.
     case IDENTIFIER:
-        // If table is NULL it shouldn't need to be checked
-        // ie if it is a function call IDENTIFIER
-
-        //if this is in the function declaratoin it should be looking in the scope that the function was declared in
-        //so the node should point to that table
-        //ask erik if thats not how it works
-        //tho i guess it doesn't really matter since the declaration won't be checked
-        if (node->table == NULL) {
-            break;
-        }
-        struct symTab *scope = node->table; //symTab.h
-        struct symEntry *entry;             //symTab.h
-        while(scope->parent != NULL)
-        {
-            entry = contains(scope, node->leaf->text); //symTab.h
-            if(entry != NULL)
-            {
-                node->type = entry->type;
-                break;
-            }
-        }
-        break;
+        // break;
     default:
         break;
     }
@@ -1050,7 +1038,7 @@ void multaplicativeExpression(struct tree *node)
 void returnCheck(struct tree *node, struct typeInfo *type)
 {
     while(node->parent != NULL)
-    {
+    {   
         switch (node->prodrule)
         {
         case funcDecAll:
@@ -1065,6 +1053,7 @@ void returnCheck(struct tree *node, struct typeInfo *type)
         default:
             break;
         }
+        node = node->parent;
     }
     typeError("Non-function blocks cannot return", node);
 }
@@ -1076,9 +1065,12 @@ void returnCheck(struct tree *node, struct typeInfo *type)
  */
 void arrayDeclaration(struct tree *ident, struct tree *exprList)
 {
-    if(!typeEquals(ident->type, arrayAnyType_ptr))
-    {
-        typeError("Cannot assign Array to non-Array variable", ident);
+
+
+    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType){
+        typeError("Arrays are assigned to conflicting types of arrays.", ident);
+    } else if (strcmp(ident->kids[2]->leaf->text, "Array")){
+        typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
     }
 
     if(exprList->prodrule != expressionList)
@@ -1107,5 +1099,42 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
             }
         }
     }
+}
+
+
+/**
+ * @brief Prints type error message and sets symError to 1
+ *
+ * @param node
+ */
+void typeError(char *message, struct tree *node)
+{
+    while(node->nkids != 0)
+    {
+        node = node->kids[0];
+    }
+
+    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
+    symError = 1;
+}
+
+/**
+ * @brief Does type check handling assignments.
+ * 
+ * Works like a wizard of type comparisons forced inside a compiler. With 
+ * extra memory leaks
+ * 
+ * @param left
+ * @param right
+ * @return int 
+ */
+int typeMagicAssign(struct tree *left, struct tree *right){
+    if (left->type->basicType == INT_TYPE && right->type->basicType == DOUBLE_TYPE){
+        right->type = alcType(INT_TYPE);
+    } else if(left->type->basicType == DOUBLE_TYPE && right->type->basicType == INT_TYPE){
+        right->type = alcType(DOUBLE_TYPE);
+    }
+
+    return 0;
 }
 

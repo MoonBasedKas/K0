@@ -84,8 +84,11 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     rv->u.func.st = st;
 
     // Get the return type
-    rv->u.func.returnType = determineReturnType(r); //typeHelpers.c
-
+    if (r->prodrule == arrayType){
+        rv->u.func.returnType = alcArrayType(NULL, r->kids[1]->type);
+    } else {
+        rv->u.func.returnType = determineReturnType(r); //typeHelpers.c
+    }
     // Traverse/process subtree(s) for parameters
     rv->u.func.numParams = p->nkids;
     rv->u.func.parameters = NULL;

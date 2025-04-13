@@ -1,11 +1,11 @@
-import qemu.emulator
-import java.lang.Math.*
+// import qemu.emulator
+// import java.lang.Math.*
 
-// fun f() : Int {
-//    val threadlocal : Int = 5
-//    g()
-//    return threadlocal
-// }
+fun f() : Int {
+   val threadlocal : Int = 5
+   g()
+   return threadlocal
+}
 
 fun g() : Int {
    var z : Int = 23
@@ -30,7 +30,7 @@ fun q() : Int {
 
 fun w() : Int {
     fun q(): Int{
-        var x : String = 2
+        var x : String = "s"
         var e : Double = 2.6
     }
    return 2*2

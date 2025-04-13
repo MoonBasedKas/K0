@@ -19,5 +19,6 @@ void inExpression(struct tree *node);
 void returnCheck(struct tree *node, struct typeInfo *type);
 void arrayDeclaration(struct tree *ident, struct tree *exprList);
 void typeError(char *message, struct tree *node);
+int typeMagicAssign(struct tree *left, struct tree *right);
 
 #endif

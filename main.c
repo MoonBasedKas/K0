@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
     int tree = 0;
     int symtab = 0;
     int fileCount = 0;
+    int debug = 0;
 
     char **fileNames = malloc(sizeof(char *) * argc);
     if(fileNames == NULL) {
@@ -50,7 +51,17 @@ int main(int argc, char *argv[])
             tree = 1;
         } else if (!strcmp(argv[i], "-symtab")){
             symtab = 1;
-        } else {
+        } else if(!strcmp(argv[i], "-debug")){
+            debug = 1;
+        } else if(!strcmp(argv[i], "-help")){
+            printf("Usage ./k0 [option]|[file] ...\n");
+            printf("Options:\n");
+            printf("-help: Prints out this command interface.\n");
+            printf("-dot: Generates a dot file, needs to be compiled.\n");
+            printf("-tree: View the syntax tree of the program.\n");
+            printf("-symtab: View the symbol tables.\n");
+            printf("-debug: One does not reveal what their debug command does.\n");
+        } else{
             // Treat non-flag arguments as file names.
             fileNames[fileCount++] = argv[i];
         }
@@ -75,15 +86,20 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
+        giveTables(root);
+        findNullTables(root);
         struct symEntry *x = NULL;
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
-        //typeCheck(root);
+        // The bottom two could probably be one function, but more tree traversals is better!
+        varTypeTheft(root);
+        typeTheft(root);
+        typeCheck(root);
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); //symTabHelper.c
-        if (symError != 0) return symError; // If something is undeclared.
+        if (symError != 0 && debug == 0) return symError; // If something is undeclared.
         
 
         if(dot){
