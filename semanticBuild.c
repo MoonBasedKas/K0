@@ -78,20 +78,17 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
 
     switch (n->prodrule){
         case collapsedImport:
-        case expandingImport:
         {
             /*
             kids[0] = IMPORT
             kids[1] = importIdentifier
             kids[2] = importList (optional)
             */
-            struct tree* importIdentifier = n->kids[1];
-            processImport(importIdentifier, rootScope);
-
-            if (n->nkids == 3){
-                struct tree* importList = n->kids[2];
-                parseImportList(importList, rootScope);
-            }
+            printf("Collapsed import\n");
+            struct tree *temp = n->kids[1]->kids[0];
+            printf("Importing function: %s\n", temp->leaf->text);
+            temp->type = alcType(FUNCTION_TYPE);
+            assignEntrytype(n->table, temp->leaf->text, temp->type);
             break;
         }
         case expandingImportID:
@@ -99,20 +96,14 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             /*
             kids[0] = IDENTIFIER
             kids[1] = DOT
-            kids[2] = IDENTIFIER
+            kids[2] = importIdentifier
             */
-            struct tree* importIdentifier = n->kids[2];
-            processImport(importIdentifier, rootScope);
-
+            struct tree *temp = n->kids[0];
+                printf("Importing function: %s\n", temp->leaf->text);
+                temp->type = alcType(FUNCTION_TYPE);
+                assignEntrytype(n->table, temp->leaf->text, temp->type);
             break;
         }
-        case expandingImportID:
-        {
-            /*
-            kids[0] = IDENTIFIER
-            kids[1] = DOT
-            kids[2] = IDENTIFIER
-            */
         case varDecQuests: // Sets the entry to nullable.
 
             if (n->kids[1]->prodrule == arrayTypeQuests){
