@@ -87,7 +87,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             struct tree *temp = n->kids[1]->kids[0];
             temp->type = alcType(FUNCTION_TYPE);
             assignEntrytype(n->table, temp->leaf->text, temp->type);
-            free(temp);
             break;
         }
         case expandingImportID:
@@ -108,8 +107,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
                     assignEntrytype(n->table, RHS->leaf->text, RHS->type);
                 }
             }
-            free(RHS);
-            free(LHS);
+
             break;
         }
         case varDecQuests: // Sets the entry to nullable.
@@ -157,7 +155,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = type
             */
-
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -171,11 +168,9 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = functionBody
             */
-
             struct tree *unitTypeNode = createUnitTypeNode();
             n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
-            free(unitTypeNode);
             break;
         }
         case funcDecTypeBody:
@@ -192,7 +187,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
-            free(emptyParam);
             break;
         }
         case funcDecType:
@@ -206,7 +200,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(n->kids[2], emptyParam, rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
-            free(emptyParam);
             break;
         }
         case funcDecBody:
@@ -221,8 +214,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             struct tree *emptyParam = createEmptyParam();
             n->type = alcFuncType(unitTypeNode, emptyParam, rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
-            free(unitTypeNode);
-            free(emptyParam);
             break;
         }
         case arrayDec:
@@ -381,7 +372,6 @@ int checkNullability(struct tree *root){
                     symError = 1;
                 }
             }
-            free(temp);
             break;
         case arrayAssignment:
         case arrayAssignAdd:
