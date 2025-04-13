@@ -3,11 +3,14 @@
 
 #include "type.h"
 #include "tree.h"
+#include <stdarg.h>
 
 
 typePtr lookupType(struct tree *n);
 char *typeName(typePtr t);
 struct param* createParamFromTree(struct tree *paramNode);
+struct param *buildfuncParams(int params, ...);
+struct param *alcParams(char *paramName, int type);
 typePtr determineReturnType(struct tree *r);
 int extractArraySize(struct tree *size);
 

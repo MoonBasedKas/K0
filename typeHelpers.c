@@ -116,6 +116,57 @@ struct param* createParamFromTree(struct tree *paramNode) {
 }
 
 /**
+ * @brief A basic function which allocates param nodes.
+ * 
+ * @param paramName 
+ * @param type 
+ * @return struct param* 
+ */
+struct param *alcParams(char *paramName, int type){
+    struct param *param = malloc(sizeof(struct param));
+    param->name = strdup(paramName);
+    param->type = alcType(type);
+    param->next = NULL;
+    return param;
+}
+
+/**
+ * @brief A wrapper to allocate function params.
+ * 
+ * 
+ * @param params - Number of params to input
+ * @param i      - Param name
+ * @param i + 1  - Param type
+ * @return struct param* 
+ */
+struct param *buildfuncParams(int params, ...){
+    va_list args;
+    char *name;
+    int bigT;
+    struct param *funParams = NULL;
+    struct param *mostRecent = NULL;
+    struct param *prev = NULL;
+    va_start(args, params);
+    for (int i = 0; i < params; i++) {
+        name = va_arg(args, char *);
+        bigT = va_arg(args, int);
+        mostRecent = alcParams(name, bigT);
+        if (!funParams) {
+            funParams = mostRecent;
+            prev = mostRecent;
+        } else {
+            prev->next = mostRecent;
+            prev = prev->next;
+        }
+    
+    }
+    va_end(args);
+
+    return 0;
+
+}
+
+/**
  * @brief Determine the return type of a function
  *
  * @param r
