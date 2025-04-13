@@ -23,7 +23,7 @@ struct addr {
 
 struct instr {
    int opcode;
-   struct addr dest, src1, src2;
+   struct addr *dest, *src1, *src2;
    struct instr *next;
 };
 /* Opcodes, per lecture notes */
@@ -56,11 +56,12 @@ struct instr {
 #define D_END   3055
 #define D_PROT  3056 /* prototype "declaration" */
 
-struct instr *gen(int, struct addr, struct addr, struct addr);
+struct instr *gen(int, struct addr *, struct addr *, struct addr *);
 struct instr *concat(struct instr *, struct instr *);
 char *regionname(int i);
 char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
+struct addr *genLocal(int size);
 
 #endif

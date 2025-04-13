@@ -27,18 +27,29 @@ char *pseudoname(int i)
     return pseudonames[i-D_GLOB]; 
 }
 
-int labelcounter;
+int labelCounter;
 
 struct addr *genlabel()
 {
     struct addr *a = malloc(sizeof(struct addr));
     a->region = R_LABEL;
-    a->u.offset = labelcounter++;
+    a->u.offset = labelCounter++;
     printf("generated a label %d\n", a->u.offset);
     return a;
 }
 
-struct instr *gen(int op, struct addr a1, struct addr a2, struct addr a3)
+int localCounter = 0;
+
+struct addr *genLocal(int size)
+{
+    struct addr *a = malloc(sizeof(struct addr));
+    a->region = R_LOCAL;
+    a->u.offset = localCounter;
+    localCounter += size;
+    return a;
+}
+
+struct instr *gen(int op, struct addr *a1, struct addr *a2, struct addr *a3)
 {
     struct instr *rv = malloc(sizeof (struct instr));
     if (rv == NULL) {
