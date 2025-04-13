@@ -2,6 +2,7 @@
 #define TYPE_H
 
 #include "tree.h"
+#include "symNonTerminals.h"
 
 typedef struct param {
     char *name;
