@@ -84,9 +84,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[1] = importIdentifier
             kids[2] = importList (optional)
             */
-            printf("Collapsed import\n");
             struct tree *temp = n->kids[1]->kids[0];
-            printf("Name check: %s\n", temp->leaf->text);
             temp->type = alcType(FUNCTION_TYPE);
             assignEntrytype(n->table, temp->leaf->text, temp->type);
             break;
@@ -144,7 +142,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
-            printf("funcDecAll\n");
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -158,7 +155,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = type
             */
-            printf("funcDecParamType\n");
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -172,7 +168,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = functionBody
             */
-            printf("funcDecParamBody\n");
             struct tree *unitTypeNode = createUnitTypeNode();
             n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);

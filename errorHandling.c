@@ -21,7 +21,7 @@ void typeError(char *message, struct tree *node)
         node = node->kids[0];
     }
 
-    fprintf(stderr, "Line %d, Type Error: %s\n", node->leaf->lineno, message);
+    fprintf(stderr, "Name: %s Line %d, Type Error: %s\n", node->leaf->text, node->leaf->lineno, message);
     symError = 1;
 }
 
