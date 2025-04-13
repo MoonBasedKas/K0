@@ -1118,11 +1118,6 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
         }
     }
 }
-
-<<<<<<< HEAD
-=======
-
->>>>>>> main
 /**
  * @brief Does type check handling assignments.
  * 
