@@ -27,6 +27,8 @@ struct tree *alctoken(int prodrule, char *symbolname, int nkids, ...);
 int assignMutability(struct tree *root);
 int typeTheft(struct tree *root);
 int varTypeTheft(struct tree *root);
+void freeTree(nodeptr node);
+void freeToken(struct token *tok);
 extern int serial;
 
 
