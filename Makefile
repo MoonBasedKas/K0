@@ -5,7 +5,7 @@ FLEX=flex
 BISON=bison
 HFLAG=-d
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o importHandler.o errorHandling.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h 
@@ -53,11 +53,17 @@ typeCheck.o: typeCheck.c typeCheck.h typeHelpers.h type.h
 symTabHelper.o: symTabHelper.c symTabHelper.h symTab.h tree.h type.h typeHelpers.h
 	$(CC) $(OBJFLAGS) $<
 
+importHandler.o: importHandler.c importHandler.h symTab.h tree.h type.h typeHelpers.h symNonTerminals.h lex.h k0gram.tab.h
+	$(CC) $(OBJFLAGS) $<
+
+errorHandling.o: errorHandling.c errorHandling.h
+	$(CC) $(OBJFLAGS) $<
+
 dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
 
-zip: main.c lex.c lex.h tree.c tree.h k0gram.y kotlex.l Makefile README dot.c dot.h TestCasesOld/ symTab.c symTab.h symNonTerminals.h type.c type.h semanticBuild.c semanticBuild.h typeHelpers.c typeHelpers.h typeCheck.c typeCheck.h tests/
+zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/
 	zip -r hw5.zip $^

@@ -2,6 +2,7 @@
 #include "lex.h"
 #include "dot.h"
 #include "k0gram.tab.h"
+#include "errorHandling.h"
 
 extern const char *yyname(int sym);
 char *escape(const char *s);

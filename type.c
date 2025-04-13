@@ -8,6 +8,7 @@
 #include "k0gram.tab.h"
 #include "semanticBuild.h"
 #include "typeHelpers.h"
+#include "errorHandling.h"
 
 struct typeInfo null_type = {NULL_TYPE};
 struct typeInfo byte_type = {BYTE_TYPE};

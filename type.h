@@ -32,6 +32,15 @@ typedef enum {
     LAST_TYPE
 } basicType;
 
+typedef enum {
+    IMPORT_RETURN_INT,
+    IMPORT_RETURN_DOUBLE,
+    IMPORT_RETURN_BOOLEAN,
+    IMPORT_RETURN_CHAR,
+    IMPORT_RETURN_STRING,
+    IMPORT_RETURN_UNIT // ??
+} importValueType;
+
 enum {
     notNullable = 0,
     nullable,
@@ -58,6 +67,11 @@ typedef struct typeInfo {
             struct typeInfo *elemType;
             int until;
         } range;
+        struct importInfo {
+            importValueType returnType;
+            int paramCount;
+            importValueType paramTypes[2];
+        } import;
     } u;
 } *typePtr;
 

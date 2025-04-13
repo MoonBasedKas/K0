@@ -9,6 +9,7 @@
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
 #include "typeCheck.h"
+#include "errorHandling.h"
 
 extern int symError;
 
@@ -1100,6 +1101,7 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
     }
 }
 
+
 /**
  * @brief Prints type error message and sets symError to 1
  *
@@ -1135,3 +1137,4 @@ int typeMagicAssign(struct tree *left, struct tree *right){
 
     return 0;
 }
+

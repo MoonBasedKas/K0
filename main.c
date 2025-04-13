@@ -14,6 +14,7 @@
 #include "semanticBuild.h"
 #include "typeCheck.h"
 #include "symTabHelper.h"
+#include "errorHandling.h"
 
 char *filename;
 char temp[100];

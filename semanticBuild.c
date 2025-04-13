@@ -11,6 +11,7 @@
 #include "symNonTerminals.h"
 #include "lex.h"
 #include "semanticBuild.h"
+#include "errorHandling.h"
 
 struct tree *createEmptyParam(void);
 
@@ -76,6 +77,33 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
     checkLeafType(n);
 
     switch (n->prodrule){
+        case collapsedImport:
+        {
+            /*
+            kids[0] = IMPORT
+            kids[1] = importIdentifier
+            kids[2] = importList (optional)
+            */
+            printf("Collapsed import\n");
+            struct tree *temp = n->kids[1]->kids[0];
+            printf("Importing function: %s\n", temp->leaf->text);
+            temp->type = alcType(FUNCTION_TYPE);
+            assignEntrytype(n->table, temp->leaf->text, temp->type);
+            break;
+        }
+        case expandingImportID:
+        {
+            /*
+            kids[0] = IDENTIFIER
+            kids[1] = DOT
+            kids[2] = importIdentifier
+            */
+            struct tree *temp = n->kids[0];
+                printf("Importing function: %s\n", temp->leaf->text);
+                temp->type = alcType(FUNCTION_TYPE);
+                assignEntrytype(n->table, temp->leaf->text, temp->type);
+            break;
+        }
         case varDecQuests: // Sets the entry to nullable.
 
             if (n->kids[1]->prodrule == arrayTypeQuests){
