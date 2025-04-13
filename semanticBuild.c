@@ -155,6 +155,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = type
             */
+
             n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
@@ -168,6 +169,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[2] = functionValueParameters
             kids[3] = functionBody
             */
+
             struct tree *unitTypeNode = createUnitTypeNode();
             n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);

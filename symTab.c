@@ -101,6 +101,24 @@ struct symEntry *contains(struct symTab *table, char *elem){
     return NULL; //No...
 }
 
+/**
+ * @brief A wrapper for contains that checks every scope.
+ * 
+ * @param table 
+ * @param elem 
+ * @return struct symEntry* 
+ */
+struct symEntry *inZaWorldo(struct symTab *table, char *elem){
+    struct symEntry *entry = NULL;
+    while(table != rootScope || table != NULL){
+        entry = contains(table, elem);
+        if (entry) return entry;
+        table = table->parent;
+    }
+    if (table == NULL) return entry;
+    return contains(rootScope, elem);
+}
+
 
 /**
  * @brief Computes a quick hash for our function.

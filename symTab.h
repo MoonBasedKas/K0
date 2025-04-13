@@ -48,4 +48,6 @@ int makeEntryNonMutable(struct symTab *table, char *string);
 int checkNullable(struct symTab *table, char *string);
 int checkMutable(struct symTab *table, char *string);
 int findNullTables(struct tree *root);
+struct symEntry *inZaWorldo(struct symTab *table, char *elem);
+
 #endif
