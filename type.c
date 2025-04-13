@@ -121,21 +121,30 @@ typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     }
 
     return rv;
-    // for (int i = 0; i < p->nkids; i++) {
-    //     struct tree *paramNode = p->kids[i];
-    //     // Use the new helper to create a new parameter node.
-    //     struct param *newParam = createParamFromTree(paramNode); //typeHelpers.c
+}
 
-    //     // Add to the end of the list.
-    //     if (rv->u.func.parameters == NULL) {
-    //         rv->u.func.parameters = newParam;
-    //     } else {
-    //         lastParam->next = newParam;
-    //     }
-    //     lastParam = newParam;
-    // }
 
-    // return rv;
+/**
+ * @brief A much more direct way of allocating a function type pointer, evil due to 
+ * lack of abstraction as the user must fill out the survey to get something 
+ * they want.
+ * 
+ * @param retValue 
+ * @param name 
+ * @param params 
+ * @param pCount 
+ * @param table 
+ * @return typePtr 
+ */
+typePtr evilAlcfunctype(int retValue, char *name, struct param *params, int pCount, struct symTab *table){
+    struct typeInfo *func = alcType(FUNCTION_TYPE);
+    func->u.func.parameters = params;
+    func->u.func.name = strdup(name);
+    func->u.func.numParams = pCount;
+    func->u.func.returnType = alcType(retValue);
+    func->u.func.st = table;
+    func->u.func.defined = 1; // We literally don't use this one.
+    return func;
 }
 
 /**

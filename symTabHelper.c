@@ -278,34 +278,51 @@ void populateTypes(){
  */
 void populateStdlib(){
     struct symEntry *temp = NULL;
+    struct param *params = NULL;
     // Functions
     addSymTab(rootScope, "print", VARIABLE); //symTab.c
     temp = contains(rootScope, "print");
-    temp->type = alcType(UNIT_TYPE);
+    params = buildfuncParams(1, "line", STRING_TYPE);
+    temp->type = evilAlcfunctype(UNIT_TYPE, "print", params, 1, rootScope);
+
+
     addSymTab(rootScope, "println", VARIABLE);
     temp = contains(rootScope, "println");
-    temp->type = alcType(UNIT_TYPE);
-    // addSymTab(rootScope, "get", VARIABLE);
-    // temp = contains(rootScope, "get");
-    // temp->type = alcType(CHAR_TYPE);
-    // addSymTab(rootScope, "equals", VARIABLE);
-    // temp = contains(rootScope, "equals");
-    // temp->type = alcType(BOOL_TYPE);
-    // addSymTab(rootScope, "length", VARIABLE);
-    // temp = contains(rootScope, "length");
-    // temp->type = alcType(INT_TYPE);
-    // addSymTab(rootScope, "toString", VARIABLE);
-    // temp = contains(rootScope, "toString");
-    // temp->type = alcType(STRING_TYPE);
-    // addSymTab(rootScope, "valueOf", VARIABLE);
-    // temp = contains(rootScope, "valueOf");
-    // temp->type = alcType(STRING_TYPE);
-    // addSymTab(rootScope, "substring", VARIABLE);
-    // temp = contains(rootScope, "substring");
-    // temp->type = alcType(STRING_TYPE);
+    params = buildfuncParams(1, "line", STRING_TYPE);
+    temp->type = evilAlcfunctype(UNIT_TYPE, "println", params, 1, rootScope);
+
+    addSymTab(rootScope, "get", VARIABLE);
+    temp = contains(rootScope, "get");
+    params = buildfuncParams(1, "index", INT_TYPE);
+    temp->type = evilAlcfunctype(CHAR_TYPE, "get", params, 1, rootScope);
+
+    addSymTab(rootScope, "equals", VARIABLE);
+    temp = contains(rootScope, "equals");
+    params = buildfuncParams(1, "strOne", STRING_TYPE);
+    temp->type = evilAlcfunctype(BOOL_TYPE, "equals", params, 1, rootScope);
+
+    addSymTab(rootScope, "length", VARIABLE);
+    temp = contains(rootScope, "length");
+    temp->type = evilAlcfunctype(INT_TYPE, "println", NULL, 0, rootScope);
+
+    addSymTab(rootScope, "toString", VARIABLE);
+    temp = contains(rootScope, "toString");
+    params = buildfuncParams(1, "strOne", INT_TYPE); // TODO: Update this
+    temp->type = evilAlcfunctype(BOOL_TYPE, "toString", params, 1, rootScope);
+
+    addSymTab(rootScope, "valueOf", VARIABLE);
+    temp = contains(rootScope, "valueOf"); // TODO: update this
+    temp->type = evilAlcfunctype(INT_TYPE, "valueOf", NULL, 0, rootScope);
+
+    addSymTab(rootScope, "substring", VARIABLE);
+    temp = contains(rootScope, "substring");
+    params = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
+    temp->type = evilAlcfunctype(STRING_TYPE, "substring", params, 2, rootScope);
+
+
     addSymTab(rootScope, "readln", VARIABLE);
     temp = contains(rootScope, "readln");
-    temp->type = alcType(STRING_TYPE);
+    temp->type = evilAlcfunctype(STRING_TYPE, "readln", NULL, 0, rootScope);
 }
 
 
