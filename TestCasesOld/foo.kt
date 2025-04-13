@@ -1,4 +1,6 @@
 // foo.kt
+import java.lang.String.toString
+
 fun foo(x : Int, y : String) : Int {
    return x
    }

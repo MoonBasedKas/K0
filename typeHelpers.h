@@ -15,4 +15,6 @@ int typeEquals(typePtr type1, typePtr type2);
 typePtr copyType(typePtr type);
 void deleteType(typePtr type);
 
+int countExprList(struct tree *exprList);
+int getImportParamCount(const char *fnName);
 #endif
