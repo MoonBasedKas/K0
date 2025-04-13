@@ -18,6 +18,30 @@ extern struct tree *root;
 extern struct symTab *rootScope;
 extern struct symTab *currentScope;
 
+const char* supportedImports[] = {
+    "String",
+    "get",
+    "equals",
+    "length",
+    "toString",
+    "valueOf",
+    "substring",
+    "java",
+    "util",
+    "lang",
+    "Math",
+    "Random",
+    "nextInt",
+    "abs",
+    "max",
+    "min",
+    "pow",
+    "cos",
+    "sin",
+    "tan",
+    NULL  // Sentinel value
+};
+
 /**
  * @brief Runs through the tree interesting into the table.
  *
@@ -37,40 +61,52 @@ void buildSymTabs(struct tree *node, struct symTab *scope)
 
             break;
 
-        // // Import chains
-        // case expandingImportID:
-        //     // Is it there?
-        //     if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
-        //     scope = addSymTab(rootScope, node->kids[0]->leaf->text, PACKAGE); //symTab.c
+        // Import chains
+        case expandingImportID:
+            // Is it there?
+            bool isValidImport = false;
+            for (int i = 0; supportedImports[i] != NULL; i++) {
+                if (strcmp(node->kids[0]->leaf->text, supportedImports[i]) == 0) {
+                    isValidImport = true;
+                    break;
+                }
+            }
+            if (!isValidImport) {
+                typeError("Invalid import", node);
+                return;
+            }
+            if(contains(rootScope, node->kids[0]->leaf->text) == NULL) //symTab.c
+                addSymTab(rootScope, node->kids[0]->leaf->text, VARIABLE); //symTab.c
 
-        //     // So we need to check if the next leaf is a *...
+            // So we need to check if the next leaf is a *...
 
-        //     if (node->kids[2]->nkids != 0) {
-        //         buildSymTabs(node->kids[2], scope);
-        //     } else {
-        //         if (strcmp(node->kids[2]->leaf->text, "*")) {
-        //             scope = addSymTab(rootScope, node->kids[2]->leaf->text, PACKAGE);
-        //         } else {
-        //             if (contains(rootScope, "Math")) addMathModule();
-        //         }
-        //     }
+            if (node->kids[2]->nkids != 0) {
+                buildSymTabs(node->kids[2], scope);
+            } else {
+                if (strcmp(node->kids[2]->leaf->text, "*")) {
+                    addSymTab(rootScope, node->kids[2]->leaf->text, VARIABLE);
+                } 
+                // else {
+                //     if (contains(rootScope, "Math")) addMathModule();
+                // }
+            }
 
-        //     // Check if next is valid.
-        //     break;
+            // Check if next is valid.
+            break;
 
-        // // Singular imports.
-        // case collapsedImport:
-        //     if(node->kids[1]->nkids == 0){
-        //         if (strcmp(node->kids[1]->leaf->text, "*")){
-        //             addSymTab(scope, node->kids[1]->leaf->text, VARIABLE); //symTab.c
-        //         } else {
-        //             fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
-        //             symError = 3;
-        //         }
-        //     } else {
-        //         buildSymTabs(node->kids[1], scope);
-        //     }
-        //     break;
+        // Singular imports.
+        case collapsedImport:
+            if(node->kids[1]->nkids == 0){
+                if (strcmp(node->kids[1]->leaf->text, "*")){
+                    addSymTab(scope, node->kids[1]->leaf->text, VARIABLE); //symTab.c
+                } else {
+                    fprintf(stderr, "Line: %d | Cannot only import * need to specify a package.\n", node->kids[1]->leaf->lineno);
+                    symError = 3;
+                }
+            } else {
+                buildSymTabs(node->kids[1], scope);
+            }
+            break;
 
         //function declarations
         case funcDecAll:
@@ -208,27 +244,27 @@ int checkExistance(struct tree *node, struct symTab *scope){
  */
 // int addMathModule(){
 //     struct symEntry *temp = NULL;
-//     addSymTab(rootScope, "abs", FUNCTION); //symTab.c
+//     addSymTab(rootScope, "abs", VARIABLE); //symTab.c
 //     temp = contains(rootScope, "abs");
-//     temp->type = alcType(INT_TYPE);
-//     addSymTab(rootScope, "max", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "max", VARIABLE);
 //     temp = contains(rootScope, "max");
-//     temp->type = alcType(INT_TYPE);
-//     addSymTab(rootScope, "min", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "min", VARIABLE);
 //     temp = contains(rootScope, "min");
-//     temp->type = alcType(INT_TYPE);
-//     addSymTab(rootScope, "pow", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "pow", VARIABLE);
 //     temp = contains(rootScope, "pow");
-//     temp->type = alcType(INT_TYPE);
-//     addSymTab(rootScope, "cos", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "cos", VARIABLE);
 //     temp = contains(rootScope, "cos");
-//     temp->type = alcType(DOUBLE_TYPE);
-//     addSymTab(rootScope, "sin", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "sin", VARIABLE);
 //     temp = contains(rootScope, "sin");
-//     temp->type = alcType(DOUBLE_TYPE);
-//     addSymTab(rootScope, "tan", FUNCTION);
+//     temp->type = alcType(FUNCTION_TYPE);
+//     addSymTab(rootScope, "tan", VARIABLE);
 //     temp = contains(rootScope, "tan");
-//     temp->type = alcType(DOUBLE_TYPE);
+//     temp->type = alcType(FUNCTION_TYPE);
 
 //     return 0;
 // }
@@ -313,6 +349,8 @@ char *getTableType(int type){
             return "Function";
         case PACKAGE:
             return "Package";
+        case IMPORT:
+            return "Import";
         default:
             return "UNKNOWN";
     }
