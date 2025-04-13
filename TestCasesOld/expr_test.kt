@@ -1,3 +1,5 @@
-z = 5 * 10
-blazeIt = (n%5)*69+420
-arr = 20/4+8
+fun main() {
+    var n : Int = 10;
+    var z : Int = 5 * 10
+    var arr : Int = 20/1
+}

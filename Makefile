@@ -4,6 +4,7 @@ OBJFLAGS=-g -Wall -c
 FLEX=flex
 BISON=bison
 HFLAG=-d
+EXEC=k0
 
 k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o
 	$(CC) $(CFLAGS) $^ -o $@
@@ -61,6 +62,9 @@ dotify:
 
 clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
+
+valgrind: k0
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
 
 zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/
 	zip -r hw5.zip $^

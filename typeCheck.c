@@ -420,6 +420,22 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
     if (strcmp(id->leaf->text, "print") == 0 || strcmp(id->leaf->text, "println") == 0) {
         return;
     }
+    // Check if import function has the correct number of parameters
+    int expectedCount = getImportParamCount(id->leaf->text);
+    if (expectedCount >= 0) {
+        // It's a recognized library/import function
+        // -> Just check argument count
+        int actualCount = countExprList(exprList);
+        if (actualCount != expectedCount) {
+            char msg[128];
+            snprintf(msg, sizeof(msg),
+                     "Function '%s' expects %d argument(s), but got %d",
+                     id->leaf->text, expectedCount, actualCount);
+            typeError(msg, id->parent);
+        }
+        return;
+    }
+    
     struct symEntry *entry = returnType(id);
     // struct tree *exprList = node->kids[1];
     struct param *paramList = id->type->u.func.parameters;

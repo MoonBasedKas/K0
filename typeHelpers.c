@@ -50,9 +50,9 @@ char *typeName(typePtr t){
 
 /**
  * @brief Lookup the type of a node, finds it within its symbol table.
- * 
+ *
  * TODO: Proper scope retrival
- * 
+ *
  * @param n
  * @return typePtr
  */
@@ -98,7 +98,7 @@ struct param* createParamFromTree(struct tree *paramNode) {
         }
         if (paramNode->kids[0] && paramNode->kids[0]->leaf)
             paramName = paramNode->kids[0]->leaf->text;
-    } else { 
+    } else {
         return NULL;
     }
 
@@ -125,8 +125,14 @@ typePtr determineReturnType(struct tree *r) {
     if (r != NULL) {
         if (r->type != NULL)
             return r->type;
-        else {
-            fprintf(stderr, "Function return type not found\n");
+        else if(r->prodrule == 264)
+        {
+            typeError("Void function return type not supported", r);
+            symError = 3;
+        }
+        else
+        {
+            typeError("Function return type not found", r);
             symError = 3;
         }
     }
@@ -340,3 +346,59 @@ void deleteType(typePtr type)
     free(type);
 }
 
+/**
+ * @brief Supported import functions struct for checking
+ *
+ */
+typedef struct {
+    const char *funcName;
+    int paramCount;  // number of required parameters
+} supportedImportFunc;
+
+/**
+ * @brief Supported import functions
+ *
+ */
+static supportedImportFunc knownImports[] = {
+    {"abs",    1},
+    {"pow",    2},
+    {"max",    2},
+    {"min",    2},
+    {"equals", 1},
+    {"length", 0},
+    {"get",    1},
+    {NULL, 0}  // sentinel
+};
+
+/**
+ * @brief get the param count of an import function
+ *
+ * @param fnName
+ * @return int
+ */
+int getImportParamCount(const char *fnName)
+{
+    for (int i = 0; knownImports[i].funcName != NULL; i++) {
+        if (strcmp(fnName, knownImports[i].funcName) == 0) {
+            return knownImports[i].paramCount;
+        }
+    }
+    return -1; // means not a recognized import function (keep it movin)
+}
+
+/**
+ * @brief count the number of expressions in an expression list
+ *
+ * @param exprList
+ * @return int
+ */
+int countExprList(struct tree *exprList)
+{
+    if (!exprList) return 0;
+
+    // If exprList->prodrule != expressionList, it may be a single expression (no comma)
+    if (exprList->prodrule == expressionList) {
+        return 1 + countExprList(exprList->kids[1]);
+    }
+    return 1;
+}
