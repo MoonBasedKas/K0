@@ -234,7 +234,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             */
         {
 
-            n->type = alcArrayType(n->kids[3], n->kids[2]->type);
+            n->type = alcArrayType(n->kids[4], n->kids[3]->type);
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }

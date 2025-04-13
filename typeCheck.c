@@ -265,7 +265,7 @@ void typeCheck(struct tree *node)
     case arrayAccess:
     case postfixArrayAccess:
     case arrayIndex:
-        if(!typeEquals(node->kids[0]->type, arrayAnyType_ptr))
+        if(node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
         {
             typeError("Array access must be performed on an array", node);
             break;
@@ -276,7 +276,7 @@ void typeCheck(struct tree *node)
             break;
         }
         node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
-
+        break;
     case propDecAssign:
         if(!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type))
         {
@@ -323,16 +323,17 @@ void typeCheck(struct tree *node)
         }
         break;
     case arrayDecEqualValueless:
-        if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
-        {
-            typeError("Cannot assign Array to non-Array variable", node);
+        if (node->kids[1]->kids[0]->type->u.array.elemType->basicType != node->kids[3]->type->basicType){
+            typeError("Arrays are assigned to conflicting types of arrays.", node);
+        } else if (strcmp(node->kids[2]->leaf->text, "Array")){
+            typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", node); // TODO Fix this
         }
         break;
     case arrayDec:
-        arrayDeclaration(node->kids[1]->kids[0], node->kids[3]->kids[1]);
+        arrayDeclaration(node, node->kids[3]->kids[1]);
         break;
     case arrayDecEqual: 
-        arrayDeclaration(node->kids[1]->kids[0], node->kids[5]->kids[1]);
+        arrayDeclaration(node, node->kids[5]->kids[1]);
         break;
     
     case arraySizeIdent: 
@@ -1063,9 +1064,12 @@ void returnCheck(struct tree *node, struct typeInfo *type)
  */
 void arrayDeclaration(struct tree *ident, struct tree *exprList)
 {
-    if(!typeEquals(ident->type, arrayAnyType_ptr))
-    {
-        typeError("Cannot assign Array to non-Array variable", ident);
+
+
+    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType){
+        typeError("Arrays are assigned to conflicting types of arrays.", ident);
+    } else if (strcmp(ident->kids[2]->leaf->text, "Array")){
+        typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
     }
 
     if(exprList->prodrule != expressionList)
