@@ -61,13 +61,19 @@ dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
-	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png
+	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9
 
 valgrind: k0
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
 
-lab9: lab9.o tac.o #Something here
+lab9: lab9.o tac.o
 	$(CC) $(CFLAGS) $^ -o $@
+
+lab9.o: lab9.c tac.h
+	$(CC) $(OBJFLAGS) $<
+
+tac.o: tac.c tac.h
+	$(CC) $(OBJFLAGS) $<
 
 zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/
 	zip -r hw5.zip $^

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "tac.h"
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
@@ -146,7 +147,7 @@ void tacPrint(struct instr *code)
                 }
                 else if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
                     // e.g. "Variable i is %d.\000"
-                    printf("%s\n", p->dest->u.name);
+                    printf("\t%s\n", p->dest->u.name);
                 }
                 else {
                     // Print "glob <addr>"
@@ -172,24 +173,79 @@ void tacPrint(struct instr *code)
                 }
             }
             else if (p->opcode == D_PROC) {
-                // e.g. "proc main,0,32"
                 printf("proc ");
-                if (p->dest) {
-                    printAddr(p->dest);  // "main"
+                // Usually dest=R_NAME:"main"
+                if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
+                    printf("%s", p->dest->u.name);
+                } else if (p->dest) {
+                    printAddr(p->dest);
                 }
+
                 printf(",");
-                if (p->src1) {
-                    printAddr(p->src1);  // const:0 => 0
+
+                // src1 => param count -> R_CONST
+                if (p->src1 && p->src1->region == R_CONST) {
+                    printf("%d", p->src1->u.offset);
+                } else if (p->src1) {
+                    printAddr(p->src1);
                 }
+
                 printf(",");
-                if (p->src2) {
-                    printAddr(p->src2);  // const:32 => 32
+
+                // src2 => local size -> R_CONST
+                if (p->src2 && p->src2->region == R_CONST) {
+                    printf("%d", p->src2->u.offset);
+                } else if (p->src2) {
+                    printAddr(p->src2);
                 }
+
                 printf("\n");
             }
             else {
                 // pseudo-ops print
-                printf("%s ", pseudoname(p->opcode));
+                printf("\t%s ", pseudoname(p->opcode));
+                if (p->dest) {
+                    printAddr(p->dest);
+                }
+                if (p->src1) {
+                    printf(",");
+                    printAddr(p->src1);
+                }
+                if (p->src2) {
+                    printf(",");
+                    printAddr(p->src2);
+                }
+           }
+        } else if (p->opcode >= O_ADD && p->opcode <= O_RET) {
+            // ops and stuff prints
+            if (p->opcode == O_CALL) { // STUPID SPECIFIC FORMATING FOR MY OCD BRAIN
+                printf("\tCALL\t");
+
+                if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
+                    printf("%s", p->dest->u.name);
+                } else if (p->dest) {
+                    printAddr(p->dest);  // incase
+                }
+
+                printf(",");
+
+                // src1 => #params, const:2 -> print just "2" !!!!1!one
+                if (p->src1 && p->src1->region == R_CONST) {
+                    printf("%d", p->src1->u.offset);
+                } else if (p->src1) {
+                    printAddr(p->src1);
+                }
+
+                printf(",");
+
+                // src2 => return storage -> loc:24
+                if (p->src2) {
+                    printAddr(p->src2);
+                }
+
+                printf("\n");
+            } else {
+                printf("\t%s\t", opcodename(p->opcode));
                 if (p->dest) {
                     printAddr(p->dest);
                 }
@@ -203,27 +259,9 @@ void tacPrint(struct instr *code)
                 }
                 printf("\n");
             }
-        }
-        else if (p->opcode >= O_ADD && p->opcode <= O_RET) {
-            // ops and stuff prints
-            printf("%s ", opcodename(p->opcode));
-            if (p->dest) {
-                printAddr(p->dest);
-            }
-            if (p->src1) {
-                printf(",");
-                printAddr(p->src1);
-            }
-            if (p->src2) {
-                printf(",");
-                printAddr(p->src2);
-            }
-            printf("\n");
-        }
-        else {
+        } else {
             printf("UNKNOWN(%d)\n", p->opcode);
         }
-
         p = p->next;
     }
 }
