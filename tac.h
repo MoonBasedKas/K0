@@ -9,6 +9,7 @@ struct addr {
   union {
   int offset;
   char *name;
+  int size;
   } u;
 };
 
