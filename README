@@ -2,8 +2,3 @@ Lab9 : Lily, Kassidy, Erik
 
 Lily = 2
 Kassidy = 2
-
-lab9 executable buildable:
-
-make lab9
-./lab9
