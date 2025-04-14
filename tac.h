@@ -9,7 +9,6 @@ struct addr {
   union {
   int offset;
   char *name;
-  int size;
   } u;
 };
 
@@ -64,5 +63,6 @@ char *opcodename(int i);
 char *pseudoname(int i);
 struct addr *genlabel();
 struct addr *genLocal(int size);
-
+void tacPrint(struct instr *code);
+void freeInstrList(struct instr *list);
 #endif

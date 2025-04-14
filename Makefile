@@ -66,5 +66,8 @@ clean:
 valgrind: k0
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
 
+lab9: lab9.o tac.o #Something here
+	$(CC) $(CFLAGS) $^ -o $@
+
 zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/
 	zip -r hw5.zip $^

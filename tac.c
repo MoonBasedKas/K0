@@ -3,28 +3,29 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "tac.h"
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
-char *regionname(int i) 
-{ 
-    return regionnames[i-R_GLOBAL]; 
+char *regionname(int i)
+{
+    return regionnames[i-R_GLOBAL];
 }
 char *opcodenames[] = {
    "ADD","SUB", "MUL", "DIV", "NEG", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
    "BLT", "BLE", "BGT", "BGE", "BEQ", "BNE", "BIF", "BNIF", "PARM", "CALL",
    "RETURN"
    };
-char *opcodename(int i) 
-{ 
-    return opcodenames[i-O_ADD]; 
+char *opcodename(int i)
+{
+    return opcodenames[i-O_ADD];
 }
 char *pseudonames[] = {
    "glob","proc", "loc", "lab", "end", "prot"
    };
-char *pseudoname(int i) 
-{ 
-    return pseudonames[i-D_GLOB]; 
+char *pseudoname(int i)
+{
+    return pseudonames[i-D_GLOB];
 }
 
 int labelCounter;
@@ -84,4 +85,225 @@ struct instr *append(struct instr *l1, struct instr *l2)
 struct instr *concat(struct instr *l1, struct instr *l2)
 {
     return append(copylist(l1), l2);
+}
+
+/**
+ * @brief Print the address in a human-readable format.
+ *
+ * @param a The address to print.
+ */
+static void printAddr(struct addr *a) {
+    if (!a) return;
+
+    switch(a->region) {
+        case R_GLOBAL:
+            printf("global:%d", a->u.offset);
+            break;
+        case R_LOCAL:
+            printf("loc:%d", a->u.offset);
+            break;
+        case R_LABEL:
+            printf("label:%d", a->u.offset);
+            break;
+        case R_CONST:
+            printf("const:%d", a->u.offset);
+            break;
+        case R_NAME:
+            // If .u.name is set, print it; otherwise, fallback to offset.
+            if (a->u.name) {
+                printf("%s", a->u.name);
+            } else {
+                // "str:0" if offset = 0
+                printf("str:%d", a->u.offset);
+            }
+            break;
+        default:
+            printf("unknown:%d", a->u.offset);
+            break;
+    }
+}
+
+/**
+ * @brief Print the TAC code out
+ *
+ * @param code The TAC list to print.
+ */
+void tacPrint(struct instr *code)
+{
+    struct instr *p = code;
+    while (p) {
+
+        // Handle pseudo first (D_GLOB, D_PROC, etc.)
+        if (p->opcode >= D_GLOB && p->opcode <= D_PROT) {
+
+            /*
+             * .string 8 => D_GLOB, dest->region = R_GLOBAL, offset=8
+             * "Variable i is %d.\000" => D_GLOB, dest->region=R_NAME, .u.name=...
+             */
+            if (p->opcode == D_GLOB) {
+                if (p->dest && p->dest->region == R_GLOBAL && p->dest->u.offset == 8) {
+                    printf(".string 8\n");
+                }
+                else if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
+                    // e.g. "Variable i is %d.\000"
+                    printf("%s\n", p->dest->u.name);
+                }
+                else {
+                    // Print "glob <addr>"
+                    printf("%s ", pseudoname(p->opcode));
+                    if (p->dest) {
+                        printAddr(p->dest);
+                    }
+                    printf("\n");
+                }
+            }
+            else if (p->opcode == D_LABEL) {
+                // Possibly .code or some other label.
+                if (p->dest && p->dest->region == R_NAME && p->dest->u.name
+                    && strcmp(p->dest->u.name, ".code") == 0) {
+                    printf(".code\n");
+                } else {
+                    // "lab <dest>"
+                    printf("%s ", pseudoname(p->opcode));
+                    if (p->dest) {
+                        printAddr(p->dest);
+                    }
+                    printf("\n");
+                }
+            }
+            else if (p->opcode == D_PROC) {
+                // e.g. "proc main,0,32"
+                printf("proc ");
+                if (p->dest) {
+                    printAddr(p->dest);  // "main"
+                }
+                printf(",");
+                if (p->src1) {
+                    printAddr(p->src1);  // const:0 => 0
+                }
+                printf(",");
+                if (p->src2) {
+                    printAddr(p->src2);  // const:32 => 32
+                }
+                printf("\n");
+            }
+            else {
+                // pseudo-ops print
+                printf("%s ", pseudoname(p->opcode));
+                if (p->dest) {
+                    printAddr(p->dest);
+                }
+                if (p->src1) {
+                    printf(",");
+                    printAddr(p->src1);
+                }
+                if (p->src2) {
+                    printf(",");
+                    printAddr(p->src2);
+                }
+                printf("\n");
+            }
+        }
+        else if (p->opcode >= O_ADD && p->opcode <= O_RET) {
+            // ops and stuff prints
+            printf("%s ", opcodename(p->opcode));
+            if (p->dest) {
+                printAddr(p->dest);
+            }
+            if (p->src1) {
+                printf(",");
+                printAddr(p->src1);
+            }
+            if (p->src2) {
+                printf(",");
+                printAddr(p->src2);
+            }
+            printf("\n");
+        }
+        else {
+            printf("UNKNOWN(%d)\n", p->opcode);
+        }
+
+        p = p->next;
+    }
+}
+
+/**
+ * @brief A node in the FreedNode list.
+ *
+ * Tracks addresses that have been freed.
+ * Thinking about our growing Valgrind issues
+ */
+struct FreedNode {
+    void *ptr;
+    struct FreedNode *next;
+};
+
+/**
+ * @brief Check if an address has already been freed.
+ *
+ * @param head The head of the FreedNode list.
+ * @param p The pointer to check.
+ * @return True if the pointer has been freed, false otherwise.
+ */
+static bool alreadyFreed(struct FreedNode *head, void *p)
+{
+    for (struct FreedNode *fn = head; fn != NULL; fn = fn->next) {
+        if (fn->ptr == p) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * @brief Push a new FreedNode for 'p' onto the list. Returns the new head.
+ *
+ * @param head The head of the FreedNode list.
+ * @param p The pointer to mark as freed.
+ * @return The new head of the FreedNode list.
+ */
+static struct FreedNode *markFreed(struct FreedNode *head, void *p)
+{
+    struct FreedNode *fn = malloc(sizeof(struct FreedNode));
+    fn->ptr = p;
+    fn->next = head;
+    return fn;
+}
+
+/**
+ * @brief Free the TAC list.
+ *
+ * @param list da list
+ */
+void freeInstrList(struct instr *list)
+{
+    struct FreedNode *freedList = NULL;
+    struct instr *cur = list;
+
+    while (cur) {
+        struct instr *next = cur->next;
+        // tired of switchs
+        if (cur->dest && !alreadyFreed(freedList, cur->dest)) {
+            freedList = markFreed(freedList, cur->dest);
+            free(cur->dest);
+        }
+        if (cur->src1 && !alreadyFreed(freedList, cur->src1)) {
+            freedList = markFreed(freedList, cur->src1);
+            free(cur->src1);
+        }
+        if (cur->src2 && !alreadyFreed(freedList, cur->src2)) {
+            freedList = markFreed(freedList, cur->src2);
+            free(cur->src2);
+        }
+        free(cur);
+        cur = next;
+    }
+
+    // Free FreedNode list freefreelistfreedfree
+    while (freedList) {
+        struct FreedNode *tmp = freedList->next;
+        free(freedList);
+        freedList = tmp;
+    }
 }

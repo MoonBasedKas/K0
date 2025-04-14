@@ -158,5 +158,7 @@ int main(int argc, char *argv[])
         nextInstr = nextInstr->next;
     }
 
+    tacPrint(instrList);
+    freeInstrList(instrList);
     return 0;
 }
