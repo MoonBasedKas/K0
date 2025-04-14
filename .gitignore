@@ -11,3 +11,6 @@ dotfile.png
 !/k0/
 k0
 lab9
+*.zip
+/lab9
+!/lab9/
