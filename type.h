@@ -77,6 +77,7 @@ typedef struct typeInfo {
 
 typePtr alcType(int);
 typePtr alcFuncType(struct tree *returnType, struct tree *params, struct symTab *st);
+typePtr evilAlcfunctype(int retValue, char *name, struct param *params, int pCount, struct symTab *table);
 typePtr alcArrayType(struct tree *size, struct typeInfo *elemType);
 char *typeName(typePtr t);
 //int findType(struct tree *node);
