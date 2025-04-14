@@ -75,5 +75,5 @@ lab9.o: lab9.c tac.h
 tac.o: tac.c tac.h
 	$(CC) $(OBJFLAGS) $<
 
-zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/
-	zip -r hw5.zip $^
+zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/ gdb.sh
+	zip -r lab9.zip $^
