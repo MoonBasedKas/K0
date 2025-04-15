@@ -267,3 +267,19 @@ int varTypeTheft(struct tree *node){
     }
     return 0;
 }
+
+
+int returnTheft(struct tree *node){
+    for(int i = 0; i < node->nkids; i++){
+        returnTheft(node->kids[i]);
+    }
+    if (node->prodrule == returnVal){
+        for(int i = 0; i < node->nkids; i++){
+            if(node->kids[i]->type->basicType != UNIT_TYPE){
+                node->type = node->kids[i]->type;
+                break;
+            }
+        }
+    }
+    return 0;
+}

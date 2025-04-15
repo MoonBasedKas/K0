@@ -96,6 +96,7 @@ int main(int argc, char *argv[])
         // The bottom two could probably be one function, but more tree traversals is better!
         varTypeTheft(root);
         typeTheft(root);
+        returnTheft(root);
         typeCheck(root);
         checkNullability(root);
         checkMutability(root);
