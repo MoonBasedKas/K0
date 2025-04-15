@@ -859,6 +859,7 @@ void addExpression(struct tree *node)
             typeError("Can only add Int or Double to type Int", node);
             break;
         }
+        break;
     case DOUBLE_TYPE:
         if (typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr))
         {
