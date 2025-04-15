@@ -384,7 +384,7 @@ int ifAssigned(struct tree *node)
 struct symEntry *returnType(struct tree *node) //change to identifier node
 {
     struct symTab *scope = node->table; //symTab.h
-    struct symEntry *entry;             //symTab.h
+    struct symEntry *entry = NULL;      //symTab.h
     int found = 0;
     while(scope->parent != rootScope && found == 0)
     {   
@@ -406,6 +406,7 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
     if(found == 0)
     {
         typeError("Function not found", node);
+        exit(3);
     }
     return entry;
 }
