@@ -57,6 +57,8 @@ struct instr {
 #define D_PROT  3056 /* prototype "declaration" */
 
 struct instr *gen(int, struct addr *, struct addr *, struct addr *);
+struct instr *copylist(struct instr *l);
+struct instr *append(struct instr *l1, struct instr *l2);
 struct instr *concat(struct instr *, struct instr *);
 char *regionname(int i);
 char *opcodename(int i);
