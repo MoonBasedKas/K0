@@ -14,6 +14,8 @@ struct tree
     struct tree *kids[10];
     struct token *leaf;
     struct typeInfo *type;
+    struct addr *addr;
+    struct instr *icode;
 
     struct symTab *table; // Scope that the node exists within.
 };
