@@ -8,6 +8,7 @@ struct symTab{
     struct symTab *parent;
     struct symEntry **buckets;
     int tableType;
+    int varSize;
 };
 
 struct symEntry{

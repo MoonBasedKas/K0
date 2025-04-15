@@ -91,6 +91,8 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     node->id = serial++;
     node->parent = NULL;
     node->type = NULL;
+    node->addr = NULL;
+    node->icode = NULL;
 
     va_list args;
     va_start(args, nkids);
@@ -114,7 +116,7 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
  *
  * @param node
  */
-void freeTree(nodeptr node) {
+void freeTree(nodeptr node) { //do we need to free addr and icode here?
     if (node == NULL)
         return;
 
