@@ -2,7 +2,7 @@ fun shortCountdown(s: Short) {
     var current: Short = s
     while (current > 0) {
         println(current)
-        current = (current - 1).toShort()
+        // current = (current - 1).toShort()
     }
     do {
         println("Blast off!")

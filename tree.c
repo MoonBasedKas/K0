@@ -76,11 +76,12 @@ int printTree(nodeptr root, int depth) {
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
 
     struct tree *node = malloc(sizeof(struct tree));
+    memset(node, 0, sizeof(struct tree));
     if (!node) {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
         exit(1);
     }
-
+    
     node->prodrule = prodrule;
     node->symbolname = strdup(symbolname);
     node->nkids = nkids;
@@ -240,30 +241,46 @@ int typeTheft(struct tree *root){
  * 
  * TODO: GLOBAL SCOPING!!!!
  * 
- * @param root 
+ * @param node 
  * @return int 
  */
-int varTypeTheft(struct tree *root){
-    for (int i = 0; i < root->nkids; i++){
-        varTypeTheft(root->kids[i]);
+int varTypeTheft(struct tree *node){
+    for (int i = 0; i < node->nkids; i++){
+        varTypeTheft(node->kids[i]);
     }
-    if (root->nkids == 0){
+    if (node->nkids == 0){
         struct symEntry *temp;
-        if (root->leaf->category == IDENTIFIER){
-            
-            temp = inZaWorldo(root->table, root->leaf->text);
-            if (!strcmp(root->leaf->text, "Array")){
+        if (node->leaf->category == IDENTIFIER){
+            // printf("%p\n", node->table);
+            temp = inZaWorldo(node->table, node->leaf->text);
+            if (!strcmp(node->leaf->text, "Array")){
                 // The array type, my mortal enemy...
-                root->type = arrayAnyType_ptr;
+                node->type = arrayAnyType_ptr;
             } else if (temp != NULL){
                 if (temp->type->basicType == FUNCTION_TYPE){
-                    root->type = temp->type;
+                    node->type = temp->type;
                 } else if (temp->type->basicType == ARRAY_TYPE) {
-                    root->type = temp->type;
+                    node->type = temp->type;
                 }else {
-                    root->type = alcType(temp->type->basicType);
+                    node->type = alcType(temp->type->basicType);
                 }
             } 
+        }
+    }
+    return 0;
+}
+
+
+int returnTheft(struct tree *node){
+    for(int i = 0; i < node->nkids; i++){
+        returnTheft(node->kids[i]);
+    }
+    if (node->prodrule == returnVal){
+        for(int i = 0; i < node->nkids; i++){
+            if(node->kids[i]->type->basicType != UNIT_TYPE){
+                node->type = node->kids[i]->type;
+                break;
+            }
         }
     }
     return 0;

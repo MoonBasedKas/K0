@@ -87,14 +87,16 @@ int main(int argc, char *argv[])
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
         giveTables(root);
-        findNullTables(root);
+        if(debug == 1) findNullTables(root);
         struct symEntry *x = NULL;
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
+        if (symError != 0 && debug == 0) return symError;
         assignMutability(root);
         assignType(root, rootScope); //semanticBuild.c
         // The bottom two could probably be one function, but more tree traversals is better!
         varTypeTheft(root);
         typeTheft(root);
+        returnTheft(root);
         typeCheck(root);
         checkNullability(root);
         checkMutability(root);

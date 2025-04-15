@@ -108,7 +108,7 @@ void typeCheck(struct tree *node)
     //assigment
     case assignment:
     case arrayAssignment:
-        typeMagicAssign(node->kids[0], node->kids[1]);
+        // typeMagicAssign(node->kids[0], node->kids[1]);
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
@@ -384,7 +384,7 @@ int ifAssigned(struct tree *node)
 struct symEntry *returnType(struct tree *node) //change to identifier node
 {
     struct symTab *scope = node->table; //symTab.h
-    struct symEntry *entry;             //symTab.h
+    struct symEntry *entry = NULL;      //symTab.h
     int found = 0;
     while(scope->parent != rootScope && found == 0)
     {   
@@ -406,6 +406,7 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
     if(found == 0)
     {
         typeError("Function not found", node);
+        exit(3);
     }
     return entry;
 }

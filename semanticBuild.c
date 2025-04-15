@@ -17,6 +17,7 @@ struct tree *createEmptyParam(void);
 
 struct tree *createUnitTypeNode(void) {
     struct tree *unitNode = malloc(sizeof(struct tree));
+    memset(unitNode, 0, sizeof(struct tree));
     if (unitNode == NULL) {
         fprintf(stderr, "Failed to allocate memory for unit type node. \n");
         exit(EXIT_FAILURE);
@@ -272,13 +273,13 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
         case returnVal:
         {
             // If we have return expression
-            if (n->nkids >= 2) {
-                typeCheck(n->kids[1]);
-                n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
-            } else {
-                n->type = alcType(UNIT_TYPE);
-            }
-            break;
+            // if (n->nkids >= 2) {
+            //     typeCheck(n->kids[1]);
+            //     n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
+            // } else {
+            //     n->type = alcType(UNIT_TYPE);
+            // }
+            // break;
         }
         case arrayType:
         /*

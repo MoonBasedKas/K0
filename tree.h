@@ -31,6 +31,7 @@ int typeTheft(struct tree *root);
 int varTypeTheft(struct tree *root);
 void freeTree(nodeptr node);
 void freeToken(struct token *tok);
+int returnTheft(struct tree *node);
 extern int serial;
 
 
