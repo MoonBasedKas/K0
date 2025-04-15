@@ -108,7 +108,7 @@ void typeCheck(struct tree *node)
     //assigment
     case assignment:
     case arrayAssignment:
-        typeMagicAssign(node->kids[0], node->kids[1]);
+        // typeMagicAssign(node->kids[0], node->kids[1]);
         if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
