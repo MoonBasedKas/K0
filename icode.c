@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "icode.h"
 #include "tree.h"
 #include "symNonTerminals.h"
@@ -53,7 +54,13 @@ void buildICode(struct tree *node)
         case assignment:
         case assignAdd:
         case assignSub:
-
+        case arrayAssignSub:
+        case arrayAssignAdd:
+        case arrayAssignment:
+            node->addr = node->kids[0]->addr;
+            node->icode = append(concat(node->kids[0]->icode, node->kids[1]->icode), gen(O_ASN, node->addr, node->kids[1]->addr, NULL));
+            break;
+            
         case forStmntWithVars:
         case forStmnt:
 
@@ -83,7 +90,7 @@ void buildICode(struct tree *node)
         case infixFunction:
         case range:
         case rangeUntil:
-        
+
         case add:
         case sub:
         case mult:
@@ -124,9 +131,7 @@ void buildICode(struct tree *node)
         case arrayDecEqual:
         case arrayDecEqualValueless:
         case arrayIndex:
-        case arrayAssignSub:
-        case arrayAssignAdd:
-        case arrayAssignment:
+        
         case arrayType:
         case arrayTypeQuests:
 
