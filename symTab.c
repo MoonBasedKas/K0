@@ -110,12 +110,15 @@ struct symEntry *contains(struct symTab *table, char *elem){
  */
 struct symEntry *inZaWorldo(struct symTab *table, char *elem){
     struct symEntry *entry = NULL;
-    while(table != rootScope || table != NULL){
-        entry = contains(table, elem);
+    struct symTab *temp = table;
+    // printf("%p\n", table);
+    while(temp != rootScope || temp != NULL){
+        if(temp == NULL) break; 
+        entry = contains(temp, elem);
         if (entry) return entry;
-        table = table->parent;
+        temp = temp->parent;
     }
-    if (table == NULL) return entry;
+    if (temp == NULL) return entry;
     return contains(rootScope, elem);
 }
 

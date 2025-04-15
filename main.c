@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
         //yydebug = 1;
         yyparse();
         buildSymTabs(root, rootScope); //symTabHelper.c
-        if(debug) giveTables(root);
-        findNullTables(root);
+        giveTables(root);
+        if(debug == 1) findNullTables(root);
         struct symEntry *x = NULL;
         if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
         assignMutability(root);
