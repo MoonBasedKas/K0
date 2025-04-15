@@ -40,11 +40,11 @@ struct instr {
 #define O_BLT   3011
 #define O_BLE   3012
 #define O_BGT   3013
-#define O_BGE   3014
-#define O_BEQ   3015
-#define O_BNE   3016
-#define O_BIF   3017
-#define O_BNIF  3018
+#define O_BGE   3014 
+#define O_BEQ   3015 //three address instr
+#define O_BNE   3016 //three address instr
+#define O_BIF   3017 //two address instr -compare hw to 0
+#define O_BNIF  3018 //two address instr -compare hw to 0
 #define O_PARM  3019
 #define O_CALL  3020
 #define O_RET   3021
@@ -56,15 +56,15 @@ struct instr {
 #define D_END   3055
 #define D_PROT  3056 /* prototype "declaration" */
 
-struct instr *gen(int, struct addr *, struct addr *, struct addr *);
-struct instr *copylist(struct instr *l);
-struct instr *append(struct instr *l1, struct instr *l2);
-struct instr *concat(struct instr *, struct instr *);
-char *regionname(int i);
-char *opcodename(int i);
-char *pseudoname(int i);
-struct addr *genlabel();
-struct addr *genLocal(int size);
+struct instr *genInstr(int, struct addr *, struct addr *, struct addr *);
+struct instr *copyInstrList(struct instr *l);
+struct instr *appendInstrList(struct instr *l1, struct instr *l2);
+struct instr *concatInstrList(struct instr *, struct instr *);
+char *regionName(int i);
+char *opCodeName(int i);
+char *pseudoName(int i);
+struct addr *genLabel();
+struct addr *genLocal(int size, struct symTab *scope);
 void tacPrint(struct instr *code);
 void freeInstrList(struct instr *list);
 #endif

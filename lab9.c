@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         string8->region = R_GLOBAL;
         string8->u.offset = 8;
 
-        instrList = gen(D_GLOB, string8, NULL, NULL);
+        instrList = genInstr(D_GLOB, string8, NULL, NULL);
         nextInstr = instrList;
     }
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         strVar->region = R_NAME;
         strVar->u.name = "Variable i is %d.\000";
 
-        struct instr *i = gen(D_GLOB, strVar, NULL, NULL);
+        struct instr *i = genInstr(D_GLOB, strVar, NULL, NULL);
         nextInstr->next = i;
         nextInstr = nextInstr->next;
     }
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
         code->region = R_NAME;
         code->u.name = ".code";
 
-        struct instr *codeInstr = gen(D_LABEL, code, NULL, NULL);
+        struct instr *codeInstr = genInstr(D_LABEL, code, NULL, NULL);
         nextInstr->next = codeInstr;
         nextInstr = nextInstr->next;
     }
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         procOffset->region = R_CONST;
         procOffset->u.offset = 32;
 
-        struct instr *procInstr = gen(D_PROC, procName, procParam, procOffset);
+        struct instr *procInstr = genInstr(D_PROC, procName, procParam, procOffset);
         nextInstr->next = procInstr;
         nextInstr = nextInstr->next;
     }
@@ -82,14 +82,14 @@ int main(int argc, char *argv[])
         const5->region = R_CONST;
         const5->u.offset = 5;
 
-        struct instr *iAsn = gen(O_ASN, addrI, const5, NULL); 
+        struct instr *iAsn = genInstr(O_ASN, addrI, const5, NULL); 
         nextInstr->next = iAsn;
         nextInstr = nextInstr->next;
     }
     //t1 = i * i
     {
         struct addr *t1 = genLocal(8);
-        struct instr *iMult = gen(O_MUL, t1, addrI, addrI);
+        struct instr *iMult = genInstr(O_MUL, t1, addrI, addrI);
         nextInstr->next = iMult;
         nextInstr = nextInstr->next;
     }
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
         const1->region = R_CONST;
         const1->u.offset = 1;
 
-        struct instr *iAdd = gen(O_ADD, t2, t1result, const1);
+        struct instr *iAdd = genInstr(O_ADD, t2, t1result, const1);
         nextInstr->next = iAdd;
         nextInstr = nextInstr->next;
     }
@@ -110,14 +110,14 @@ int main(int argc, char *argv[])
     // i = t2
     {
         struct addr *t2result = nextInstr->dest;
-        struct instr *iAsnT2 = gen(O_ASN, addrI, t2result, NULL);
+        struct instr *iAsnT2 = genInstr(O_ASN, addrI, t2result, NULL);
         nextInstr->next = iAsnT2;
         nextInstr = nextInstr->next;
     }
 
     // push param 2 (i)
     {
-        struct instr *Param2 = gen(O_PARM, addrI, NULL, NULL);
+        struct instr *Param2 = genInstr(O_PARM, addrI, NULL, NULL);
         nextInstr->next = Param2;
         nextInstr = nextInstr->next;
     }
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
         str0->region = R_NAME;
         str0->u.offset = 0;
 
-        struct instr *Param1 = gen(O_PARM, str0, NULL, NULL);
+        struct instr *Param1 = genInstr(O_PARM, str0, NULL, NULL);
         nextInstr->next = Param1;
         nextInstr = nextInstr->next;
     }
@@ -148,14 +148,14 @@ int main(int argc, char *argv[])
         rvLocation->region = R_LOCAL;
         rvLocation->u.offset = 24;
 
-        struct instr *printfCall = gen(O_CALL, printfName, callParams, rvLocation);
+        struct instr *printfCall = genInstr(O_CALL, printfName, callParams, rvLocation);
         nextInstr->next = printfCall;
         nextInstr = nextInstr->next;
     }
 
     // return
     {
-        struct instr *ret = gen(O_RET, NULL, NULL, NULL);
+        struct instr *ret = genInstr(O_RET, NULL, NULL, NULL);
         nextInstr->next = ret;
         nextInstr = nextInstr->next;
     }

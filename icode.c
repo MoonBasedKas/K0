@@ -14,18 +14,17 @@ void buildICode(struct tree *node)
 
     switch (node->prodrule)
     {
-        case propDecEmpty:
-        case propDecTypeless:
-        case propDecAssign:
-        case propDecReceiver:
-        case propDecReceiverAssign:
-        case propDecTypeParams:
-        case propDecTypeParamsAssign:
-        case propDecTypeParamsReceiver:
-        case propDecAll:
+        case varDec:
+        case varDecQuests:
+            //give local addresses
+            break;
 
-        case constantVal:
-        case typeParameters:
+        case propDecAssign:
+        case propDecReceiverAssign:
+        case propDecTypeParamsAssign:
+        case propDecAll:
+            //these are assignemnts
+            break;
 
         case funcDecAll:
         case funcDecParamType:
@@ -36,18 +35,9 @@ void buildICode(struct tree *node)
         case funcValParams:
         case funcValParamList:
         case funcValParamAssign:
+            //whatever we need to do with this idk
+            break;
 
-        case userType:
-        case simpleUserType:
-        case typeArgumentsList:
-
-        case functionTypeDot:
-        case functionType:
-        case functionTypeParameters:
-        case functionTypeParamsEmpty:
-        case functionTypeParamList:
-        case parenTypeQuests:
-        case parenType:
         case quests:
         case funcBody:
 
@@ -58,7 +48,7 @@ void buildICode(struct tree *node)
         case arrayAssignAdd:
         case arrayAssignment:
             node->addr = node->kids[0]->addr;
-            node->icode = append(concat(node->kids[0]->icode, node->kids[1]->icode), gen(O_ASN, node->addr, node->kids[1]->addr, NULL));
+            node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));
             break;
             
         case forStmntWithVars:
@@ -67,11 +57,6 @@ void buildICode(struct tree *node)
         case whileStmntCtrlBody:
         case whileStmnt:
         case doWhileStmnt:
-
-        case varDec:
-        case varDecQuests:
-        case multiVarDec:
-        case varDecList:
 
         case disj:
         case conj:
@@ -151,10 +136,10 @@ void buildICode(struct tree *node)
         {
             break;
         }
-        node->icode = copylist(node->kids[0]);
+        node->icode = copyInstrList(node->kids[0]);
         for(int i = 1; i < node->nkids; i++)
         {
-            node->icode = append(node->icode, copylist(node->kids[i])); //does the 2nd need to be coppied?
+            node->icode = appendInstrList(node->icode, node->kids[i]);
         }
         break;
     }

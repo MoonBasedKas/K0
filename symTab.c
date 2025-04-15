@@ -148,6 +148,7 @@ struct symTab *createTable(struct symTab *parent, char *name, int type){
     table->buckets = calloc(SYMBUCKETS, sizeof(struct symEntry*));
     table->name = name;
     table->parent = parent;
+    table->varSize = 0;
     return table;
 }
 

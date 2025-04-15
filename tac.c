@@ -6,9 +6,10 @@
 #include <stdbool.h>
 #include <string.h>
 #include "tac.h"
+#include "symTab.h"
 
 char *regionnames[] = {"global","loc", "class", "lab", "const", "", "none"};
-char *regionname(int i)
+char *regionName(int i)
 {
     return regionnames[i-R_GLOBAL];
 }
@@ -17,21 +18,21 @@ char *opcodenames[] = {
    "BLT", "BLE", "BGT", "BGE", "BEQ", "BNE", "BIF", "BNIF", "PARM", "CALL",
    "RETURN"
    };
-char *opcodename(int i)
+char *opCodeName(int i)
 {
     return opcodenames[i-O_ADD];
 }
 char *pseudonames[] = {
    "glob","proc", "loc", "lab", "end", "prot"
    };
-char *pseudoname(int i)
+char *pseudoName(int i)
 {
     return pseudonames[i-D_GLOB];
 }
 
 int labelCounter;
 
-struct addr *genlabel()
+struct addr *genLabel()
 {
     struct addr *a = malloc(sizeof(struct addr));
     a->region = R_LABEL;
@@ -40,18 +41,16 @@ struct addr *genlabel()
     return a;
 }
 
-int localCounter = 0;
-
-struct addr *genLocal(int size)
+struct addr *genLocal(int size, struct symTab *scope)
 {
     struct addr *a = malloc(sizeof(struct addr));
     a->region = R_LOCAL;
-    a->u.offset = localCounter;
-    localCounter += size;
+    a->u.offset = scope->varSize;
+    scope->varSize += size;
     return a;
 }
 
-struct instr *gen(int op, struct addr *a1, struct addr *a2, struct addr *a3)
+struct instr *genInstr(int op, struct addr *a1, struct addr *a2, struct addr *a3)
 {
     struct instr *rv = malloc(sizeof (struct instr));
     if (rv == NULL) {
@@ -66,15 +65,15 @@ struct instr *gen(int op, struct addr *a1, struct addr *a2, struct addr *a3)
     return rv;
 }
 
-struct instr *copylist(struct instr *l)
+struct instr *copyInstrList(struct instr *l)
 {
     if (l == NULL) return NULL;
-    struct instr *lcopy = gen(l->opcode, l->dest, l->src1, l->src2);
-    lcopy->next = copylist(l->next);
+    struct instr *lcopy = genInstr(l->opcode, l->dest, l->src1, l->src2);
+    lcopy->next = copyInstrList(l->next);
     return lcopy;
 }
 
-struct instr *append(struct instr *l1, struct instr *l2)
+struct instr *appendInstrList(struct instr *l1, struct instr *l2)
 {
     if (l1 == NULL) return l2;
     struct instr *ltmp = l1;
@@ -83,9 +82,9 @@ struct instr *append(struct instr *l1, struct instr *l2)
     return l1;
 }
 
-struct instr *concat(struct instr *l1, struct instr *l2)
+struct instr *concatInstrList(struct instr *l1, struct instr *l2)
 {
-    return append(copylist(l1), l2);
+    return appendInstrList(copyInstrList(l1), l2);
 }
 
 /**
@@ -151,7 +150,7 @@ void tacPrint(struct instr *code)
                 }
                 else {
                     // Print "glob <addr>"
-                    printf("%s ", pseudoname(p->opcode));
+                    printf("%s ", pseudoName(p->opcode));
                     if (p->dest) {
                         printAddr(p->dest);
                     }
@@ -165,7 +164,7 @@ void tacPrint(struct instr *code)
                     printf(".code\n");
                 } else {
                     // "lab <dest>"
-                    printf("%s ", pseudoname(p->opcode));
+                    printf("%s ", pseudoName(p->opcode));
                     if (p->dest) {
                         printAddr(p->dest);
                     }
@@ -203,7 +202,7 @@ void tacPrint(struct instr *code)
             }
             else {
                 // pseudo-ops print
-                printf("\t%s ", pseudoname(p->opcode));
+                printf("\t%s ", pseudoName(p->opcode));
                 if (p->dest) {
                     printAddr(p->dest);
                 }
@@ -245,7 +244,7 @@ void tacPrint(struct instr *code)
 
                 printf("\n");
             } else {
-                printf("\t%s\t", opcodename(p->opcode));
+                printf("\t%s\t", opCodeName(p->opcode));
                 if (p->dest) {
                     printAddr(p->dest);
                 }
