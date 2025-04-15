@@ -76,11 +76,12 @@ int printTree(nodeptr root, int depth) {
 struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
 
     struct tree *node = malloc(sizeof(struct tree));
+    memset(node, 0, sizeof(struct tree));
     if (!node) {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
         exit(1);
     }
-
+    
     node->prodrule = prodrule;
     node->symbolname = strdup(symbolname);
     node->nkids = nkids;

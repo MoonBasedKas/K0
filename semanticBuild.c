@@ -17,6 +17,7 @@ struct tree *createEmptyParam(void);
 
 struct tree *createUnitTypeNode(void) {
     struct tree *unitNode = malloc(sizeof(struct tree));
+    memset(unitNode, 0, sizeof(struct tree));
     if (unitNode == NULL) {
         fprintf(stderr, "Failed to allocate memory for unit type node. \n");
         exit(EXIT_FAILURE);
