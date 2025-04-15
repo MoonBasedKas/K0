@@ -378,7 +378,10 @@ char *getTableType(int type){
 int giveTables(struct tree *root){
     if (root->table == NULL){
         root->table = root->parent->table;
+
     }
-    for(int i = 0; i < root->nkids; i++) giveTables(root->kids[i]);
+    for(int i = 0; i < root->nkids; i++) {
+        giveTables(root->kids[i]);
+    }
     return 0;
 }

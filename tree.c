@@ -249,7 +249,7 @@ int varTypeTheft(struct tree *root){
     if (root->nkids == 0){
         struct symEntry *temp;
         if (root->leaf->category == IDENTIFIER){
-            
+            printf("%s\n", root->symbolname);
             temp = inZaWorldo(root->table, root->leaf->text);
             if (!strcmp(root->leaf->text, "Array")){
                 // The array type, my mortal enemy...
