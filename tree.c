@@ -94,6 +94,10 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
     node->type = NULL;
     node->addr = NULL;
     node->icode = NULL;
+    node->first = NULL;
+    node->follow = NULL;
+    node->onTrue = NULL;
+    node->onFalse = NULL;
 
     va_list args;
     va_start(args, nkids);

@@ -16,7 +16,10 @@ struct tree
     struct typeInfo *type;
     struct addr *addr;
     struct instr *icode;
-
+    struct addr *first;
+    struct addr *follow;
+    struct addr *onTrue;
+    struct addr *onFalse;
     struct symTab *table; // Scope that the node exists within.
 };
 
