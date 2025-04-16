@@ -17,6 +17,7 @@ struct symEntry{
     struct symEntry *next;
     int func;
     struct typeInfo *type;
+    struct addr *addr;
 
     int mutable;
     int nullable;

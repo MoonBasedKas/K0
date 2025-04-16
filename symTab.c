@@ -66,6 +66,7 @@ struct symEntry *createEntry(struct symTab *table, char *elem, int func){
     struct symEntry *temp = malloc(sizeof(struct symEntry));
     temp->type = NULL; // To be assigned later.
     temp->scope = NULL;
+    temp->addr = NULL;
     temp->name = elem;
     temp->func = func;
     temp->mutable = 1; // mutable
