@@ -37,6 +37,9 @@ static void checkLeafType(struct tree *n)
 
     // Switch on the leaf's category -> This is how we printed leaf types to the syntax tree
     switch (n->prodrule) {
+        case SHORT:
+        case LONG:
+        case BYTE:
         case INT:
             n->type = alcType(INT_TYPE);
             break;
@@ -49,9 +52,7 @@ static void checkLeafType(struct tree *n)
         case CHAR:
             n->type = alcType(CHAR_TYPE);
             break;
-        case BYTE:
-            n->type = alcType(BYTE_TYPE);
-            break;
+        case FLOAT:
         case DOUBLE:
             n->type = alcType(DOUBLE_TYPE);
             break;

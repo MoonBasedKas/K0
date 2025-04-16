@@ -38,8 +38,6 @@ typePtr alcType(int baseType) {
     switch (baseType) {
         case NULL_TYPE:
             return nullType_ptr;
-        case BYTE_TYPE:
-            return byteType_ptr;
         case INT_TYPE:
             return integerType_ptr;
         case DOUBLE_TYPE:
