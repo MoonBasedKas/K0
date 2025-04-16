@@ -1,6 +1,7 @@
 #ifndef ICCODE_H
 #define ICCODE_H
 
-void buildICode(struct tree *node);
+void basicBlocks(struct tree *node);
+void control(struct tree *node);
 
 #endif

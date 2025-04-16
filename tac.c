@@ -50,6 +50,14 @@ struct addr *genLocal(int size, struct symTab *scope)
     return a;
 }
 
+struct addr *genConst(int val)
+{
+    struct addr *a = malloc(sizeof(struct addr));
+    a->region = R_CONST;
+    a->u.offset = val;
+    return a;
+}
+
 struct instr *genInstr(int op, struct addr *a1, struct addr *a2, struct addr *a3)
 {
     struct instr *rv = malloc(sizeof (struct instr));

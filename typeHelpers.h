@@ -8,6 +8,7 @@
 
 typePtr lookupType(struct tree *n);
 char *typeName(typePtr t);
+int typeSize(struct typeInfo *type);
 struct param* createParamFromTree(struct tree *paramNode);
 struct param *buildfuncParams(int params, ...);
 struct param *alcParams(char *paramName, int type);
