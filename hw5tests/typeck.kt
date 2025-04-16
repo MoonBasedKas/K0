@@ -1,4 +1,4 @@
-// Expect type error to + on line 7
+// Expect type error to + on line 8
 fun fib(i : Int) : Int {
    return 11
    }

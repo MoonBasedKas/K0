@@ -1,4 +1,4 @@
-// Expect wrong number of parameters on line 6
+// Expect wrong number of parameters on line 7
 fun fib( i : Int) : Int {
    return 11
 }

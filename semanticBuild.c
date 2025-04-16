@@ -37,6 +37,9 @@ static void checkLeafType(struct tree *n)
 
     // Switch on the leaf's category -> This is how we printed leaf types to the syntax tree
     switch (n->prodrule) {
+        case SHORT:
+        case LONG:
+        case BYTE:
         case INT:
             n->type = alcType(INT_TYPE);
             break;
@@ -49,9 +52,7 @@ static void checkLeafType(struct tree *n)
         case CHAR:
             n->type = alcType(CHAR_TYPE);
             break;
-        case BYTE:
-            n->type = alcType(BYTE_TYPE);
-            break;
+        case FLOAT:
         case DOUBLE:
             n->type = alcType(DOUBLE_TYPE);
             break;
@@ -143,7 +144,7 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             kids[3] = type
             kids[4] = functionBody
             */
-            n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); //type.c
+            n->type = alcFuncType(n->kids[3], n->kids[2]->kids[0], rootScope); //type.c
             assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
             break;
         }
@@ -270,17 +271,17 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
-        case returnVal:
-        {
-            // If we have return expression
-            // if (n->nkids >= 2) {
-            //     typeCheck(n->kids[1]);
-            //     n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
-            // } else {
-            //     n->type = alcType(UNIT_TYPE);
-            // }
-            // break;
-        }
+        // case returnVal:
+        // {
+        //     // If we have return expression
+        //     // if (n->nkids >= 2) {
+        //     //     typeCheck(n->kids[1]);
+        //     //     n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
+        //     // } else {
+        //     //     n->type = alcType(UNIT_TYPE);
+        //     // }
+        //     // break;
+        // }
         case arrayType:
         /*
         kids[0] = IDENTIFIER

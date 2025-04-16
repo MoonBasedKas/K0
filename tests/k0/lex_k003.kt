@@ -7,7 +7,7 @@ fun main(args : Array<String>) {
 
     // Character literals with escape sequences
     val ch1 : Char = 'A';
-    // val ch2 : Char = '\n';
+    //val ch2 : Char = '\n';
 
     // String literal with escape sequences and a field identifier ($foo)
     val str : String = "Line1\nLine2\twith tab and a dollar sign: \$foo";
@@ -21,9 +21,8 @@ string literal with "quotes" and a backslash \\ in it.*/
     println("longNum: " + longNum);
     println("dbl: " + dbl);
     println("flt: " + flt);
-    println("hex: " + hex);
     println("Character A: " + ch1);
-    println("Newline char: " + ch2);
+    //println("Newline char: " + ch2);
     println("String: " + str);
     println("Multi-line string: " + multi);
 }

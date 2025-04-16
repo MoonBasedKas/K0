@@ -1,3 +1,5 @@
+import String.equals
+
 fun combine(a: String, b: String): String {
     return a + b;
 }

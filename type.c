@@ -38,8 +38,6 @@ typePtr alcType(int baseType) {
     switch (baseType) {
         case NULL_TYPE:
             return nullType_ptr;
-        case BYTE_TYPE:
-            return byteType_ptr;
         case INT_TYPE:
             return integerType_ptr;
         case DOUBLE_TYPE:
@@ -76,48 +74,60 @@ typePtr alcType(int baseType) {
 
 typePtr alcFuncType(struct tree *r, struct tree *p, struct symTab *st) {
     typePtr rv = alcType(FUNCTION_TYPE);
-    if (rv == NULL)
-        return NULL;
+    if (!rv) return NULL;
 
-    // Symbol table for the scope
-    // This might be the most difficult thing I could need to obtain.
     rv->u.func.st = st;
 
-    // Get the return type
-    if (r->prodrule == arrayType){
+    if (r->prodrule == arrayType) {
         rv->u.func.returnType = alcArrayType(NULL, r->kids[1]->type);
     } else {
-        rv->u.func.returnType = determineReturnType(r); //typeHelpers.c
+        rv->u.func.returnType = determineReturnType(r);
     }
-    // Traverse/process subtree(s) for parameters
-    rv->u.func.numParams = p->nkids;
-    rv->u.func.parameters = NULL;
-    struct param *lastParam = NULL;
-    // Okay so, I think we are traversing this incorrectly, it doesnt seem like the code considers the datatype.
-    if (p->nkids == 0 && p->type == NULL){
+
+    // If p is a funcValParams node, unwrap it to get the real param-list node
+    if (p && p->prodrule == funcValParams) {
+        p = p->kids[0];
+    }
+
+    // If there's no parameter node at all, return now
+    if (!p || (p->nkids == 0 && !p->type)) {
         return rv;
-    };     
-    if (p->kids[0]->prodrule == varDec || p->kids[0]->prodrule == funcValParamAssign){
+    }
+
+    // Single parameter?  - We were returning immediately before
+    if (p->prodrule == varDec || p->prodrule == funcValParamAssign) {
         rv->u.func.numParams = 1;
-        rv->u.func.parameters = createParamFromTree(p->kids[0]);
+        rv->u.func.parameters = createParamFromTree(p);
         return rv;
     }
+    // Multiple parameters
+    else if (p->prodrule == funcValParamList) {
+        rv->u.func.numParams = 0;
+        rv->u.func.parameters = NULL;
+        struct param *lastParam = NULL;
+        struct tree *temp = p;
 
-    rv->u.func.numParams = 0;
-    struct tree *temp = p->kids[0];
-    struct param *newParam = NULL;
-
-    while(temp->prodrule == funcValParamList){
-        newParam = createParamFromTree(temp->kids[0]);
-        if(rv->u.func.parameters == NULL){
-            rv->u.func.parameters = newParam;
+        while (temp->prodrule == funcValParamList) {
+            struct param *newParam = createParamFromTree(temp->kids[0]);
+            if (!rv->u.func.parameters) {
+                rv->u.func.parameters = newParam;
+            } else {
+                lastParam->next = newParam;
+            }
             lastParam = newParam;
-        } else {
-            lastParam->next = newParam;
+            rv->u.func.numParams++;
+            temp = temp->kids[1];
         }
 
-        rv->u.func.numParams++;
-        temp = temp->kids[1];
+        if (temp->prodrule == varDec || temp->prodrule == funcValParamAssign) {
+            struct param *newParam = createParamFromTree(temp);
+            if (!rv->u.func.parameters) {
+                rv->u.func.parameters = newParam;
+            } else {
+                lastParam->next = newParam;
+            }
+            rv->u.func.numParams++;
+        }
     }
 
     return rv;
