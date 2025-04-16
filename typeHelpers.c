@@ -49,6 +49,40 @@ char *typeName(typePtr t){
 }
 
 /**
+ * @brief Return the size of a type
+ *
+ * @param type
+ * @return int
+ */
+int typeSize(struct typeInfo *type)
+{
+    switch (type->basicType)
+    {
+    case INT_TYPE:
+    case DOUBLE_TYPE:
+    case STRING_TYPE: //???
+    case ARRAY_TYPE:
+        //need to know how many elements in array
+        //figure this one out later
+        //for now do 8 as a pointer to the array somewhere else
+        return 8;
+    case BOOL_TYPE:
+    case CHAR_TYPE:
+        return 1;
+    
+    case FUNCTION_TYPE:
+        //do we need?? and if so what looks like
+    case UNIT_TYPE: //do we need??
+    case RANGE_TYPE: //do we need?
+        /* code */
+        break;
+    
+    default:
+        break;
+    }
+}
+
+/**
  * @brief Lookup the type of a node, finds it within its symbol table.
  *
  * TODO: Proper scope retrival
