@@ -1,4 +1,4 @@
-// Expect type error to param on line 12
+// Expect type error to param on line 13
 var dd : Double = 3.14;
 
 fun fib(f : Double, i : Int) : Double {

@@ -1,5 +1,5 @@
 // foo.kt
-import java.lang.String.toString
+import String.toString
 
 fun foo(x : Int, y : String) : Int {
    return x

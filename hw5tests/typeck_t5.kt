@@ -1,4 +1,4 @@
-// Expect type error on line 3
+// Expect type error on line 4
 fun main() {
    var j : Int = 0;
    var s : atypename;

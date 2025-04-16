@@ -6,6 +6,7 @@ import java.lang.Math.pow
 import java.lang.Math.max
 import java.lang.Math.min
 import java.util.Random.nextInt
+import String.equals
 
 fun main(){
     println("HI!!!!")
