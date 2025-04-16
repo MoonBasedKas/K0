@@ -6,6 +6,16 @@
 #include "tac.h"
 #include "lex.h"
 
+void buildICode(struct tree *node)
+{
+    localAddr(node);
+    basicBlocks(node);
+    assignFirst(node);
+    assignFollow(node);
+    assignOnTrueFalse(node);
+    control(node);
+}
+
 void localAddr(struct tree *node)
 {
     switch (node->prodrule)
@@ -200,8 +210,57 @@ void basicBlocks(struct tree *node)
     }
 }
 
+void assignFirst(struct tree *node)
+{
+    for(int i = 0; i < node->nkids; i++)
+    {
+        assignFirst(node->kids[i]);
+    }
+    switch (node->prodrule)
+    {
+    
+        
+    
+    default:
+        break;
+    }
+}
+
+void assignFollow(struct tree *node)
+{
+    switch (node->prodrule)
+    {
+    
+    
+    default:
+        break;
+    }
+
+    for(int i = 0; i < node->kids; i++)
+    {
+        assignFollow(node->kids[i]);
+    }
+}
+
+void assignOnTrueFalse(struct tree *node)
+{
+    switch (node->prodrule)
+    {
+    
+    
+    default:
+        break;
+    }
+
+    for(int i = 0; i < node->kids; i++) //might need to go first
+    {
+        assignFollow(node->kids[i]);
+    }
+}
+
 //will need recursion of some sort
 //for now just pulling out rules that have control flow stuff
+//actual icode using previouly gen labels
 void control(struct tree *node)
 {
     switch (node->prodrule)
