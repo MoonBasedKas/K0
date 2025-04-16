@@ -1,8 +1,11 @@
-import java.util.Random
+import java.util.Random.nextInt
 import java.lang.Math
+import String.length
+import String.substring
 
 fun main(args: Array<String>) {
     println("Enter a word:")
+    val x : Int = 10
     val input: String = readln()
 
     if (input.length() >= 3) {
@@ -15,12 +18,12 @@ fun main(args: Array<String>) {
         println("You didn't type hello.")
     }
 
-    fun doubleRandom(r: Random): Int {
+    fun doubleRandom(r: Int): Int {
         val randVal: Int = r.nextInt(100) // range 0..99
         return Math.max(randVal, 0) * 2
     }
 
-    val randomGen = Random()
-    val dr = doubleRandom(randomGen)
+    val randomGen : Int = x.nextInt(100)
+    val dr : Int = doubleRandom(randomGen)
     println("Double random(0..99): " + dr)
 }
