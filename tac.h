@@ -65,6 +65,7 @@ char *opCodeName(int i);
 char *pseudoName(int i);
 struct addr *genLabel();
 struct addr *genLocal(int size, struct symTab *scope);
+struct addr *genConst(int val);
 void tacPrint(struct instr *code);
 void freeInstrList(struct instr *list);
 #endif
