@@ -117,8 +117,27 @@ void basicBlocks(struct tree *node)
                             genInstr(O_AND, node->addr, node->kids[0]->addr, node->kids[1]->addr)); //tac.c
         break;
 
+    //NOT DONE!!!!
+    //same as equals()
     case equal:
+        switch (node->kids[0]->type->basicType)
+        {
+        case INT_TYPE:
+        case DOUBLE_TYPE:
+        case CHAR_TYPE:
+        case BOOL_TYPE:
+            
+
+        //need to figure these out
+        case STRING_TYPE:
+        case ARRAY_TYPE:
+            break;
+        
+        default:
+            break;
+        }
     case notEqual:
+    //checks equality of pointers for structures same as == for primatives
     case eqeqeq:
     case notEqeqeq:
         
