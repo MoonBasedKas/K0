@@ -5,6 +5,8 @@
 #include "k0gram.tab.h"
 #include "tac.h"
 #include "lex.h"
+#include "symTab.h"
+#include "typeHelpers.h"
 
 void buildICode(struct tree *node)
 {
@@ -20,9 +22,12 @@ void localAddr(struct tree *node)
 {
     switch (node->prodrule)
     {
+    //handles both variable declarations and parameters
     case varDec:
     case varDecQuests:
-        //give local addresses
+        struct symEntry *entry = contains(node->table, node->kids[0]->leaf->text); //symTab.c
+        entry->addr = genLocal(typeSize(entry->type), entry->scope); //tac.c typeHelpers.c
+
         break;
 
     case funcDecAll:
@@ -31,10 +36,11 @@ void localAddr(struct tree *node)
     case funcDecTypeBody:
     case funcDecType:
     case funcDecBody:
-    case funcValParams:
-    case funcValParamList:
-    case funcValParamAssign:
-        //whatever we need to do with this idk
+        //do we do something with functions now or later?
+        //i think we just need labels for functions
+        //yes do the label now because then when i do addr in basicBlocks it will be done??
+        //no because in basic blocks i can have the same code and it will just assign it to null again and 
+        //then deal with all the labels at once??
         break;
 
     default:
@@ -55,6 +61,7 @@ void basicBlocks(struct tree *node)
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
     case propDecAll:
+    case funcValParamAssign:
         //these are assignemnts
         break;
 
@@ -68,7 +75,8 @@ void basicBlocks(struct tree *node)
     case arrayAssignAdd:
     case arrayAssignment:
         node->addr = node->kids[0]->addr;
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), 
+                            genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); //tac.c
         break;
 
     case disj:
@@ -154,7 +162,7 @@ void basicBlocks(struct tree *node)
 
     case INTEGER_LITERAL:
     case HEX_LITERAL:
-        node->addr = genConst(node->leaf->ival);
+        node->addr = genConst(node->leaf->ival); //tac.c
         break;
         
     case CHARACTER_LITERAL:
@@ -169,10 +177,25 @@ void basicBlocks(struct tree *node)
         break;
 
     case IDENTIFIER:
-        //need to give these nodes addresses so thier parents can use them
+        struct symTab *scope = node->table;
+        struct symEntry *entry;
+
+        while(scope != NULL)
+        {
+            entry = contains(scope, node->leaf->text); //symTab.c
+            if(entry != NULL)
+            {
+                break;
+            }
+            scope = scope->parent;
+        }
+
+        node->addr = entry->addr;
+
         break;
 
-    //when hit control flow, return without concating child code
+    //when hit control flow, break without concating child code
+    //these need to be null for later
     case forStmntWithVars:
     case forStmnt:
     case whileStmntCtrlBody:
@@ -194,17 +217,17 @@ void basicBlocks(struct tree *node)
     case funcBody:
     case returnVal:
     case RETURN:
-        return;
+        break;;
 
     default:
         if(node->nkids == 0)
         {
             break;
         }
-        node->icode = copyInstrList(node->kids[0]);
+        node->icode = copyInstrList(node->kids[0]); //tac.c
         for(int i = 1; i < node->nkids; i++)
         {
-            node->icode = appendInstrList(node->icode, node->kids[i]);
+            node->icode = appendInstrList(node->icode, node->kids[i]); //tac.c
         }
         break;
     }
@@ -216,22 +239,71 @@ void assignFirst(struct tree *node)
     {
         assignFirst(node->kids[i]);
     }
-    switch (node->prodrule)
+
+    //if this node has icode and the parent doesn't then the parent has control flow stuff
+    //so its first child needs a first label
+    //might also give labels to other children if they have the same prodrule as first child
+    if(node->icode != NULL && node->parent->icode == NULL)
     {
-    
-        
-    
-    default:
-        break;
+        if(node->prodrule == node->parent->kids[0]->prodrule)
+        {
+            node->first = genLabel(); //tac.c
+        }
     }
+
+    //do i need more than this??
+    //are there any other times where you would need a first label
+    //in assign follow print out message saying that something needs to be added here if something is NULL
 }
 
 void assignFollow(struct tree *node)
 {
+    //currently just copied all of the prodrules that have control flow
     switch (node->prodrule)
     {
-    
-    
+    case forStmntWithVars:
+    case forStmnt:
+
+    case whileStmntCtrlBody:
+    case whileStmnt:
+    case doWhileStmnt:
+
+    //need to do speceal something for assignment ifs???
+    case emptyIf:
+    case if_k:
+    case ifElse:
+    case ifElseIf:
+
+    //took out whens
+
+    case elvis:
+    //i think this goes here
+    //idk tho
+
+    case postfixExpr:
+    case postfixNoExpr:
+        //function call
+        //figrue that shit out
+
+    case postfixDotID:
+    case postfixDotIDExpr:
+    case postfixDotIDNoExpr:
+    case postfixSafeDotID:
+    case postfixSafeDotIDExpr:
+    case postfixSafeDotIDNoExpr:
+        //figure all this shit out
+        //at this point might not need the intital part???
+
+    case funcBody:
+        //treat like return value??
+        //ASSIGNMENT expression
+        break;
+
+    case returnVal:
+    case RETURN:
+        //definlty need this shit
+        break;
+
     default:
         break;
     }
