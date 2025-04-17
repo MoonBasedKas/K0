@@ -58,16 +58,31 @@ void basicBlocks(struct tree *node)
     switch (node->prodrule)
     {
     case propDecAssign:
+        node->addr = node->kids[1]->kids[0]->addr;
+        node->icode = concatInstrList(node->kids[2]->icode, genInstr(O_ASN, node->addr, node->kids[2]->addr, NULL)); //tac.c
+        break;
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
+        node->addr = node->kids[2]->kids[0]->addr;
+        node->icode = concatInstrList(node->kids[3]->icode, genInstr(O_ASN, node->addr, node->kids[3]->addr, NULL)); //tac.c
+        break;
     case propDecAll:
+        node->addr = node->kids[3]->kids[0]->addr;
+        node->icode = concatInstrList(node->kids[4]->icode, genInstr(O_ASN, node->addr, node->kids[4]->addr, NULL)); //tac.c
+        break;
     case funcValParamAssign:
-        //these are assignemnts
+        node->addr = node->kids[0]->kids[0]->addr;
+        node->icode = concatInstrList(node->kids[1]->icode, genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); //tac.c
         break;
 
     //need to do speceal something for assignment ifs???
     //cause when this happens if hasn't been evaluated yet
     //does that cause problems here or can i leave this and then just deal later???
+    //maybe this is fine here cause it will just append NULL to the end of the list and then 
+    //when we get to if latter we can fix it????
+    //no that won't work cause we copy this later into the upper code so it can't be fixed latter
+    //fuck
+    //maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
     case assignment:
     case assignAdd:
     case assignSub:
@@ -75,7 +90,7 @@ void basicBlocks(struct tree *node)
     case arrayAssignAdd:
     case arrayAssignment:
         node->addr = node->kids[0]->addr;
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), 
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
                             genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); //tac.c
         break;
 
