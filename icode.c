@@ -316,10 +316,85 @@ void assignFollow(struct tree *node)
 
 void assignOnTrueFalse(struct tree *node)
 {
+    //currently just copied all of the prodrules that have control flow
     switch (node->prodrule)
     {
-    
-    
+    case forStmntWithVars:
+    case forStmnt:
+        node->onTrue = node->kids[3]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[3]);
+        }
+        node->onFalse = node->follow;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node);
+        }
+        break;
+
+    case whileStmntCtrlBody:
+        node->onTrue = node->kids[2]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        node->onFalse = node->follow;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node);
+        }
+        break;
+    case whileStmnt:
+        //how does this one work??? IDK
+        break;
+    case doWhileStmnt:
+        node->onTrue = node->kids[1]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[1]);
+        }
+        node->onFalse = node->follow;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node);
+        }
+        break;
+
+    //need to do speceal something for assignment ifs??? since they can be assigned??
+    case emptyIf:
+    case if_k:
+    case ifElse:
+    case ifElseIf:
+
+    case elvis:
+    //i think this goes here
+    //idk tho
+
+    case postfixExpr:
+    case postfixNoExpr:
+        //function call
+        //figrue that shit out
+
+    case postfixDotID:
+    case postfixDotIDExpr:
+    case postfixDotIDNoExpr:
+    case postfixSafeDotID:
+    case postfixSafeDotIDExpr:
+    case postfixSafeDotIDNoExpr:
+        //figure all this shit out
+        //at this point might not need the intital part???
+
+    case funcBody:
+        //treat like return value??
+        //ASSIGNMENT expression
+        break;
+
+    case returnVal:
+    case RETURN:
+        //definlty need this shit
+        break;
+
     default:
         break;
     }
@@ -383,4 +458,14 @@ void control(struct tree *node)
     default:
         break;
     }
+}
+
+void debugICode(char *string, struct tree *node)
+{
+    while(node->nkids != 0)
+    {
+        node = node->kids[0];
+    }
+
+    printf("Name: %s Line %d, Debug Message: %s\n", node->leaf->text, node->leaf->lineno, string);
 }
