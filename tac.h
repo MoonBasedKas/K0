@@ -26,35 +26,42 @@ struct instr {
    struct addr *dest, *src1, *src2;
    struct instr *next;
 };
-/* Opcodes, per lecture notes */
-#define O_ADD   3001
-#define O_SUB   3002
-#define O_MUL   3003
-#define O_DIV   3004
-#define O_NEG   3005
-#define O_ASN   3006
-#define O_ADDR  3007
-#define O_LCONT 3008
-#define O_SCONT 3009
-#define O_GOTO  3010
-#define O_BLT   3011
-#define O_BLE   3012
-#define O_BGT   3013
-#define O_BGE   3014 
-#define O_BEQ   3015 //three address instr
-#define O_BNE   3016 //three address instr
-#define O_BIF   3017 //two address instr -compare hw to 0
-#define O_BNIF  3018 //two address instr -compare hw to 0
-#define O_PARM  3019
-#define O_CALL  3020
-#define O_RET   3021
-/* declarations/pseudo instructions */
-#define D_GLOB  3051
-#define D_PROC  3052
-#define D_LOCAL 3053
-#define D_LABEL 3054
-#define D_END   3055
-#define D_PROT  3056 /* prototype "declaration" */
+
+enum {
+  /* Opcodes, per lecture notes */
+  O_ADD = 3001,
+  O_SUB,
+  O_MUL,  
+  O_DIV,  
+  O_NEG,
+  O_AND,
+  O_OR,
+  O_XOR,
+  O_NOT,  
+  O_ASN,  
+  O_ADDR, 
+  O_LCONT,
+  O_SCONT,
+  O_GOTO, 
+  O_BLT,  
+  O_BLE,  
+  O_BGT,  
+  O_BGE,   
+  O_BEQ,   //three address instr
+  O_BNE,   //three address instr
+  O_BIF,   //two address instr -compare hw to 0
+  O_BNIF,  //two address instr -compare hw to 0
+  O_PARM, 
+  O_CALL, 
+  O_RET,  
+  /* declarations/pseudo instructions */
+  D_GLOB, 
+  D_PROC, 
+  D_LOCAL,
+  D_LABEL,
+  D_END,  
+  D_PROT  /* prototype "declaration" */
+};
 
 struct instr *genInstr(int, struct addr *, struct addr *, struct addr *);
 struct instr *copyInstrList(struct instr *l);

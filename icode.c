@@ -89,18 +89,39 @@ void basicBlocks(struct tree *node)
     case arrayAssignSub:
     case arrayAssignAdd:
     case arrayAssignment:
-        node->addr = node->kids[0]->addr;
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
-                            genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); //tac.c
+        switch (node->kids[1]->prodrule)
+        {
+        case emptyIf:
+        case if_k:
+        case ifElse:
+        case ifElseIf:
+            break;
+        
+        default:
+            node->addr = node->kids[0]->addr;
+            node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
+                                genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); //tac.c
+            break;
+        }
         break;
 
+    //are we doing short circuting??
     case disj:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
+                            genInstr(O_OR, node->addr, node->kids[0]->addr, node->kids[1]->addr)); //tac.c
+        break;
     case conj:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
+                            genInstr(O_AND, node->addr, node->kids[0]->addr, node->kids[1]->addr)); //tac.c
+        break;
+
     case equal:
     case notEqual:
     case eqeqeq:
     case notEqeqeq:
-        //are we doing short circuting??
+        
         break;
 
     case less:
@@ -111,13 +132,8 @@ void basicBlocks(struct tree *node)
         break;
 
     case in:
-        //how do this??
-        //does this need its own code or will it just be delt with in for loop
-        //yes definitly
-        //for range, if > min and < max and store val
-        //idk what to do for array
-        //walk down full array and store in register OR of == this element
-        //could do it with goto if found but that seems not worth unless huge array
+        //NOT PART OF FOR LOOP
+        //BOOLEAN EXPRESSION
         break;
 
     case infixFunction:
@@ -438,12 +454,19 @@ void control(struct tree *node)
     {
     case forStmntWithVars:
     case forStmnt:
+        //how do this??
+        //for range, if > min and < max and store val
+        //idk what to do for array
+        //walk down full array and store in register OR of == this element
+        //could do it with goto if found but that seems not worth unless huge array
 
     case whileStmntCtrlBody:
     case whileStmnt:
     case doWhileStmnt:
 
     //need to do speceal something for assignment ifs???
+    //YES
+    //need to check if parent is assignment and if so add code for it
     case emptyIf:
     case if_k:
     case ifElse:
