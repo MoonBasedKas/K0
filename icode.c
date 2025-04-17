@@ -253,7 +253,7 @@ void assignFirst(struct tree *node)
 
     //do i need more than this??
     //are there any other times where you would need a first label
-    //in assign follow print out message saying that something needs to be added here if something is NULL
+    //in assignFollow and assignOnTrueFasle print out message saying that something needs to be added here if something is NULL
 }
 
 void assignFollow(struct tree *node)
@@ -316,7 +316,11 @@ void assignFollow(struct tree *node)
 
 void assignOnTrueFalse(struct tree *node)
 {
-    //currently just copied all of the prodrules that have control flow
+    for(int i = 0; i < node->kids; i++)
+    {
+        assignOnTrueFalse(node->kids[i]);
+    }
+
     switch (node->prodrule)
     {
     case forStmntWithVars:
@@ -364,44 +368,49 @@ void assignOnTrueFalse(struct tree *node)
     //need to do speceal something for assignment ifs??? since they can be assigned??
     case emptyIf:
     case if_k:
-    case ifElse:
-    case ifElseIf:
-
-    case elvis:
-    //i think this goes here
-    //idk tho
-
-    case postfixExpr:
-    case postfixNoExpr:
-        //function call
-        //figrue that shit out
-
-    case postfixDotID:
-    case postfixDotIDExpr:
-    case postfixDotIDNoExpr:
-    case postfixSafeDotID:
-    case postfixSafeDotIDExpr:
-    case postfixSafeDotIDNoExpr:
-        //figure all this shit out
-        //at this point might not need the intital part???
-
-    case funcBody:
-        //treat like return value??
-        //ASSIGNMENT expression
+        node->onTrue = node->kids[2]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        node->onFalse = node->follow;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node);
+        }
         break;
 
-    case returnVal:
-    case RETURN:
-        //definlty need this shit
+    case ifElse:
+    case ifElseIf:
+        node->onTrue = node->kids[2]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        node->onFalse = node->kids[4]->first;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node->kids[4]);
+        }
+        break;
+
+    case elvis:
+        //true is when the value isn't null, might change latter
+        node->onTrue = node->kids[0]->first;
+        if(node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        //false is the alternate value, might change latter
+        node->onFalse = node->kids[1]->first;
+        if(node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node->kids[4]);
+        }
         break;
 
     default:
         break;
-    }
-
-    for(int i = 0; i < node->kids; i++) //might need to go first
-    {
-        assignFollow(node->kids[i]);
     }
 }
 
