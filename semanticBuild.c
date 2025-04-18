@@ -377,9 +377,9 @@ int checkNullability(struct tree *root)
                 symError = 1;
             }
         }
-        else if (root->kids[1]->nkids != 0)
+        else // Expression checking
         {
-            if (lookForNullables(root) == 1)
+            if (lookForNullables(root->kids[1]) == 1)
             {
                 fprintf(stderr, "Error | Dangerous to use a nullable type in an expression.\n");
                 symError = 3;
@@ -448,7 +448,6 @@ int lookForNullables(struct tree *node)
     if (node->nkids == 0 && node->leaf->category == IDENTIFIER)
     {
         struct symEntry *temp = inZaWorldo(node->table, node->leaf->text);
-        printf("BANG %d %s\n", temp->nullable, temp->name);
         if (temp == NULL)
         {
             fprintf(stderr, "Arrow through into the knee! Identifier was not found.");
