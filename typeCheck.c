@@ -22,18 +22,18 @@ void typeCheck(struct tree *node)
 {
     struct symEntry *entry;
 
-    //base case
-    if(node == NULL)
+    // base case
+    if (node == NULL)
     {
         return;
     }
 
-    for(int i = 0; i < node->nkids; i++)
+    for (int i = 0; i < node->nkids; i++)
     {
         typeCheck(node->kids[i]);
     }
 
-    if(node->nkids == 0)
+    if (node->nkids == 0)
     {
         leafExpression(node);
         return;
@@ -49,13 +49,13 @@ void typeCheck(struct tree *node)
         switch (node->kids[0]->type->basicType)
         {
         case INT_TYPE:
-            node->type = alcType(INT_TYPE); //type.c
+            node->type = alcType(INT_TYPE); // type.c
             break;
         case DOUBLE_TYPE:
-            node->type = alcType(DOUBLE_TYPE); //type.c
+            node->type = alcType(DOUBLE_TYPE); // type.c
             break;
         case CHAR_TYPE:
-            node->type = alcType(CHAR_TYPE); //type.c
+            node->type = alcType(CHAR_TYPE); // type.c
         default:
             typeError("Postfix ++ and -- operators can only be applied to types: Int, Double, Char", node);
             break;
@@ -64,7 +64,7 @@ void typeCheck(struct tree *node)
     // function call
     case postfixNoExpr:
         entry = returnType(node->kids[0]);
-        if(entry->type->u.func.numParams !=0)
+        if (entry->type->u.func.numParams != 0)
         {
             typeError("Function call missing arguments", node);
         }
@@ -72,7 +72,7 @@ void typeCheck(struct tree *node)
     case postfixExpr:
         paramTypeCheck(node->kids[0], node->kids[1]);
         break;
-    //built in stuff, don't deal with safety here
+    // built in stuff, don't deal with safety here
     case postfixDotID:
         checkImport(node->kids[0], node->kids[2]);
         node->type = copyType(node->kids[2]->type);
@@ -83,15 +83,15 @@ void typeCheck(struct tree *node)
         break;
     case postfixDotIDExpr:
         checkImport(node->kids[0], node->kids[2]);
-        paramTypeCheck(node->kids[2], node->kids[3]); 
+        paramTypeCheck(node->kids[2], node->kids[3]);
     case postfixSafeDotIDExpr:
         checkImport(node->kids[0], node->kids[3]);
-        paramTypeCheck(node->kids[3], node->kids[4]); 
+        paramTypeCheck(node->kids[3], node->kids[4]);
         break;
     case postfixDotIDNoExpr:
         checkImport(node->kids[0], node->kids[2]);
         entry = returnType(node->kids[2]);
-        if(entry->type->u.func.numParams !=0)
+        if (entry->type->u.func.numParams != 0)
         {
             typeError("Function call missing arguments", node);
         }
@@ -99,21 +99,21 @@ void typeCheck(struct tree *node)
     case postfixSafeDotIDNoExpr:
         checkImport(node->kids[0], node->kids[3]);
         entry = returnType(node->kids[3]);
-        if(entry->type->u.func.numParams !=0)
+        if (entry->type->u.func.numParams != 0)
         {
             typeError("Function call missing arguments", node);
         }
         break;
 
-    //assigment
+    // assigment
     case assignment:
     case arrayAssignment:
         // typeMagicAssign(node->kids[0], node->kids[1]);
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        if (!typeEquals(node->kids[0]->type, node->kids[1]->type) && node->kids[1]->type->basicType != NULL_TYPE)
         {
             typeError("Types must match for assigmnet", node);
         }
-        node->type = copyType(node->kids[0]->type); //typeHelpers.c
+        node->type = copyType(node->kids[0]->type); // typeHelpers.c
         break;
     case assignAdd:
     case arrayAssignAdd:
@@ -124,114 +124,113 @@ void typeCheck(struct tree *node)
         assignSubExpression(node);
         break;
 
-    //statments
+    // statments
     case forStmntWithVars:
-        //might need something different here??? Not sure
+        // might need something different here??? Not sure
     case forStmnt:
         forStatement(node);
         break;
     case whileStmntCtrlBody:
     case whileStmnt:
-        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("While condition must be of type Boolean", node);
         }
         break;
     case doWhileStmnt:
-        if(!typeEquals(node->kids[3]->type, booleanType_ptr))
+        if (!typeEquals(node->kids[3]->type, booleanType_ptr))
         {
             typeError("While condition must be of type Boolean", node);
         }
         break;
 
-    //need ifs
+    // need ifs
     case emptyIf:
     case if_k:
-        if(ifAssigned(node))
+        if (ifAssigned(node))
         {
-            if(node->kids[2]->type == NULL)
+            if (node->kids[2]->type == NULL)
             {
                 typeError("When assigned if statment bodies must be expressions", node);
             }
-            node->type = copyType(node->kids[2]->type); //typeHelpers.c
+            node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
-        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
         }
         break;
     case ifElse:
     case ifElseIf:
-        if(ifAssigned(node))
+        if (ifAssigned(node))
         {
-            if(node->kids[2]->type == NULL)
+            if (node->kids[2]->type == NULL)
             {
                 typeError("When assigned if statment bodies must be expressions", node);
             }
-            if(node->kids[4]->type == NULL)
+            if (node->kids[4]->type == NULL)
             {
                 typeError("When assigned if statment bodies must be expressions", node);
             }
-            if(!typeEquals(node->kids[2]->type, node->kids[4]->type))
+            if (!typeEquals(node->kids[2]->type, node->kids[4]->type))
             {
                 typeError("When assigned if statment bodies must have matching types", node);
             }
-            node->type = copyType(node->kids[2]->type); //typeHelpers.c
+            node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
-        if(!typeEquals(node->kids[1]->type, booleanType_ptr))
+        if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
         }
         break;
     case blockStmnts:
     case statement:
-        node->type = copyType(node->kids[0]->type); //typeHelpers.c
+        node->type = copyType(node->kids[0]->type); // typeHelpers.c
         break;
     case disj:
     case conj: // Changed kids[0] && kids[0] to kids[0] && kids[1]
-        if(!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
+        if (!(typeEquals(node->kids[0]->type, booleanType_ptr) && typeEquals(node->kids[1]->type, booleanType_ptr)))
         {
             typeError("|| and && operators must have arguments of type Boolean", node);
         }
-        node->type = alcType(BOOL_TYPE); //type.c
+        node->type = alcType(BOOL_TYPE); // type.c
         break;
     case equal:
     case notEqual:
     case eqeqeq:
     case notEqeqeq:
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        if (!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
             typeError("Equality operators must have arguments of the same type", node);
         }
-        node->type = alcType(BOOL_TYPE); //type.c
+        node->type = alcType(BOOL_TYPE); // type.c
         break;
     case less:
     case greater:
     case lessEqual:
     case greaterEqual:
-        if(!typeEquals(node->kids[0]->type, node->kids[1]->type))
+        if (!typeEquals(node->kids[0]->type, node->kids[1]->type))
         {
-            if(!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr))
-                    && !(typeEquals(node->kids[1]->type, integerType_ptr) && typeEquals(node->kids[1]->type, doubleType_ptr)))
+            if (!(typeEquals(node->kids[0]->type, integerType_ptr) && typeEquals(node->kids[0]->type, doubleType_ptr)) && !(typeEquals(node->kids[1]->type, integerType_ptr) && typeEquals(node->kids[1]->type, doubleType_ptr)))
             {
                 typeError("Comparison operators must have arguments of the same type or one Int and one Double arugment", node);
             }
         }
-        if(typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, returnUnitType_ptr))
+        if (typeEquals(node->kids[0]->type, arrayAnyType_ptr) || typeEquals(node->kids[0]->type, returnUnitType_ptr))
         {
             typeError("Cannot compare Array or Unit types", node);
         }
-        node->type = alcType(BOOL_TYPE); //type.c
+        node->type = alcType(BOOL_TYPE); // type.c
         break;
     case in:
         inExpression(node);
         break;
     case range:
-        if(!typeEquals(node->kids[0]->type, integerType_ptr))
+        if (!typeEquals(node->kids[0]->type, integerType_ptr))
         {
             typeError("Range must be of type Int", node);
         }
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Range types must match", node);
         }
@@ -240,11 +239,11 @@ void typeCheck(struct tree *node)
         node->type->u.range.until = 0;
         break;
     case rangeUntil:
-        if(!typeEquals(node->kids[0]->type, integerType_ptr))
+        if (!typeEquals(node->kids[0]->type, integerType_ptr))
         {
             typeError("Range must be of type Int", node);
         }
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Range types must match", node);
         }
@@ -266,46 +265,46 @@ void typeCheck(struct tree *node)
     case arrayAccess:
     case postfixArrayAccess:
     case arrayIndex:
-        if(node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
+        if (node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
         {
             typeError("Array access must be performed on an array", node);
             break;
         }
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Must use Int to determine the index of array element", node);
             break;
         }
-        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType);  //type.c
+        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType); // type.c
         break;
     case propDecAssign:
-        if(!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type))
+        if (!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type) && node->kids[2]->type->basicType != NULL_TYPE)
         {
             typeError("Types must match for assigmnet", node);
         }
         break;
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
-        if(!typeEquals(node->kids[2]->kids[0]->type, node->kids[3]->type))
+        if (!typeEquals(node->kids[2]->kids[0]->type, node->kids[3]->type))
         {
             typeError("Types must match for assigmnet", node);
         }
         break;
     case propDecAll:
-        if(!typeEquals(node->kids[3]->kids[0]->type, node->kids[4]->type))
+        if (!typeEquals(node->kids[3]->kids[0]->type, node->kids[4]->type))
         {
             typeError("Types must match for assigmnet", node);
         }
         break;
     case funcValParamAssign:
-        if(!typeEquals(node->kids[0]->kids[0]->type, node->kids[1]->type))
+        if (!typeEquals(node->kids[0]->kids[0]->type, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
         }
         break;
 
     case funcBody:
-        if(!typeEquals(node->parent->kids[1]->type->u.func.returnType, node->kids[1]->type))
+        if (!typeEquals(node->parent->kids[1]->type->u.func.returnType, node->kids[1]->type))
         {
             typeError("Types must match for assigmnet", node);
         }
@@ -315,32 +314,43 @@ void typeCheck(struct tree *node)
         returnCheck(node, node->kids[1]->type);
         break;
     case RETURN:
-        returnCheck(node, unitType_ptr);    
+        returnCheck(node, unitType_ptr);
 
     case arrayDecValueless:
-        if(!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
+        if (!typeEquals(node->kids[1]->kids[0]->type, arrayAnyType_ptr))
         {
             typeError("Cannot assign Array to non-Array variable", node);
         }
         break;
     case arrayDecEqualValueless:
-        if (node->kids[1]->kids[0]->type->u.array.elemType->basicType != node->kids[3]->type->basicType){
+        if (node->kids[1]->kids[0]->type->u.array.elemType->basicType != node->kids[3]->type->basicType)
+        {
             typeError("Arrays are assigned to conflicting types of arrays.", node);
-        } else if (strcmp(node->kids[2]->leaf->text, "Array")){
+        }
+        else if (strcmp(node->kids[2]->leaf->text, "Array"))
+        {
             typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", node); // TODO Fix this
         }
         break;
     case arrayDec:
         arrayDeclaration(node, node->kids[3]->kids[1]);
         break;
-    case arrayDecEqual: 
+    case arrayDecEqual:
         arrayDeclaration(node, node->kids[5]->kids[1]);
         break;
-    
-    case arraySizeIdent: 
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+
+    case arraySizeIdent:
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Array size must be of type Int", node);
+        }
+        break;
+
+    case elvis:
+        if ((!typeEquals(node->kids[0]->type, node->kids[1]->type)))
+        {
+            if (!(node->kids[1]->nkids == 0 && node->kids[1]->leaf->category == NULL_K))
+                typeError("Elvis expressions MUST share the same type!", node);
         }
         break;
 
@@ -381,29 +391,29 @@ int ifAssigned(struct tree *node)
  *
  * @param node
  */
-struct symEntry *returnType(struct tree *node) //change to identifier node
+struct symEntry *returnType(struct tree *node) // change to identifier node
 {
-    struct symTab *scope = node->table; //symTab.h
-    struct symEntry *entry = NULL;      //symTab.h
+    struct symTab *scope = node->table; // symTab.h
+    struct symEntry *entry = NULL;      // symTab.h
     int found = 0;
-    while(scope->parent != rootScope && found == 0)
-    {   
+    while (scope->parent != rootScope && found == 0)
+    {
         printf("scope: %s\n", scope->name);
-        entry = contains(scope, node->leaf->text); //symTab.h
-        if(entry != NULL)
+        entry = contains(scope, node->leaf->text); // symTab.h
+        if (entry != NULL)
         {
             node->parent->type = entry->type->u.func.returnType;
             found = 1;
         }
     }
 
-    entry = contains(rootScope, node->leaf->text); //symTab.h
-    if(entry != NULL)
+    entry = contains(rootScope, node->leaf->text); // symTab.h
+    if (entry != NULL)
     {
         node->parent->type = entry->type->u.func.returnType;
         found = 1;
     }
-    if(found == 0)
+    if (found == 0)
     {
         typeError("Function not found", node);
         exit(3);
@@ -418,16 +428,19 @@ struct symEntry *returnType(struct tree *node) //change to identifier node
  */
 void paramTypeCheck(struct tree *id, struct tree *exprList)
 {
-    if (strcmp(id->leaf->text, "print") == 0 || strcmp(id->leaf->text, "println") == 0) {
+    if (strcmp(id->leaf->text, "print") == 0 || strcmp(id->leaf->text, "println") == 0)
+    {
         return;
     }
     // Check if import function has the correct number of parameters
     int expectedCount = getImportParamCount(id->leaf->text);
-    if (expectedCount >= 0) {
+    if (expectedCount >= 0)
+    {
         // It's a recognized library/import function
         // -> Just check argument count
         int actualCount = countExprList(exprList);
-        if (actualCount != expectedCount) {
+        if (actualCount != expectedCount)
+        {
             char msg[128];
             snprintf(msg, sizeof(msg),
                      "Function '%s' expects %d argument(s), but got %d",
@@ -436,7 +449,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
         }
         return;
     }
-    
+
     struct symEntry *entry = returnType(id);
     // struct tree *exprList = node->kids[1];
     struct param *paramList = id->type->u.func.parameters;
@@ -475,7 +488,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
 
 /**
  * @brief Checks that an imported function or variable exists and has been imported
- * 
+ *
  * @param import
  * @param name
  */
@@ -488,12 +501,14 @@ void checkImport(struct tree *import, struct tree *element)
     char *importName = import->leaf->text;
     char *elementName = element->leaf->text;
 
-    if(!contains(rootScope, importName)) {
+    if (!contains(rootScope, importName))
+    {
         typeError("Imported function not found", import);
         return;
     }
 
-    if(!contains(rootScope, elementName)) {
+    if (!contains(rootScope, elementName))
+    {
         typeError("Imported function not found", element);
         return;
     }
@@ -565,30 +580,30 @@ void leafExpression(struct tree *node)
 {
     switch (node->prodrule)
     {
-    //literal base cases
+    // literal base cases
     case INTEGER_LITERAL:
     case HEX_LITERAL:
-        node->type = alcType(INT_TYPE); //type.c
+        node->type = alcType(INT_TYPE); // type.c
         break;
     case CHARACTER_LITERAL:
-        node->type = alcType(CHAR_TYPE); //type.c
+        node->type = alcType(CHAR_TYPE); // type.c
         break;
     case REAL_LITERAL:
-        node->type = alcType(DOUBLE_TYPE); //type.c
+        node->type = alcType(DOUBLE_TYPE); // type.c
         break;
     case TRUE:
     case FALSE:
-        node->type = alcType(BOOL_TYPE); //type.c
+        node->type = alcType(BOOL_TYPE); // type.c
         break;
     case NULL_K:
-        node->type = alcType(NULL_TYPE); //type.c
+        node->type = alcType(NULL_TYPE); // type.c
         break;
     case LINE_STRING:
     case MULTILINE_STRING:
-        node->type = alcType(STRING_TYPE); //type.c
+        node->type = alcType(STRING_TYPE); // type.c
         break;
 
-    //variable base case, Moved to another function this would infinitely loop.
+    // variable base case, Moved to another function this would infinitely loop.
     case IDENTIFIER:
         // break;
     default:
@@ -610,24 +625,24 @@ void assignAddExpression(struct tree *node)
         {
             typeError("Int += x, x must be type Int", node);
         }
-        node->type = alcType(INT_TYPE); //type.c
+        node->type = alcType(INT_TYPE); // type.c
         break;
     case DOUBLE_TYPE:
         if (!(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr)))
         {
             typeError("Double += x, x must be type Int or Double", node);
         }
-        node->type = alcType(DOUBLE_TYPE); //type.c
+        node->type = alcType(DOUBLE_TYPE); // type.c
         break;
     case CHAR_TYPE:
         if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Char += x, x must be type Int", node);
         }
-        node->type = alcType(CHAR_TYPE); //type.c
+        node->type = alcType(CHAR_TYPE); // type.c
         break;
     case STRING_TYPE:
-        node->type = alcType(STRING_TYPE); //type.c
+        node->type = alcType(STRING_TYPE); // type.c
         break;
     case ARRAY_TYPE:
         switch (node->kids[1]->type->basicType)
@@ -635,7 +650,7 @@ void assignAddExpression(struct tree *node)
         case INT_TYPE:
             if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -645,7 +660,7 @@ void assignAddExpression(struct tree *node)
         case DOUBLE_TYPE:
             if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -655,7 +670,7 @@ void assignAddExpression(struct tree *node)
         case CHAR_TYPE:
             if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -665,7 +680,7 @@ void assignAddExpression(struct tree *node)
         case STRING_TYPE:
             if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -675,7 +690,7 @@ void assignAddExpression(struct tree *node)
         case BOOL_TYPE:
             if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -685,7 +700,7 @@ void assignAddExpression(struct tree *node)
         case ARRAY_TYPE:
             if (typeEquals(node->kids[0]->type, node->kids[1]->type))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -716,25 +731,25 @@ void assignSubExpression(struct tree *node)
     switch (node->kids[0]->type->basicType)
     {
     case INT_TYPE:
-        if(!typeEquals(node->kids[1]->type, integerType_ptr))
+        if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Int -= x, x must be type Int", node);
         }
-        node->type = alcType(INT_TYPE); //type.c
+        node->type = alcType(INT_TYPE); // type.c
         break;
     case DOUBLE_TYPE:
         if (!(typeEquals(node->kids[1]->type, integerType_ptr) || typeEquals(node->kids[1]->type, doubleType_ptr)))
         {
             typeError("Double -= x, x must be type Int or Double", node);
         }
-        node->type = alcType(DOUBLE_TYPE); //type.c
+        node->type = alcType(DOUBLE_TYPE); // type.c
         break;
     case CHAR_TYPE:
         if (!typeEquals(node->kids[1]->type, integerType_ptr))
         {
             typeError("Char += x, x must be type Int", node);
         }
-        node->type = alcType(CHAR_TYPE); //type.c
+        node->type = alcType(CHAR_TYPE); // type.c
         break;
     default:
         typeError("The -= operator can only be used with types Int, Double, and Char", node);
@@ -896,7 +911,7 @@ void addExpression(struct tree *node)
         case INT_TYPE:
             if (typeEquals(node->kids[0]->type, arrayIntegerType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -906,7 +921,7 @@ void addExpression(struct tree *node)
         case DOUBLE_TYPE:
             if (typeEquals(node->kids[0]->type, arrayDoubleType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -916,7 +931,7 @@ void addExpression(struct tree *node)
         case CHAR_TYPE:
             if (typeEquals(node->kids[0]->type, arrayCharType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -926,7 +941,7 @@ void addExpression(struct tree *node)
         case STRING_TYPE:
             if (typeEquals(node->kids[0]->type, arrayStringType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -936,7 +951,7 @@ void addExpression(struct tree *node)
         case BOOL_TYPE:
             if (typeEquals(node->kids[0]->type, arrayBooleanType_ptr))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -946,7 +961,7 @@ void addExpression(struct tree *node)
         case ARRAY_TYPE:
             if (typeEquals(node->kids[0]->type, node->kids[1]->type))
             {
-                node->type = copyType(node->kids[0]->type); //typeHelpers.c
+                node->type = copyType(node->kids[0]->type); // typeHelpers.c
             }
             else
             {
@@ -1073,15 +1088,15 @@ void multaplicativeExpression(struct tree *node)
  */
 void returnCheck(struct tree *node, struct typeInfo *type)
 {
-    while(node->parent != NULL)
-    {   
+    while (node->parent != NULL)
+    {
         switch (node->prodrule)
         {
         case funcDecAll:
         case funcDecParamBody:
         case funcDecTypeBody:
         case funcDecBody:
-            if(!typeEquals(node->kids[1]->type->u.func.returnType, type))
+            if (!typeEquals(node->kids[1]->type->u.func.returnType, type))
             {
                 typeError("Return type does not match", node);
             }
@@ -1102,32 +1117,34 @@ void returnCheck(struct tree *node, struct typeInfo *type)
 void arrayDeclaration(struct tree *ident, struct tree *exprList)
 {
 
-
-    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType){
+    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType)
+    {
         typeError("Arrays are assigned to conflicting types of arrays.", ident);
-    } else if (strcmp(ident->kids[2]->leaf->text, "Array")){
+    }
+    else if (strcmp(ident->kids[2]->leaf->text, "Array"))
+    {
         typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
     }
 
-    if(exprList->prodrule != expressionList)
+    if (exprList->prodrule != expressionList)
     {
-        if(!typeEquals(ident->type->u.array.elemType, exprList->type))
+        if (!typeEquals(ident->type->u.array.elemType, exprList->type))
         {
             typeError("Array elements must match array type", ident);
         }
     }
     else
     {
-        while(1)
+        while (1)
         {
-            if(!typeEquals(ident->type->u.array.elemType, exprList->kids[0]->type))
+            if (!typeEquals(ident->type->u.array.elemType, exprList->kids[0]->type))
             {
                 typeError("Array elements must match array type", ident);
             }
             exprList = exprList->kids[1];
-            if(exprList->prodrule != expressionList)
+            if (exprList->prodrule != expressionList)
             {
-                if(!typeEquals(ident->type->u.array.elemType, exprList->type))
+                if (!typeEquals(ident->type->u.array.elemType, exprList->type))
                 {
                     typeError("Array elements must match array type", ident);
                 }
@@ -1138,21 +1155,24 @@ void arrayDeclaration(struct tree *ident, struct tree *exprList)
 }
 /**
  * @brief Does type check handling assignments.
- * 
- * Works like a wizard of type comparisons forced inside a compiler. With 
+ *
+ * Works like a wizard of type comparisons forced inside a compiler. With
  * extra memory leaks
- * 
+ *
  * @param left
  * @param right
- * @return int 
+ * @return int
  */
-int typeMagicAssign(struct tree *left, struct tree *right){
-    if (left->type->basicType == INT_TYPE && right->type->basicType == DOUBLE_TYPE){
+int typeMagicAssign(struct tree *left, struct tree *right)
+{
+    if (left->type->basicType == INT_TYPE && right->type->basicType == DOUBLE_TYPE)
+    {
         right->type = alcType(INT_TYPE);
-    } else if(left->type->basicType == DOUBLE_TYPE && right->type->basicType == INT_TYPE){
+    }
+    else if (left->type->basicType == DOUBLE_TYPE && right->type->basicType == INT_TYPE)
+    {
         right->type = alcType(DOUBLE_TYPE);
     }
 
     return 0;
 }
-
