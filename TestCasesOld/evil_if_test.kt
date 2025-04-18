@@ -7,10 +7,10 @@ fun stdIf() : Int {
         return 1;
     }
 
-    if (1 == 1)
-    {
-        return 1;
-    }
+    // if (1 == 1)
+    // {
+    //     return 1;
+    // }
 
 }
 
@@ -23,13 +23,13 @@ fun ifelse() : Int {
     }
 
 
-    if (1 == 1)
-    {
-        return 1;
-    } 
-    else {
-        return 1;
-    }
+    // if (1 == 1)
+    // {
+    //     return 1;
+    // } 
+    // else {
+    //     return 1;
+    // }
 
 
     if (1 == 1){

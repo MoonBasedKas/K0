@@ -12,6 +12,7 @@
 
 int lasttoken = 0;
 int savedtoken = 0;
+int extrasaved = 0;
 
 // prints error for unsupported keywords
 void unsupportedKeyword()
@@ -344,27 +345,35 @@ int addSemi()
     }
 }
 
+/**
+ * @brief Wrapper for yylex
+ * 
+ * TODO: prevent curl failures.
+ * 
+ * @return int 
+ */
 int yylex2()
 {
-    savedtoken = lasttoken;
-    if (savedtoken == 0) savedtoken = yylex();
     lasttoken = yylex();
+    
 
     if (savedtoken == SEMICOLON){
+        printf("Bang\n");
         switch (lasttoken)
         {
-        case ELSE:
-            /* code */
-            return lasttoken;
-            break;
+            case ELSE:
+                printf("Else\n");
+                return lasttoken;
+                break;
 
-        case RCURL:
-            return lasttoken;
-            break;
-        
-        default:
-            break;
+            case LCURL:
+            printf("CURL\n");
+                return lasttoken;
+                break;
+            
+            default:
+                break;
         }
     }
-    return savedtoken;
+    return savedtoken = lasttoken;
 }
