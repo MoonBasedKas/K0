@@ -30,6 +30,7 @@ int multiLineString(int code);
 int addSemi();
 char *removeUnderscores();
 int freeTokens(int targets, ...);
+int yylex2();
 
 struct token {
    int category;   /* the integer code returned by yylex */

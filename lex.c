@@ -10,9 +10,8 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
-int lasttoken = NULL;
-int savedtoken = NULL;
-int evil_semi = 0;
+int lasttoken = 0;
+int savedtoken = 0;
 
 // prints error for unsupported keywords
 void unsupportedKeyword()
@@ -347,4 +346,25 @@ int addSemi()
 
 int yylex2()
 {
+    savedtoken = lasttoken;
+    if (savedtoken == 0) savedtoken = yylex();
+    lasttoken = yylex();
+
+    if (savedtoken == SEMICOLON){
+        switch (lasttoken)
+        {
+        case ELSE:
+            /* code */
+            return lasttoken;
+            break;
+
+        case RCURL:
+            return lasttoken;
+            break;
+        
+        default:
+            break;
+        }
+    }
+    return savedtoken;
 }
