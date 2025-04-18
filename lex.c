@@ -10,9 +10,9 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
-int lasttoken = 0;
+int futureToken = 0;
 int savedtoken = 0;
-int extrasaved = 0;
+int evilSemi = 0;
 
 // prints error for unsupported keywords
 void unsupportedKeyword()
@@ -315,65 +315,58 @@ int addSemi()
         return 0; // Null
     switch (nextToken->category)
     {
-    case INTEGER_LITERAL:
-    case HEX_LITERAL:
-    case REAL_LITERAL:
-    case CHARACTER_LITERAL:
-    case IDENTIFIER:
-    case LINE_STRING:
-    case BREAK:
-    case CONTINUE:
-    case RETURN:
-    case MULTILINE_STRING:
-    case INCR:
-    case DECR:
-    case RSQUARE:
-    case RPAREN:
-    case RCURL:
-    case BYTE:
-    case INT:
-    case DOUBLE:
-    case CHAR:
-    case STRING:
-    case TRUE:
-    case FALSE:
-    case NULL_K:
-        yytext = ";";
-        return 1; // True
-    default:
-        return 0; // False
+        case INTEGER_LITERAL:
+        case HEX_LITERAL:
+        case REAL_LITERAL:
+        case CHARACTER_LITERAL:
+        case IDENTIFIER:
+        case LINE_STRING:
+        case BREAK:
+        case CONTINUE:
+        case RETURN:
+        case MULTILINE_STRING:
+        case INCR:
+        case DECR:
+        case RSQUARE:
+        case RPAREN:
+        case RCURL:
+        case BYTE:
+        case INT:
+        case DOUBLE:
+        case CHAR:
+        case STRING:
+        case TRUE:
+        case FALSE:
+        case NULL_K:
+            yytext = ";";
+            return 1; // True
+        default:
+            return 0; // False
     }
 }
 
 /**
  * @brief Wrapper for yylex
  * 
- * TODO: prevent curl failures.
+ * TODO: Need to have a way to check past and future.
  * 
  * @return int 
  */
 int yylex2()
 {
-    lasttoken = yylex();
-    
-
+    futureToken = yylex();
+    evilSemi = addSemi();
     if (savedtoken == SEMICOLON){
-        printf("Bang\n");
-        switch (lasttoken)
+        switch (futureToken)
         {
             case ELSE:
-                printf("Else\n");
-                return lasttoken;
-                break;
-
             case LCURL:
-            printf("CURL\n");
-                return lasttoken;
-                break;
-            
-            default:
-                break;
+                savedtoken = futureToken;
+                futureToken = yylex();
+
+                return savedtoken;
         }
     }
-    return savedtoken = lasttoken;
+    savedtoken = futureToken;
+    return savedtoken;
 }
