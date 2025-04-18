@@ -55,6 +55,12 @@ void basicBlocks(struct tree *node)
         basicBlocks(node->kids[i]);
     }
 
+    if(node->icodeDone == 0)
+    {
+        node->parent->icodeDone = 0;
+        return;
+    }
+
     switch (node->prodrule)
     {
     case propDecAssign:
@@ -106,6 +112,8 @@ void basicBlocks(struct tree *node)
         break;
 
     //are we doing short circuting??
+    //YES this needs to move then
+    //TOD)
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), //tac.c
@@ -267,8 +275,9 @@ void basicBlocks(struct tree *node)
     case funcBody:
     case returnVal:
     case RETURN:
-        break;;
-
+        node->icodeDone = 0;
+        node->parent->icodeDone = 0;
+        break;
     default:
         if(node->nkids == 0)
         {
@@ -290,15 +299,9 @@ void assignFirst(struct tree *node)
         assignFirst(node->kids[i]);
     }
 
-    //if this node has icode and the parent doesn't then the parent has control flow stuff
-    //so its first child needs a first label
-    //might also give labels to other children if they have the same prodrule as first child
-    if(node->icode != NULL && node->parent->icode == NULL)
+    if(node->icode != NULL && node->icodeDone == 1 && node->parent->icodeDone == 0)
     {
-        if(node->prodrule == node->parent->kids[0]->prodrule)
-        {
-            node->first = genLabel(); //tac.c
-        }
+        node->first = genLabel(); //tac.c
     }
 
     //do i need more than this??
@@ -313,25 +316,29 @@ void assignFollow(struct tree *node)
     {
     case forStmntWithVars:
     case forStmnt:
+        //TODO
 
     case whileStmntCtrlBody:
     case whileStmnt:
     case doWhileStmnt:
+        //TODO
 
     //need to do speceal something for assignment ifs???
     case emptyIf:
     case if_k:
     case ifElse:
     case ifElseIf:
-
-    //took out whens
+        //TODO
+   
 
     case elvis:
-    //i think this goes here
-    //idk tho
+        //TODO
+        //i think this goes here
+        //idk tho
 
     case postfixExpr:
     case postfixNoExpr:
+        //TODO
         //function call
         //figrue that shit out
 
@@ -341,16 +348,19 @@ void assignFollow(struct tree *node)
     case postfixSafeDotID:
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
+        //TODO
         //figure all this shit out
         //at this point might not need the intital part???
 
     case funcBody:
+        //TODO
         //treat like return value??
         //ASSIGNMENT expression
         break;
 
     case returnVal:
     case RETURN:
+        //TODO
         //definlty need this shit
         break;
 
@@ -401,6 +411,7 @@ void assignOnTrueFalse(struct tree *node)
         break;
     case whileStmnt:
         //how does this one work??? IDK
+        //TODO
         break;
     case doWhileStmnt:
         node->onTrue = node->kids[1]->first;
@@ -473,6 +484,7 @@ void control(struct tree *node)
     {
     case forStmntWithVars:
     case forStmnt:
+        //TODO
         //how do this??
         //for range, if > min and < max and store val
         //idk what to do for array
@@ -482,6 +494,7 @@ void control(struct tree *node)
     case whileStmntCtrlBody:
     case whileStmnt:
     case doWhileStmnt:
+        //TODO
 
     //need to do speceal something for assignment ifs???
     //YES
@@ -490,15 +503,16 @@ void control(struct tree *node)
     case if_k:
     case ifElse:
     case ifElseIf:
-
-    //took out whens
+        //TODO
 
     case elvis:
+        //TOOD
     //i think this goes here
     //idk tho
 
     case postfixExpr:
     case postfixNoExpr:
+        //TODO
         //function call
         //figrue that shit out
 
@@ -508,16 +522,19 @@ void control(struct tree *node)
     case postfixSafeDotID:
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
+        //TODO
         //figure all this shit out
         //at this point might not need the intital part???
 
     case funcBody:
+        //TODO
         //treat like return value??
         //ASSIGNMENT expression
         break;
 
     case returnVal:
     case RETURN:
+        //TODO
         //definlty need this shit
         break;
 

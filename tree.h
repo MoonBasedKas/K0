@@ -20,6 +20,7 @@ struct tree
     struct addr *follow;
     struct addr *onTrue;
     struct addr *onFalse;
+    int icodeDone;
     struct symTab *table; // Scope that the node exists within.
 };
 
