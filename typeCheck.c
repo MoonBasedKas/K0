@@ -346,6 +346,14 @@ void typeCheck(struct tree *node)
         }
         break;
 
+    case elvis:
+        if ((!typeEquals(node->kids[0]->type, node->kids[1]->type)))
+        {
+            if (!(node->kids[1]->nkids == 0 && node->kids[1]->leaf->category == NULL_K))
+                typeError("Elvis expressions MUST share the same type!", node);
+        }
+        break;
+
     default:
         break;
     }
