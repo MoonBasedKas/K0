@@ -379,9 +379,9 @@ int checkNullability(struct tree *root)
         }
         else // Expression checking
         {
-            if (lookForNullables(root->kids[1]) == 1)
+            if (hermitPurple(root->kids[1]) == 1)
             {
-                fprintf(stderr, "Error | Dangerous to use a nullable type in an expression.\n");
+                fprintf(stderr, "Error: %d | Null Safety violation.\n", root->kids[0]->leaf->lineno);
                 symError = 3;
             }
         }
@@ -406,6 +406,14 @@ int checkNullability(struct tree *root)
             { // Not nullable is BAD
                 fprintf(stderr, "Error line %d | %s is not nullable but the expression computed null.\n", root->kids[0]->leaf->lineno, root->kids[0]->leaf->text);
                 symError = 1;
+            }
+        }
+        else // Expression checking
+        {
+            if (hermitPurple(root->kids[2]) == 1)
+            {
+                fprintf(stderr, "Error: %d | Null Safety violation.\n", root->kids[0]->leaf->lineno);
+                symError = 3;
             }
         }
         break;
@@ -442,7 +450,7 @@ int checkNullability(struct tree *root)
  * @param node
  * @return int
  */
-int lookForNullables(struct tree *node)
+int hermitPurple(struct tree *node)
 {
     int result = 0;
     if (node->nkids == 0 && node->leaf->category == IDENTIFIER)
@@ -458,11 +466,24 @@ int lookForNullables(struct tree *node)
             return 1;
         }
     }
-    if (node->prodrule == elvis)
-        return lookForNullables(node->kids[1]) || result;
-    for (int i = 0; i < node->nkids; i++)
+    else if (node->nkids == 0 && node->leaf->category == NULL_K)
     {
-        return result || lookForNullables(node->kids[i]);
+
+        return 1;
+    }
+
+    if (node->prodrule == elvis)
+    {
+
+        result = hermitPurple(node->kids[1]) || result;
+    }
+    else
+    {
+
+        for (int i = 0; i < node->nkids; i++)
+        {
+            return result || hermitPurple(node->kids[i]);
+        }
     }
     return result;
 }
