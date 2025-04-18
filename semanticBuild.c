@@ -450,7 +450,7 @@ int lookForNullables(struct tree *node)
         struct symEntry *temp = inZaWorldo(node->table, node->leaf->text);
         if (temp == NULL)
         {
-            fprintf(stderr, "Arrow through into the knee! Identifier was not found.");
+            fprintf(stderr, "Arrow through into the knee! Identifier %s was not found.", node->leaf->text);
             exit(3);
         }
         if (temp->nullable != 0)
@@ -458,8 +458,12 @@ int lookForNullables(struct tree *node)
             return 1;
         }
     }
+    if (node->prodrule == elvis)
+        return lookForNullables(node->kids[1]) || result;
     for (int i = 0; i < node->nkids; i++)
+    {
         return result || lookForNullables(node->kids[i]);
+    }
     return result;
 }
 

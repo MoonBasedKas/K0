@@ -7,7 +7,7 @@ fun main() {
     var x : Int? = 1
     var y : Int = 2
     var z : Int
-    // z = x 
+    z = x ?: x
     println("Display name: $displayName") // Output: Display name: Guest
 
     // val length: Int? = name?.length ?: null
