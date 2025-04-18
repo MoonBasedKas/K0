@@ -3,6 +3,7 @@
     #include "lex.h"
     #include "tree.h"
     #include "symNonTerminals.h"
+    #define yylex yylex2()
 
     #define YYDEBUG 1
 %}

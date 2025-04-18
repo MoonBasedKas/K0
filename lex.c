@@ -10,27 +10,31 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
-//prints error for unsupported keywords
+int lasttoken = NULL;
+int savedtoken = NULL;
+int evil_semi = 0;
+
+// prints error for unsupported keywords
 void unsupportedKeyword()
 {
-	fprintf(stderr, "File: %s Line:%d The keyword %s is not supported by k0\n", filename, rows, yytext);
+    fprintf(stderr, "File: %s Line:%d The keyword %s is not supported by k0\n", filename, rows, yytext);
     exit(1);
 }
 
-//prints error for unsupported operators
+// prints error for unsupported operators
 void unsupportedOperator()
 {
-	fprintf(stderr, "File: %s Line:%d The operator %s is not supported by k0\n", filename, rows, yytext);
+    fprintf(stderr, "File: %s Line:%d The operator %s is not supported by k0\n", filename, rows, yytext);
     exit(1);
 }
 
-//counts the number of newlines in yytext and adds them to rows
-//used with multiline comments and strings
+// counts the number of newlines in yytext and adds them to rows
+// used with multiline comments and strings
 void countNewLines()
 {
-    for(int i = 0; i < strlen(yytext); i++)
+    for (int i = 0; i < strlen(yytext); i++)
     {
-        if(yytext[i] == '\n')
+        if (yytext[i] == '\n')
         {
             rows++;
         }
@@ -39,48 +43,50 @@ void countNewLines()
 
 /**
  * @brief Frees tokens implied by
- * 
- * @param targets 
- * @param ... 
- * @return int 
+ *
+ * @param targets
+ * @param ...
+ * @return int
  */
-int freeTokens(int targets, ...){
+int freeTokens(int targets, ...)
+{
     va_list args;
     struct token *temp;
     va_start(args, targets);
-    for (int i = 0; i < targets; i++) {
-       temp = va_arg(args, struct token *);
-       free(temp->text);
-       free(temp);
+    for (int i = 0; i < targets; i++)
+    {
+        temp = va_arg(args, struct token *);
+        free(temp->text);
+        free(temp);
     }
     va_end(args);
 
     return 0;
 }
 
-//allocates a token struct and fills all fields except literal values
+// allocates a token struct and fills all fields except literal values
 int token(int code)
 {
     prevToken = nextToken;
-    nextToken = (struct token*)malloc(sizeof(struct token));
+    nextToken = (struct token *)malloc(sizeof(struct token));
 
-    if(nextToken == NULL)
+    if (nextToken == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
 
     nextToken->category = code;
-    nextToken->text = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
-    if(nextToken->text == NULL)
+    nextToken->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
+    if (nextToken->text == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
     strcpy(nextToken->text, yytext);
     nextToken->lineno = rows;
-    nextToken->filename = (char*) malloc(sizeof(char) * (strlen(filename) + 1));
-    if(nextToken->filename == NULL)
+    nextToken->filename = (char *)malloc(sizeof(char) * (strlen(filename) + 1));
+    if (nextToken->filename == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -95,7 +101,7 @@ int leaf(int code)
 {
     token(code);
 
-    yylval.treeptr = alctoken(code, nextToken->text, 0); //tree.c
+    yylval.treeptr = alctoken(code, nextToken->text, 0); // tree.c
     yylval.treeptr->leaf = nextToken;
 
     return code;
@@ -125,7 +131,7 @@ int intLiteral(int code)
 int longLiteral(int code)
 {
     int len = strlen(yytext);
-    yytext[len-1] = '\0';
+    yytext[len - 1] = '\0';
     intLiteral(code);
     changeSymbolName("longLiteral");
 
@@ -151,7 +157,7 @@ int hexLiteral(int code)
 int floatLiteral(int code)
 {
     int len = strlen(yytext);
-    yytext[len-1] = '\0';
+    yytext[len - 1] = '\0';
     doubleLiteral(code);
     changeSymbolName("floatLiteral");
 
@@ -180,9 +186,9 @@ int stringLiteral(int code)
     leaf(code);
     changeSymbolName("stringLiteral");
 
-    nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
+    nextToken->sval = (char *)malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
-    if(nextToken->sval == NULL)
+    if (nextToken->sval == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -191,13 +197,13 @@ int stringLiteral(int code)
     char *nextCharLex = nextToken->text;
     char *nextCharLit = nextToken->sval;
 
-    //skip intial "
+    // skip intial "
     nextCharLex++;
 
-    while(*nextCharLex != '"')
+    while (*nextCharLex != '"')
     {
         // if not the start of escape sequence transfer letter
-        if(*nextCharLex != '\\')
+        if (*nextCharLex != '\\')
         {
             *nextCharLit = *nextCharLex;
         }
@@ -244,7 +250,7 @@ int stringLiteral(int code)
         nextCharLit++;
     }
 
-    //don't forget the null character
+    // don't forget the null character
     *nextCharLit = '\0';
 
     return code;
@@ -258,9 +264,9 @@ int multiLineString(int code)
     leaf(code);
     changeSymbolName("multilineStringLiteral");
 
-    nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
+    nextToken->sval = (char *)malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
-    if(nextToken->sval == NULL)
+    if (nextToken->sval == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -271,68 +277,74 @@ int multiLineString(int code)
 
     int len = strlen(nextToken->text);
 
-    //copy string without the triple quotes
-    for(int i = 3; i < len - 3; i++)
+    // copy string without the triple quotes
+    for (int i = 3; i < len - 3; i++)
     {
         *nextCharLit = nextCharLex[i];
         nextCharLit++;
     }
-    //don't forget to close the string
+    // don't forget to close the string
     *nextCharLit = '\0';
-
 
     return code;
 }
 
-char * removeUnderscores()
+char *removeUnderscores()
 {
     char *nextCharLex = nextToken->text;
-    char *nextCharLit = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
+    char *nextCharLit = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
     int i = 0;
-    for(int j = 0; nextCharLex[i] != '\0'; i++)
+    for (int j = 0; nextCharLex[i] != '\0'; i++)
     {
-        if(*nextCharLex == '_')
+        if (*nextCharLex == '_')
         {
             j++;
         }
         else
         {
-            nextCharLit[i] = nextCharLex[j+i];
+            nextCharLit[i] = nextCharLex[j + i];
         }
     }
     nextCharLit[i] = '\0';
     return nextCharLit;
 }
 
-int addSemi(){
-    if (!nextToken) return 0; // Null
-    switch(nextToken->category){
-        case INTEGER_LITERAL:
-        case HEX_LITERAL:
-        case REAL_LITERAL:
-        case CHARACTER_LITERAL:
-        case IDENTIFIER:
-        case LINE_STRING:
-        case BREAK:
-        case CONTINUE:
-        case RETURN:
-        case MULTILINE_STRING:
-        case INCR:
-        case DECR:
-        case RSQUARE:
-        case RPAREN:
-        case RCURL:
-        case BYTE:
-        case INT:
-        case DOUBLE:
-        case CHAR:
-        case STRING:
-        case TRUE:
-        case FALSE:
-        case NULL_K:
-            yytext = ";";
-            return 1; // True
-        default:
-            return 0; // False
+int addSemi()
+{
+    if (!nextToken)
+        return 0; // Null
+    switch (nextToken->category)
+    {
+    case INTEGER_LITERAL:
+    case HEX_LITERAL:
+    case REAL_LITERAL:
+    case CHARACTER_LITERAL:
+    case IDENTIFIER:
+    case LINE_STRING:
+    case BREAK:
+    case CONTINUE:
+    case RETURN:
+    case MULTILINE_STRING:
+    case INCR:
+    case DECR:
+    case RSQUARE:
+    case RPAREN:
+    case RCURL:
+    case BYTE:
+    case INT:
+    case DOUBLE:
+    case CHAR:
+    case STRING:
+    case TRUE:
+    case FALSE:
+    case NULL_K:
+        yytext = ";";
+        return 1; // True
+    default:
+        return 0; // False
     }
+}
+
+int yylex2()
+{
 }
