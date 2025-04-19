@@ -73,20 +73,20 @@ int main(int argc, char *argv[])
         nextInstr = nextInstr->next;
     }
 
-    //fake symbol table
+    // fake symbol table
     struct addr *addrI = genLocal(8);
 
-    //i = 5
+    // i = 5
     {
         struct addr *const5 = malloc(sizeof(struct addr));
         const5->region = R_CONST;
         const5->u.offset = 5;
 
-        struct instr *iAsn = genInstr(O_ASN, addrI, const5, NULL); 
+        struct instr *iAsn = genInstr(O_ASN, addrI, const5, NULL);
         nextInstr->next = iAsn;
         nextInstr = nextInstr->next;
     }
-    //t1 = i * i
+    // t1 = i * i
     {
         struct addr *t1 = genLocal(8);
         struct instr *iMult = genInstr(O_MUL, t1, addrI, addrI);

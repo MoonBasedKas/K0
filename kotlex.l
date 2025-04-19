@@ -110,6 +110,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 "&&"											{ return leaf(CONJ); }
 "!"												{ return leaf(EXCL_NO_WS); }
 "!"hidden										{ return leaf(EXCL_WS); }
+"?:"                                            { return leaf(MICHEAL_JACKSON);}
 "?"{hidden}										{ return leaf(QUEST_WS); }
 "?"												{ return leaf(QUEST_NO_WS); }
 ".."											{ return leaf(RANGE); }

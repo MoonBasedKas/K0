@@ -27,23 +27,27 @@ struct symTab *currentScope;
  * @param depth
  * @return int
  */
-int printTree(nodeptr root, int depth) {
+int printTree(nodeptr root, int depth)
+{
     static int last[256];
     if (root == NULL)
         return 0;
-    if (depth == 0) {
+    if (depth == 0)
+    {
         memset(last, 0, sizeof(last));
     }
 
     char prefix[1024] = "";
-    for (int i = 0; i < depth - 1; i++) {
+    for (int i = 0; i < depth - 1; i++)
+    {
         if (last[i])
             strcat(prefix, "    ");
         else
             strcat(prefix, "│   ");
     }
 
-    if (depth > 0) {
+    if (depth > 0)
+    {
         if (last[depth - 1])
             strcat(prefix, "└── ");
         else
@@ -51,13 +55,14 @@ int printTree(nodeptr root, int depth) {
     }
 
     if (root->nkids > 0)
-        printf("%snode (%s, %d): %d children | Type %s\n", prefix, root->symbolname, root->prodrule, root->nkids, typeName(root->type)); //typeHelpers.c
+        printf("%snode (%s, %d): %d children | Type %s\n", prefix, root->symbolname, root->prodrule, root->nkids, typeName(root->type)); // typeHelpers.c
     else
         printf("%stoken (File: %s, Line: %d):  %s  Integer Code: %d | Type %s\n", prefix, root->leaf->filename, root->leaf->lineno,
-               root->leaf->text, root->leaf->category, typeName(root->type)); //typeHelpers.c
+               root->leaf->text, root->leaf->category, typeName(root->type)); // typeHelpers.c
 
     // recurse for each child: update the "last" array.
-    for (int i = 0; i < root->nkids; i++) {
+    for (int i = 0; i < root->nkids; i++)
+    {
         last[depth] = (i == root->nkids - 1);
         printTree(root->kids[i], depth + 1);
     }
@@ -73,19 +78,22 @@ int printTree(nodeptr root, int depth) {
  * @param ...
  * @return struct tree*
  */
-struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
+struct tree *alctoken(int prodrule, char *symbolname, int nkids, ...)
+{
 
     struct tree *node = malloc(sizeof(struct tree));
     memset(node, 0, sizeof(struct tree));
-    if (!node) {
+    if (!node)
+    {
         fprintf(stderr, "Error: Failed to allocate memory for tree node\n");
         exit(1);
     }
-    
+
     node->prodrule = prodrule;
     node->symbolname = strdup(symbolname);
     node->nkids = nkids;
-    for (int i = 0; i < nkids; i++) {
+    for (int i = 0; i < nkids; i++)
+    {
         node->kids[i] = NULL;
     }
     node->leaf = NULL;
@@ -101,18 +109,21 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
 
     va_list args;
     va_start(args, nkids);
-    for (int i = 0; i < nkids; i++) {
+    for (int i = 0; i < nkids; i++)
+    {
         node->kids[i] = va_arg(args, struct tree *);
     }
     va_end(args);
 
-    for (int i = 0; i < nkids; i++) {
-        if (node->kids[i] != NULL) {
+    for (int i = 0; i < nkids; i++)
+    {
+        if (node->kids[i] != NULL)
+        {
             node->kids[i]->parent = node;
         }
     }
 
-    node->table = NULL;  // Done for debugging
+    node->table = NULL; // Done for debugging
     return node;
 }
 
@@ -121,19 +132,23 @@ struct tree *alctoken(int prodrule, char* symbolname, int nkids, ...){
  *
  * @param node
  */
-void freeTree(nodeptr node) { //do we need to free addr and icode here?
+void freeTree(nodeptr node)
+{ // do we need to free addr and icode here?
     if (node == NULL)
         return;
 
-    for (int i = 0; i < node->nkids; i++) {
+    for (int i = 0; i < node->nkids; i++)
+    {
         freeTree(node->kids[i]);
     }
 
     free(node->symbolname);
-    if (node->leaf) {
+    if (node->leaf)
+    {
         free(node->leaf->text);
         free(node->leaf->filename);
-        if (node->leaf->sval) {
+        if (node->leaf->sval)
+        {
             free(node->leaf->sval);
         }
         free(node->leaf);
@@ -141,61 +156,70 @@ void freeTree(nodeptr node) { //do we need to free addr and icode here?
     free(node);
 }
 
-
-int assignMutability(struct tree *root){
+int assignMutability(struct tree *root)
+{
     struct tree *temp = NULL;
     struct tree *id = NULL;
-    for(int i = 0; i < root->nkids; i++){
+    for (int i = 0; i < root->nkids; i++)
+    {
         assignMutability(root->kids[i]);
     }
-    switch(root->prodrule){
-        // case propDecEmpty: Can't be unmutabble
-        // case propDecTypeless:
-        case propDecAssign:
-            temp = root->kids[0];
-            id = root->kids[1];
-            if (!(temp->nkids == 0 && temp->leaf->category == VAR))
+    switch (root->prodrule)
+    {
+    // case propDecEmpty: Can't be unmutabble
+    // case propDecTypeless:
+    case propDecAssign:
+        temp = root->kids[0];
+        id = root->kids[1];
+        if (!(temp->nkids == 0 && temp->leaf->category == VAR))
             makeEntryNonMutable(id->table, id->kids[0]->leaf->text);
-            break;
-        case arrayDec:
-        case arrayDecValueless:
-        case arrayDecEqual:
-        case arrayDecEqualValueless:
-            temp = root->kids[0];
-            id = root->kids[1];
-            if (!(temp->kids == 0 && temp->leaf->category == VAR))
+        break;
+    case arrayDec:
+    case arrayDecValueless:
+    case arrayDecEqual:
+    case arrayDecEqualValueless:
+        temp = root->kids[0];
+        id = root->kids[1];
+        if (!(temp->nkids == 0 && temp->leaf->category == VAR))
             makeEntryNonMutable(id->table, id->kids[0]->leaf->text);
-            break;
-        default:
-            break;
+        break;
+    default:
+        break;
     }
     return 0;
 }
 
-
 /**
- * @brief A C hacker type method of pushing types up the tree. We just 
+ * @brief A C hacker type method of pushing types up the tree. We just
  * smash and dash everything that isn't a type after its been assigned
  * and forcibly take the type of the first element or leaf.
- * 
+ *
  * The digging for guns of kotlin! -H.S.
- * 
- * @param root 
- * @return int 
+ *
+ * @param root
+ * @return int
  */
-int typeTheft(struct tree *root){
-    for(int i = 0; i < root->nkids; i++) typeTheft(root->kids[i]);
+int typeTheft(struct tree *root)
+{
+    for (int i = 0; i < root->nkids; i++)
+        typeTheft(root->kids[i]);
     int assigned = 0;
-    if (root->type == NULL && root->nkids!= 0){
-        for (int i = 0; i < root->nkids; i++){
-            if (root->kids[i]->type->basicType != UNIT_TYPE){
+    if (root->type == NULL && root->nkids != 0)
+    {
+        for (int i = 0; i < root->nkids; i++)
+        {
+            if (root->kids[i]->type->basicType != UNIT_TYPE)
+            {
                 root->type = root->kids[0]->type;
                 assigned = 1;
                 break;
-            } 
+            }
         }
-        if (!assigned) root->type = alcType(UNIT_TYPE);
-    } else if (root->type == NULL){
+        if (!assigned)
+            root->type = alcType(UNIT_TYPE);
+    }
+    else if (root->type == NULL)
+    {
         switch (root->leaf->category)
         {
         case INTEGER_LITERAL:
@@ -203,32 +227,31 @@ int typeTheft(struct tree *root){
             break;
 
         case CHARACTER_LITERAL:
-            root->type=alcType(CHARACTER_LITERAL);
+            root->type = alcType(CHARACTER_LITERAL);
             break;
 
         case REAL_LITERAL:
-            root->type=alcType(DOUBLE_TYPE);
+            root->type = alcType(DOUBLE_TYPE);
             break;
 
         case FALSE:
         case TRUE:
-            root->type=alcType(BOOL_TYPE);
+            root->type = alcType(BOOL_TYPE);
             break;
 
         case NULL_K:
-            root->type=alcType(NULL_TYPE);
+            root->type = alcType(NULL_TYPE);
             break;
 
         case LINE_STRING:
         case MULTILINE_STRING:
-            root->type=alcType(STRING_TYPE);
+            root->type = alcType(STRING_TYPE);
             break;
-        
+
         case IDENTIFIER:
             struct symEntry *temp = contains(root->table, root->leaf->text);
-                if (temp != NULL)
-                    root->type = alcType(temp->type->basicType);
-
+            if (temp != NULL)
+                root->type = alcType(temp->type->basicType);
 
         default:
             root->type = alcType(UNIT_TYPE);
@@ -242,46 +265,62 @@ int typeTheft(struct tree *root){
 /**
  * @brief Grabs variables types and assigns them in all places where they appear in the tree.
  * The other version of digging for guns in kotlin! -H.S.
- * 
+ *
  * TODO: GLOBAL SCOPING!!!!
- * 
- * @param node 
- * @return int 
+ *
+ * @param node
+ * @return int
  */
-int varTypeTheft(struct tree *node){
-    for (int i = 0; i < node->nkids; i++){
+int varTypeTheft(struct tree *node)
+{
+    for (int i = 0; i < node->nkids; i++)
+    {
         varTypeTheft(node->kids[i]);
     }
-    if (node->nkids == 0){
+    if (node->nkids == 0)
+    {
         struct symEntry *temp;
-        if (node->leaf->category == IDENTIFIER){
+        if (node->leaf->category == IDENTIFIER)
+        {
             // printf("%p\n", node->table);
             temp = inZaWorldo(node->table, node->leaf->text);
-            if (!strcmp(node->leaf->text, "Array")){
+            if (!strcmp(node->leaf->text, "Array"))
+            {
                 // The array type, my mortal enemy...
                 node->type = arrayAnyType_ptr;
-            } else if (temp != NULL){
-                if (temp->type->basicType == FUNCTION_TYPE){
+            }
+            else if (temp != NULL)
+            {
+                if (temp->type->basicType == FUNCTION_TYPE)
+                {
                     node->type = temp->type;
-                } else if (temp->type->basicType == ARRAY_TYPE) {
+                }
+                else if (temp->type->basicType == ARRAY_TYPE)
+                {
                     node->type = temp->type;
-                }else {
+                }
+                else
+                {
                     node->type = alcType(temp->type->basicType);
                 }
-            } 
+            }
         }
     }
     return 0;
 }
 
-
-int returnTheft(struct tree *node){
-    for(int i = 0; i < node->nkids; i++){
+int returnTheft(struct tree *node)
+{
+    for (int i = 0; i < node->nkids; i++)
+    {
         returnTheft(node->kids[i]);
     }
-    if (node->prodrule == returnVal){
-        for(int i = 0; i < node->nkids; i++){
-            if(node->kids[i]->type->basicType != UNIT_TYPE){
+    if (node->prodrule == returnVal)
+    {
+        for (int i = 0; i < node->nkids; i++)
+        {
+            if (node->kids[i]->type->basicType != UNIT_TYPE)
+            {
                 node->type = node->kids[i]->type;
                 break;
             }
