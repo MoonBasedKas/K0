@@ -271,17 +271,6 @@ void assignType(struct tree *n, struct symTab *rootScope){ // Many composite typ
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
-        // case returnVal:
-        // {
-        //     // If we have return expression
-        //     // if (n->nkids >= 2) {
-        //     //     typeCheck(n->kids[1]);
-        //     //     n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
-        //     // } else {
-        //     //     n->type = alcType(UNIT_TYPE);
-        //     // }
-        //     // break;
-        // }
         case arrayType:
         /*
         kids[0] = IDENTIFIER

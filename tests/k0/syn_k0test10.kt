@@ -1,7 +1,5 @@
 import java.util.Random.nextInt
 import java.lang.Math
-import String.length
-import String.substring
 
 fun main(args: Array<String>) {
     println("Enter a word:")
