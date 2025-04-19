@@ -10,7 +10,7 @@
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
 #include "lex.h"
-#include "semanticBuild.h"
+#include "typeDeclaration.h"
 #include "errorHandling.h"
 
 struct tree *createEmptyParam(void);
