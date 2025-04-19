@@ -6,7 +6,7 @@
 #include "symTab.h"
 #include "lex.h"
 #include "k0gram.tab.h"
-#include "semanticBuild.h"
+#include "typeDeclaration.h"
 #include "typeHelpers.h"
 #include "errorHandling.h"
 

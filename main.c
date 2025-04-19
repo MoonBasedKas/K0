@@ -11,7 +11,7 @@
 #include "tree.h"
 #include "symTab.h"
 #include "type.h"
-#include "semanticBuild.h"
+#include "typeDeclaration.h"
 #include "typeCheck.h"
 #include "symTabHelper.h"
 #include "errorHandling.h"
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         if (symError != 0 && debug == 0)
             return 3;
         assignMutability(root);
-        assignType(root, rootScope); // semanticBuild.c
+        assignType(root, rootScope); // typeDeclaration.c
         // The bottom two could probably be one function, but more tree traversals is better!
         varTypeTheft(root);
         typeTheft(root);
