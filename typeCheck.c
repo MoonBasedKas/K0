@@ -80,48 +80,26 @@ void typeCheck(struct tree *node)
     case postfixDotIDExpr:
         checkImport(node->kids[0], node->kids[2], node->table);
         paramTypeCheck(node->kids[2], node->kids[3]);
-        entry = lookupEntry(node->kids[0]->table, node->kids[2]->leaf->text);
-        if (!entry) {
-            typeError("Node not found in symbol table", node);
-            break;
-        }
-        node->type = copyType(entry->type->u.func.returnType);
         break;
     case postfixSafeDotIDExpr:
         checkImport(node->kids[0], node->kids[3], node->table);
         paramTypeCheck(node->kids[3], node->kids[4]);
-        entry = lookupEntry(node->kids[0]->table, node->kids[3]->leaf->text);
-        if (!entry) {
-            typeError("Node not found in symbol table", node);
-            break;
-        }
-        node->type = copyType(entry->type->u.func.returnType);
         break;
     case postfixDotIDNoExpr:
         checkImport(node->kids[0], node->kids[2], node->table);
-        entry = lookupEntry(node->kids[0]->table, node->kids[2]->leaf->text);
-        if (!entry) {
-            typeError("Node not found in symbol table", node);
-            break;
-        }
+        entry = returnType(node->kids[2]);
         if (entry->type->u.func.numParams != 0)
         {
             typeError("Function call missing arguments", node);
         }
-        node->type = copyType(entry->type->u.func.returnType);
         break;
     case postfixSafeDotIDNoExpr:
         checkImport(node->kids[0], node->kids[3], node->table);
-        entry = lookupEntry(node->kids[0]->table, node->kids[3]->leaf->text);
-        if (!entry) {
-            typeError("Node not found in symbol table", node);
-            break;
-        }
+        entry = returnType(node->kids[3]);
         if (entry->type->u.func.numParams != 0)
         {
             typeError("Function call missing arguments", node);
         }
-        node->type = copyType(entry->type->u.func.returnType);
         break;
 
     // assigment
@@ -410,33 +388,19 @@ int ifAssigned(struct tree *node)
  *
  * @param node
  */
-struct symEntry *returnType(struct tree *node) // change to identifier node
+struct symEntry *returnType(struct tree *idNode)
 {
-    struct symTab *scope = node->table; // symTab.h
-    struct symEntry *entry = NULL;      // symTab.h
-    int found = 0;
-    while (scope->parent != rootScope && found == 0)
-    {
-        printf("scope: %s\n", scope->name);
-        entry = contains(scope, node->leaf->text); // symTab.h
-        if (entry != NULL)
-        {
-            node->parent->type = entry->type->u.func.returnType;
-            found = 1;
-        }
+    struct symEntry *entry = lookupEntry(idNode->table,
+                                         idNode->leaf->text);
+    if (!entry) {
+        typeError("Function not found", idNode);
+        exit(EXIT_FAILURE);
     }
 
-    entry = contains(rootScope, node->leaf->text); // symTab.h
-    if (entry != NULL)
-    {
-        node->parent->type = entry->type->u.func.returnType;
-        found = 1;
-    }
-    if (found == 0)
-    {
-        typeError("Function not found", node);
-        exit(3);
-    }
+    // copy the function’s returnType into the CALL node:
+    idNode->parent->type =
+      copyType(entry->type->u.func.returnType);
+
     return entry;
 }
 
