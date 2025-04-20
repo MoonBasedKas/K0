@@ -32,7 +32,7 @@ struct tree *createUnitTypeNode(void)
 
 static void checkLeafType(struct tree *n)
 {
-    // If it's not a leaf or `leaf` is NULL, do nothing
+    // If it's not a leaf or leaf is NULL, do nothing
     if (n->nkids != 0 || !n->leaf)
     {
         return;

@@ -6,7 +6,7 @@ int ifAssigned(struct tree *node);
 void prefixExpression(struct tree *node);
 struct symEntry *returnType(struct tree *node);
 void paramTypeCheck(struct tree *id, struct tree *exprList);
-void checkImport(struct tree *import, struct tree *element);
+void checkImport(struct tree *import, struct tree *element, struct symTab *scope);
 void leafExpression(struct tree *node);
 void assignAddExpression(struct tree *node);
 void assignSubExpression(struct tree *node);
