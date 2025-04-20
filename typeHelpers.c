@@ -516,3 +516,51 @@ int countExprList(struct tree *exprList)
     }
     return 1;
 }
+
+typePtr typeForImportedFunc(const char *name, struct symTab *rootScope) {
+    struct param *p;
+
+    if (strcmp(name, "abs") == 0) {
+        // Math.abs(Double): Double
+        p = buildfuncParams(1, "x", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "abs", p, 1, rootScope);
+    }
+    if (strcmp(name, "pow") == 0) {
+        // Math.pow(Double,Double): Double
+        p = buildfuncParams(2, "a", DOUBLE_TYPE, "b", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "pow", p, 2, rootScope);
+    }
+    if (strcmp(name, "max") == 0) {
+        // Math.max(Double,Double): Double
+        p = buildfuncParams(2, "a", DOUBLE_TYPE, "b", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "max", p, 2, rootScope);
+    }
+    if (strcmp(name, "min") == 0) {
+        // Math.min(Double,Double): Double
+        p = buildfuncParams(2, "a", DOUBLE_TYPE, "b", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "min", p, 2, rootScope);
+    }
+    if (strcmp(name, "cos") == 0) {
+        // Math.cos(Double): Double
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "cos", p, 1, rootScope);
+    }
+    if (strcmp(name, "sin") == 0) {
+        // Math.sin(Double): Double
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "sin", p, 1, rootScope);
+    }
+    if (strcmp(name, "tan") == 0) {
+        // Math.tan(Double): Double
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "tan", p, 1, rootScope);
+    }
+    if (strcmp(name, "nextInt") == 0) {
+        // Random.nextInt(Int): Int
+        p = buildfuncParams(1, "bound", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "nextInt", p, 1, rootScope);
+    }
+
+    // unknown import → placeholder
+    return alcType(FUNCTION_TYPE);
+}
