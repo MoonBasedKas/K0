@@ -32,7 +32,7 @@ struct tree *createUnitTypeNode(void)
 
 static void checkLeafType(struct tree *n)
 {
-    // If it's not a leaf or `leaf` is NULL, do nothing
+    // If it's not a leaf or leaf is NULL, do nothing
     if (n->nkids != 0 || !n->leaf)
     {
         return;
@@ -94,18 +94,9 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[1] = importIdentifier
         kids[2] = importList (optional)
         */
-        struct tree *imp = n->kids[1];
-        if (n->kids[2] && n->kids[2]->nkids > 0)
-        {
-            imp = n->kids[2];
-        }
-        while (imp->nkids > 0)
-        {
-            imp = imp->kids[imp->nkids - 1];
-        }
-
-        imp->type = alcType(FUNCTION_TYPE);
-        assignEntrytype(n->table, imp->leaf->text, imp->type);
+        struct tree *temp = n->kids[1]->kids[0];
+        temp->type = alcType(FUNCTION_TYPE);
+        assignEntrytype(n->table, temp->leaf->text, temp->type);
         break;
     }
     case expandingImportID:
@@ -115,14 +106,20 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[1] = DOT
         kids[2] = importIdentifier
         */
-        struct tree *imp = n->kids[2];
-        while (imp->nkids > 0)
+        struct tree *LHS = n->kids[0];
+        LHS->type = alcType(FUNCTION_TYPE);
+        assignEntrytype(n->table, LHS->leaf->text, LHS->type);
+
+        struct tree *RHS = n->kids[2];
+        if (RHS->nkids == 0 && RHS->leaf)
         {
-            imp = imp->kids[imp->nkids - 1];
+            if (strcmp(RHS->leaf->text, "*") != 0)
+            {
+                RHS->type = alcType(FUNCTION_TYPE);
+                assignEntrytype(n->table, RHS->leaf->text, RHS->type);
+            }
         }
 
-        imp->type = alcType(FUNCTION_TYPE);
-        assignEntrytype(n->table, imp->leaf->text, imp->type);
         break;
     }
     case varDecQuests: // Sets the entry to nullable.
