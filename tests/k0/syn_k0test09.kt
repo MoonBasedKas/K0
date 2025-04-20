@@ -1,5 +1,5 @@
 fun firstChar(chars: Array<Char>): Char {
-    return chars[0]
+    return chars[0] // postfixId??
 }
 
 fun main(args: Array<String>) {

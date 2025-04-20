@@ -11,7 +11,7 @@
 #include "tree.h"
 #include "symTab.h"
 #include "type.h"
-#include "semanticBuild.h"
+#include "typeDeclaration.h"
 #include "typeCheck.h"
 #include "symTabHelper.h"
 #include "errorHandling.h"
@@ -39,21 +39,32 @@ int main(int argc, char *argv[])
     int debug = 0;
 
     char **fileNames = malloc(sizeof(char *) * argc);
-    if(fileNames == NULL) {
+    if (fileNames == NULL)
+    {
         fprintf(stderr, "Memory allocation error.\n");
         exit(1);
     }
 
-    for (int i = 1; i < argc; i++){
-        if (!strcmp(argv[i], "-dot")){
+    for (int i = 1; i < argc; i++)
+    {
+        if (!strcmp(argv[i], "-dot"))
+        {
             dot = 1;
-        } else if (!strcmp(argv[i], "-tree")){
+        }
+        else if (!strcmp(argv[i], "-tree"))
+        {
             tree = 1;
-        } else if (!strcmp(argv[i], "-symtab")){
+        }
+        else if (!strcmp(argv[i], "-symtab"))
+        {
             symtab = 1;
-        } else if(!strcmp(argv[i], "-debug")){
+        }
+        else if (!strcmp(argv[i], "-debug"))
+        {
             debug = 1;
-        } else if(!strcmp(argv[i], "-help")){
+        }
+        else if (!strcmp(argv[i], "-help"))
+        {
             printf("Usage ./k0 [option]|[file] ...\n");
             printf("Options:\n");
             printf("-help: Prints out this command interface.\n");
@@ -61,38 +72,45 @@ int main(int argc, char *argv[])
             printf("-tree: View the syntax tree of the program.\n");
             printf("-symtab: View the symbol tables.\n");
             printf("-debug: One does not reveal what their debug command does.\n");
-        } else{
+        }
+        else
+        {
             // Treat non-flag arguments as file names.
             fileNames[fileCount++] = argv[i];
         }
     }
 
-    if(fileCount == 0){
+    if (fileCount == 0)
+    {
         fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
         free(fileNames);
         exit(1);
     }
 
-    for(int i = 0; i < fileCount; i++){
+    for (int i = 0; i < fileCount; i++)
+    {
 
         root = NULL;
         rootScope = createTable(NULL, "global", PACKAGE);
         populateTypes();
-        populateStdlib(); //symTabHelper.c
+        populateStdlib(); // symTabHelper.c
 
-        //checks that the file name is legal and opens the file
+        // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
 
-        //yydebug = 1;
+        // yydebug = 1;
         yyparse();
-        buildSymTabs(root, rootScope); //symTabHelper.c
+        buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);
-        if(debug == 1) findNullTables(root);
+        if (debug == 1)
+            findNullTables(root);
         struct symEntry *x = NULL;
-        if((x = contains(rootScope, "nextInt")) != NULL) x->type = alcType(INT_TYPE);
-        if (symError != 0 && debug == 0) return symError;
+        if ((x = contains(rootScope, "nextInt")) != NULL)
+            x->type = alcType(INT_TYPE);
+        if (symError != 0 && debug == 0)
+            return 3;
         assignMutability(root);
-        assignType(root, rootScope); //semanticBuild.c
+        assignType(root, rootScope); // typeDeclaration.c
         // The bottom two could probably be one function, but more tree traversals is better!
         varTypeTheft(root);
         typeTheft(root);
@@ -100,36 +118,43 @@ int main(int argc, char *argv[])
         typeCheck(root);
         checkNullability(root);
         checkMutability(root);
-        verifyDeclared(root, rootScope); //symTabHelper.c
-        if (symError != 0 && debug == 0) return symError; // If something is undeclared.
-        
+        verifyDeclared(root, rootScope); // symTabHelper.c
+        if (symError != 0 && debug == 0)
+            return 3; // If something is undeclared.
 
-        if(dot){
+        if (dot)
+        {
             char dotFilename[120];
             snprintf(dotFilename, sizeof(dotFilename), "dotfile_%d.dot", i);
             FILE *out = fopen(dotFilename, "w");
-            if(out){
+            if (out)
+            {
                 print_graph(out, root);
                 fclose(out);
                 printf("Dot file written: %s\n", dotFilename);
-            } else {
+            }
+            else
+            {
                 fprintf(stderr, "Error writing dot file for %s\n", fileNames[i]);
             }
         }
-        if (tree) {
-            printTree(root, 0); //tree.c
-        }
-
-        if(symtab){
-            printTable(rootScope); //symTab.c
-        } else if(symError == 0)
+        if (tree)
         {
-             printf("No errors in file: %s\n\n", fileNames[i]);
+            printTree(root, 0); // tree.c
         }
 
-        freeTable(rootScope); //symTab.c
+        if (symtab)
+        {
+            printTable(rootScope); // symTab.c
+        }
+        else if (symError == 0)
+        {
+            printf("No errors in file: %s\n\n", fileNames[i]);
+        }
+
+        freeTable(rootScope); // symTab.c
         fclose(yyin);
-        freeTree(root); //tree.c
+        freeTree(root); // tree.c
         yylex_destroy();
     }
 
@@ -146,16 +171,16 @@ void openFile(char *name)
 
     // Check for an extension.
     char *dot = strrchr(base, '.');
-    if(dot == NULL)
+    if (dot == NULL)
     {
         // No extension: create a new filename with ".kt" appended.
         strcpy(temp, filename);
         strcat(temp, ".kt");
 
         // If the original file exists, rename it to the new name.
-        if(access(filename, F_OK) == 0)
+        if (access(filename, F_OK) == 0)
         {
-            if(rename(filename, temp) != 0)
+            if (rename(filename, temp) != 0)
             {
                 fprintf(stderr, "Error renaming file");
                 exit(1);
@@ -167,7 +192,7 @@ void openFile(char *name)
     else
     {
         // If an extension exists, allow only ".kt".
-        if(strcmp(dot, ".kt") != 0)
+        if (strcmp(dot, ".kt") != 0)
         {
             fprintf(stderr, "Input file must be of type .kt\n");
             exit(1);
@@ -178,7 +203,7 @@ void openFile(char *name)
     yyin = fopen(filename, "r");
 
     // Check that the file opened successfully.
-    if(yyin == NULL)
+    if (yyin == NULL)
     {
         fprintf(stderr, "File %s cannot be opened.\n", filename);
         exit(1);

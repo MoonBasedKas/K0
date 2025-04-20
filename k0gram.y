@@ -164,6 +164,7 @@
 %token <treeptr> IDENTIFIER
 %token <treeptr> LINE_STRING
 %token <treeptr> MULTILINE_STRING
+%token <treeptr> MICHEAL_JACKSON
 
 
 %right ASSIGNMENT ADD_ASSIGNMENT SUB_ASSIGNMENT
@@ -483,7 +484,7 @@ infixOperation:
     ;
 
 elvisExpression:
-    elvisExpression QUEST_NO_WS COLON infixFunctionCall     {$$ = alctoken(elvis, "elvis", 2, $1, $4); freeTokens(2, $2, $3);}
+    elvisExpression MICHEAL_JACKSON infixFunctionCall     {$$ = alctoken(elvis, "elvis", 2, $1, $3); freeTokens(1, $2);}
     | infixFunctionCall                                     {$$ = $1;}
     ;
 

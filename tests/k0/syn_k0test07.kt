@@ -1,8 +1,8 @@
 fun fillArray(arr: Array<Double>) {
-    var arr: Array<Double>(3) { 0.0, 0.0, 0.0 }
-    arr[0] = 3.14
-    arr[1] = 2.718
-    arr[2] = 1.414
+    var arr2: Array<Double>(3) { 0.0, 0.0, 0.0 }
+    arr2[0] = 3.14
+    arr2[1] = 2.718
+    arr2[2] = 1.414
 }
 
 fun main(args: Array<Double>) {
