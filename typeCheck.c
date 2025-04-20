@@ -80,10 +80,12 @@ void typeCheck(struct tree *node)
     case postfixDotIDExpr:
         checkImport(node->kids[0], node->kids[2], node->table);
         paramTypeCheck(node->kids[2], node->kids[3]);
+        entry = returnType(node->kids[2]);
         break;
     case postfixSafeDotIDExpr:
         checkImport(node->kids[0], node->kids[3], node->table);
         paramTypeCheck(node->kids[3], node->kids[4]);
+        entry = returnType(node->kids[3]);
         break;
     case postfixDotIDNoExpr:
         checkImport(node->kids[0], node->kids[2], node->table);
@@ -152,6 +154,7 @@ void typeCheck(struct tree *node)
             }
             node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
+        node->type = alcType(BOOL_TYPE);
         if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
@@ -175,6 +178,7 @@ void typeCheck(struct tree *node)
             }
             node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
+        node->type = alcType(BOOL_TYPE);
         if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
