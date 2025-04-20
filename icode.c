@@ -41,6 +41,10 @@ void localAddr(struct tree *node)
         //yes do the label now because then when i do addr in basicBlocks it will be done??
         //no because in basic blocks i can have the same code and it will just assign it to null again and 
         //then deal with all the labels at once??
+        struct addr *addr = genLabel(); //tac.c
+        node->addr = addr;
+        struct symEntry *entry = contains(node->table, node->kids[1]->leaf->text); //symTab.c
+        if(entry) entry->addr = addr;
         break;
 
     default:
@@ -299,7 +303,7 @@ void assignFirst(struct tree *node)
         assignFirst(node->kids[i]);
     }
 
-    if(node->icode != NULL && node->icodeDone == 1 && node->parent->icodeDone == 0)
+    if(node->icode != NULL && node->icodeDone == 1 && node->parent->icodeDone == 0) // && or ||?
     {
         node->first = genLabel(); //tac.c
     }
@@ -316,32 +320,50 @@ void assignFollow(struct tree *node)
     {
     case forStmntWithVars:
     case forStmnt:
-        //TODO
+        int last = node->nkids - 1;
+        node->kids[last]->follow = node->first;
+        break;
 
     case whileStmntCtrlBody:
+        int last = node->nkids - 1;
+        node->kids[last]->follow = node->first;
+        break;
     case whileStmnt:
+        break;
     case doWhileStmnt:
-        //TODO
+        int body = 1;
+        int test = node->nkids - 1;
+        node->kids[body]->follow = node->kids[test]->first;
+        break;
 
     //need to do speceal something for assignment ifs???
     case emptyIf:
     case if_k:
+        node->kids[2]->follow = node->follow;
+        break;
     case ifElse:
+        node->kids[2]->follow = node->kids[4]->first;
+        node->kids[4]->follow = node->follow;
+        break;
     case ifElseIf:
-        //TODO
-   
+        node->kids[2]->follow = node->kids[4]->first;
+        node->kids[4]->follow = node->follow;
+        break;
 
     case elvis:
         //TODO
         //i think this goes here
         //idk tho
-
+        // go left: null -> right side first block, fall down
+        node->kids[0]->follow = node->kids[1]->first;
+        node->kids[1]->follow = node->follow;
+        break;
     case postfixExpr:
     case postfixNoExpr:
         //TODO
         //function call
         //figrue that shit out
-
+        // Are these control flow?
     case postfixDotID:
     case postfixDotIDExpr:
     case postfixDotIDNoExpr:
@@ -362,14 +384,19 @@ void assignFollow(struct tree *node)
     case RETURN:
         //TODO
         //definlty need this shit
+        node->follow = NULL;
+        if(node->nkids > 0)
+            node->kids[0]->follow = NULL;
         break;
 
     default:
         break;
     }
 
-    for(int i = 0; i < node->kids; i++)
+    for(int i = 0; i < node->nkids; i++)
     {
+        if(node->kids[i]->follow == NULL)
+            node->kids[i]->follow = node->follow;
         assignFollow(node->kids[i]);
     }
 }
