@@ -323,30 +323,6 @@ void populateStdlib(){
     temp->type = evilAlcfunctype(STRING_TYPE, "readln", NULL, 0, rootScope);
 }
 
-
-/**
- * @brief Pre adds all libraries in k0
- *
- */
-// void populateLibraries(){
-//     //Predefined libraries
-//     addSymTab(rootScope, "java", PACKAGE); //symTab.c
-//     addSymTab(rootScope, "util", PACKAGE);
-//     addSymTab(rootScope, "lang", PACKAGE);
-//     addSymTab(rootScope, "math", PACKAGE);
-//     addSymTab(rootScope, "Random", PACKAGE);
-
-//     // Functions within predfined libraries.
-//     addSymTab(rootScope, "nextInt", VARIABLE); //symTab.c
-//     addSymTab(rootScope, "abs", VARIABLE);
-//     addSymTab(rootScope, "max", VARIABLE);
-//     addSymTab(rootScope, "min", VARIABLE);
-//     addSymTab(rootScope, "pow", VARIABLE);
-//     addSymTab(rootScope, "cos", VARIABLE);
-//     addSymTab(rootScope, "sin", VARIABLE);
-//     addSymTab(rootScope, "tan", VARIABLE);
-// }
-
 /**
  * @brief Gets the string of a given table type.
  *

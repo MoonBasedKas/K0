@@ -13,5 +13,5 @@ fun main(){
     pow(2,3)
     max(1,2)
     min(1,2)
-    nextInt()
+    nextInt(5)
 }

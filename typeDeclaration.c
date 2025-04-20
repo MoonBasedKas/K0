@@ -14,6 +14,8 @@
 #include "errorHandling.h"
 
 struct tree *createEmptyParam(void);
+static typePtr typeForImportedFunc(const char *name, struct symTab *rootScope);
+static void wildcardImports(struct symTab *table, struct symTab *rootScope);
 
 struct tree *createUnitTypeNode(void)
 {
@@ -94,8 +96,27 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[1] = importIdentifier
         kids[2] = importList (optional)
         */
-        struct tree *temp = n->kids[1]->kids[0];
-        temp->type = alcType(FUNCTION_TYPE);
+        // struct tree *temp = n->kids[1]->kids[0];
+        // temp->type = alcType(FUNCTION_TYPE);
+        // assignEntrytype(n->table, temp->leaf->text, temp->type);
+        // break;
+
+        struct tree *temp = n->kids[1];
+        while (temp->nkids > 0)
+            temp = temp->kids[temp->nkids - 1];
+
+        // Looking for stars
+        if (strcmp(temp->leaf->text, "*") == 0) {
+            wildcardImports(n->table, rootScope);
+        break;
+        }
+
+        typePtr sig = typeForImportedFunc(temp->leaf->text, rootScope);
+        if (!sig) {
+            typeError("Imported function not supported by k0", temp);
+            sig = alcType(FUNCTION_TYPE);
+        }
+        temp->type = sig;
         assignEntrytype(n->table, temp->leaf->text, temp->type);
         break;
     }
@@ -111,15 +132,22 @@ void assignType(struct tree *n, struct symTab *rootScope)
         assignEntrytype(n->table, LHS->leaf->text, LHS->type);
 
         struct tree *RHS = n->kids[2];
-        if (RHS->nkids == 0 && RHS->leaf)
-        {
-            if (strcmp(RHS->leaf->text, "*") != 0)
-            {
-                RHS->type = alcType(FUNCTION_TYPE);
-                assignEntrytype(n->table, RHS->leaf->text, RHS->type);
-            }
+
+        while (RHS->nkids > 0)
+            RHS = RHS->kids[RHS->nkids - 1];
+
+        if (strcmp(RHS->leaf->text, "*") == 0) {
+            wildcardImports(n->table, rootScope);
+        break;
         }
 
+        typePtr sig = typeForImportedFunc(RHS->leaf->text, rootScope);
+        if (!sig) {
+            typeError("Imported function not supported by k0", RHS);
+            sig = alcType(FUNCTION_TYPE);
+        }
+        RHS->type = sig;
+        assignEntrytype(n->table, RHS->leaf->text, RHS->type);
         break;
     }
     case varDecQuests: // Sets the entry to nullable.
@@ -518,4 +546,80 @@ int checkMutability(struct tree *root)
         break;
     }
     return 0;
+}
+
+/**
+ * @brief Returns the type of an imported function that we support.
+ *
+ * @param name
+ * @param rootScope
+ * @return typePtr
+ */
+static typePtr typeForImportedFunc(const char *name, struct symTab *rootScope) {
+    struct param *p;
+
+    if (strcmp(name, "nextInt") == 0) {
+        p = buildfuncParams(1, "bound", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "nextInt", p, 1, rootScope);
+    }
+
+    if (strcmp(name, "cos") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "cos", p, 1, rootScope);
+    }
+    if (strcmp(name, "sin") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "sin", p, 1, rootScope);
+    }
+    if (strcmp(name, "tan") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "tan", p, 1, rootScope);
+    }
+
+    /* How do we catch overloads?
+    Serious question
+    IDK GLHF
+
+    EVERYTHING IS AN INT CURRENTLY
+    */
+    if (strcmp(name, "abs") == 0) {
+        p = buildfuncParams(1, "value", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "abs", p, 1, rootScope);
+    }
+    if (strcmp(name, "pow") == 0) {
+        p = buildfuncParams(2, "base", INT_TYPE, "exponent", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "pow", p, 2, rootScope);
+    }
+    if (strcmp(name, "max") == 0) {
+        p = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "max", p, 2, rootScope);
+    }
+    if (strcmp(name, "min") == 0) {
+        p = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "min", p, 2, rootScope);
+    }
+    // unsupported import
+    return NULL;
+}
+
+/**
+ * @brief Registers wildcard imports
+ *
+ * @param table
+ * @param rootScope
+ */
+static void wildcardImports(struct symTab *table, struct symTab *rootScope) {
+
+    // I added nextInt just because why not. Numbers = Maths
+    char *names[] = {"nextInt", "cos", "sin", "tan", "abs", "pow", "max", "min"};
+    for (int i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        typePtr sig = typeForImportedFunc(names[i], rootScope);
+        if(!sig) continue;
+
+        if (!contains(table, names[i])) {
+            addSymTab(table, names[i], VARIABLE);
+        }
+        struct symEntry *entry = contains(table, names[i]);
+        entry->type = sig;
+    }
 }
