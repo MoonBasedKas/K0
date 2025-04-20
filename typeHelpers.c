@@ -473,6 +473,8 @@ static supportedImportFunc knownImports[] = {
     {"equals", 1},
     {"length", 0},
     {"get", 1},
+    {"toString", 0},
+    {"substring", 2},
     {NULL, 0} // sentinel
 };
 
