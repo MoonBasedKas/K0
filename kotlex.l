@@ -71,7 +71,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
 %%
 
-{new_line}										{ rows++; if (addSemi() == 1){return leaf(SEMICOLON);} }
+{new_line}										{ rows++; saw_newline = 1; }
 
 {white_space}									{ /* Discard white space */ }
 {line_comment}          						{ /* Discard comments */  }

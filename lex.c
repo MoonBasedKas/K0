@@ -10,19 +10,16 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
-int lasttoken = 0;
-int savedtoken = 0;
 int saw_newline = 0;
+static int lastToken = 0;
+static int savedToken = 0;
+static YYSTYPE saved_lval;
 
-int isender(int tok) {
-    switch (t) {
-        case IDENTIFIER:
-        case RPAREN:
-        case RCURL
-    }
-
-// counts the number of newlines in yytext and adds them to rows
-// used with multiline comments and strings
+/**
+ * @brief Counts the number of newlines in yytext and adds them to rows
+ *
+ * @return void
+ */
 void countNewLines()
 {
     for (int i = 0; i < strlen(yytext); i++)
@@ -57,7 +54,12 @@ int freeTokens(int targets, ...)
     return 0;
 }
 
-// allocates a token struct and fills all fields except literal values
+/**
+ * @brief Allocates a token struct and fills all fields except literal values
+ *
+ * @param code
+ * @return int
+ */
 int token(int code)
 {
     prevToken = nextToken;
@@ -339,27 +341,113 @@ int addSemi()
 }
 
 /**
- * @brief Wrapper for yylex
- * 
- * TODO: Need to have a way to check past and future.
- * 
- * @return int 
+ * @brief Checks if a token is the end of a statement
+ *
+ * @param tok
+ * @return true
  */
-int yylex2()
-{
-    futureToken = yylex();
-    evilSemi = addSemi();
-    if (savedtoken == SEMICOLON){
-        switch (futureToken)
-        {
-            case ELSE:
-            case LCURL:
-                savedtoken = futureToken;
-                futureToken = yylex();
-
-                return savedtoken;
-        }
+bool isEndOfStmt(int tok) {
+    switch (tok) {
+    case INTEGER_LITERAL:
+    case HEX_LITERAL:
+    case REAL_LITERAL:
+    case CHARACTER_LITERAL:
+    case IDENTIFIER:
+    case LINE_STRING:
+    case BREAK:
+    case CONTINUE:
+    case RETURN:
+    case MULTILINE_STRING:
+    case INCR:
+    case DECR:
+    case RSQUARE:
+    case RPAREN:
+    case RCURL:
+        return true;
+      default:
+        return false;
     }
-    savedtoken = futureToken;
-    return savedtoken;
+}
+
+/**
+ * @brief Which tokens should start a fresh statement
+ *
+ * @param tok
+ * @return bool
+ */
+bool isBeginOfStmt(int tok) {
+    switch (tok) {
+    case IF:
+    case FOR:
+    case WHILE:
+    case DO:
+    case IDENTIFIER:  // e.g. a bare expression statement
+    case RETURN:
+    case BREAK:
+    case CONTINUE:
+    // case RCURL: This pushes the problem to var in line 24
+    // case VAR: case VAL: This pushes the problem to z on line 70
+        return true;
+      default:
+        return false;
+    }
+}
+
+extern int yylex(void);
+//#undef yylex
+//#define k0_yylex yylex
+
+int k0_yylex(void) {
+    return yylex();
+}
+
+/**
+ * @brief Wrapper for yylex
+ *
+ * TODO: Need to have a way to check past and future.
+ *
+ * @return int
+ */
+int yylex2(void) {
+    int tok;
+
+    if (savedToken) {
+        fprintf(stderr,
+                "Replay savedToken=%d\n",
+                savedToken);
+        if (saved_lval.treeptr) {
+            fprintf(stderr,
+                    "        symbolname=\"%s\"\n",
+                    saved_lval.treeptr->symbolname);
+        }
+        yylval = saved_lval;
+        tok = savedToken;
+        savedToken = 0;
+        lastToken  = tok;
+        return tok;
+    }
+
+    tok = k0_yylex();
+    fprintf(stderr,
+           "Got raw tok=%d, lastToken=%d, saw_newline=%d at line %d\n",
+           tok, lastToken, saw_newline, rows);
+
+    if (saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(tok)) {
+        savedToken = tok;
+        saved_lval = yylval;
+        fprintf(stderr,
+                "Saving lookahead tok=%d\n",
+                savedToken);
+        if (saved_lval.treeptr) {
+            fprintf(stderr,
+                    "        saved symbolname=\"%s\"\n",
+                    saved_lval.treeptr->symbolname);
+        }
+        tok = SEMICOLON;
+        fprintf(stderr, "Injecting SEMICOLON instead\n");
+    }
+
+    saw_newline = 0;
+    lastToken  = tok;
+    return tok;
 }

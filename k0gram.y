@@ -3,7 +3,8 @@
     #include "lex.h"
     #include "tree.h"
     #include "symNonTerminals.h"
-    // #define yylex yylex2
+    #undef yylex
+    #define yylex yylex2
 
     #define YYDEBUG 1
 %}
@@ -177,6 +178,8 @@
 %left ADD SUB
 %left MULT DIV MOD
 
+%nonassoc LOWER_THAN_ELSE
+%nonassoc ELSE
 %start program
 
 %%
@@ -580,25 +583,17 @@ parenthesizedExpression:
     ;
 
 ifExpression:
-    IF parenthesizedExpression statement SEMICOLON                                 {$$ = alctoken(emptyIf, "emptyIf", 3, $1, $2, $3); freeTokens(1, $4);}
-    | IF parenthesizedExpression block                                             {$$ = alctoken(if_k, "if", 3, $1, $2, $3);}
-    /* | IF parenthesizedExpression SEMICOLON block                                   {$$ = alctoken(if_k, "if", 3, $1, $2, $4); freeTokens(1, $3);} */
+    IF parenthesizedExpression statement SEMICOLON %prec LOWER_THAN_ELSE           {$$ = alctoken(emptyIf, "emptyIf", 3, $1, $2, $3); freeTokens(1, $4);}
+    | IF parenthesizedExpression block %prec LOWER_THAN_ELSE                       {$$ = alctoken(if_k, "if", 3, $1, $2, $3);}
     | IF parenthesizedExpression block ELSE block                                  {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $3, $4, $5);}
-    /* | IF parenthesizedExpression SEMICOLON block ELSE block                        {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $5, $6); freeTokens(1, $3);} */
-    /* | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE block              {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $6, $7); freeTokens(2, $3, $5);} */
-    /* | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE SEMICOLON block    {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $4, $6, $8); freeTokens(3, $3, $5, $7);} */
-    /* | IF parenthesizedExpression  block SEMICOLON ELSE block                       {$$ = alctoken(ifElse, "ifElse", 5, $1, $2, $3, $5, $6); freeTokens(1, $4);} */
     | IF parenthesizedExpression block ELSE ifExpression                           {$$ = alctoken(ifElseIf, "ifElseif", 5, $1, $2, $3, $4, $5);}
-    /* | IF parenthesizedExpression SEMICOLON block ELSE ifExpression                 {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $4, $5, $6); freeTokens(1, $3);} */
-    /* | IF parenthesizedExpression SEMICOLON block SEMICOLON ELSE ifExpression       {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $4, $6, $7); freeTokens(2, $3, $5);} */
-    /* | IF parenthesizedExpression  block SEMICOLON ELSE ifExpression                {$$ = alctoken(ifElseIf, "ifElseIf", 5, $1, $2, $3, $5, $6);  freeTokens(1, $4);} */
     ;
 
 whenExpression:
-    WHEN LCURL RCURL                                                                    {$$ = alctoken(whenNoSubNoEnt, "whenNoSubNoEnt", 1, $1);  freeTokens(2, $2, $3);}
-    | WHEN LCURL whenEntries RCURL                                                      {$$ = alctoken(whenEnt, "whenEnt", 2, $1, $3); freeTokens(2, $2, $4);}
-    | WHEN whenSubject LCURL RCURL                                                      {$$ = alctoken(whenSub, "whenSub", 1, $1, $2); freeTokens(2, $3, $4);}
-    | WHEN whenSubject LCURL whenEntries RCURL                                          {$$ = alctoken(whenSubEnt, "whenSubEnt", 3, $1, $2, $3); freeTokens(2, $3, $5);}
+    WHEN LCURL RCURL                                                   {$$ = alctoken(whenNoSubNoEnt, "whenNoSubNoEnt", 1, $1);  freeTokens(2, $2, $3);}
+    | WHEN LCURL whenEntries RCURL                                     {$$ = alctoken(whenEnt, "whenEnt", 2, $1, $3); freeTokens(2, $2, $4);}
+    | WHEN whenSubject LCURL RCURL                                     {$$ = alctoken(whenSub, "whenSub", 1, $1, $2); freeTokens(2, $3, $4);}
+    | WHEN whenSubject LCURL whenEntries RCURL                         {$$ = alctoken(whenSubEnt, "whenSubEnt", 3, $1, $2, $3); freeTokens(2, $3, $5);}
     ;
 
 whenSubject:
