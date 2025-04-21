@@ -161,6 +161,7 @@ int main(int argc, char *argv[])
         // buildICode(root);
 
         buildICode(root);
+        tacPrint(root->icode);
         if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);

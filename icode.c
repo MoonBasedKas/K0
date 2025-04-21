@@ -287,10 +287,10 @@ void basicBlocks(struct tree *node)
         {
             break;
         }
-        node->icode = copyInstrList(node->kids[0]); // tac.c
+        node->icode = copyInstrList(node->kids[0]->icode); // tac.c
         for (int i = 1; i < node->nkids; i++)
         {
-            node->icode = appendInstrList(node->icode, node->kids[i]); // tac.c
+            node->icode = appendInstrList(node->icode, node->kids[i]->icode); // tac.c
         }
         break;
     }
@@ -404,7 +404,7 @@ void assignFollow(struct tree *node)
 
 void assignOnTrueFalse(struct tree *node)
 {
-    for (int i = 0; i < node->kids; i++)
+    for (int i = 0; i < node->nkids; i++)
     {
         assignOnTrueFalse(node->kids[i]);
     }
