@@ -251,11 +251,15 @@ typePtr determineReturnType(struct tree *r)
  */
 int extractArraySize(struct tree *size)
 {
-    if (size != NULL && size->leaf != NULL)
-    {
+    if (!size) return -1;
+    if (size->leaf && size->leaf->category == INTEGER_LITERAL) {
         return size->leaf->ival;
     }
-    return -1; // Unknown size
+
+    if (size->nkids > 0) {
+        return extractArraySize(size->kids[0]);
+    }
+    return -1;
 }
 
 /**

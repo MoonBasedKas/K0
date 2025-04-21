@@ -186,10 +186,17 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = type
         kids[4] = functionBody
         */
-        n->type = alcFuncType(n->kids[3], n->kids[2]->kids[0], rootScope); // type.c
+     n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        // This is better than the other way
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
+
     case funcDecParamType:
     {
         /*
@@ -199,8 +206,13 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[2] = functionValueParameters
         kids[3] = type
         */
-        n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); // type.c
+        n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
     case funcDecParamBody:
@@ -213,8 +225,13 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = functionBody
         */
         struct tree *unitTypeNode = createUnitTypeNode();
-        n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); // type.c
+        n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
     case funcDecTypeBody:
@@ -268,8 +285,9 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = arrayValues
         */
         {
-
-            n->type = alcArrayType(n->kids[2], n->kids[1]->type); // type.c
+            typePtr generic = n->kids[1]->type;
+            typePtr inner = generic->u.array.elemType;
+            n->type = alcArrayType(n->kids[2], inner); // type.c
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
@@ -280,8 +298,10 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[2] = arraySize
         */
         {
-            n->type = alcArrayType(n->kids[2], n->kids[1]->type);
-            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+            typePtr generic = n->kids[1]->type;
+            typePtr inner = generic->u.array.elemType;
+            n->type = alcArrayType(n->kids[2], inner); // type.c
+            assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
 
@@ -319,7 +339,7 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[1] = type
         */
         {
-            n->type = n->kids[1]->type;
+            n->type = alcArrayType(NULL, n->kids[1]->type);
             break;
         }
     case arrayTypeQuests:

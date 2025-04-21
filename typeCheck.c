@@ -67,6 +67,7 @@ void typeCheck(struct tree *node)
         break;
     case postfixExpr:
         paramTypeCheck(node->kids[0], node->kids[1]);
+        entry = returnType(node->kids[0]);
         break;
     // built in stuff, don't deal with safety here
     case postfixDotID:
@@ -266,17 +267,27 @@ void typeCheck(struct tree *node)
     case arrayAccess:
     case postfixArrayAccess:
     case arrayIndex:
-        if (node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
-        {
+        // if (node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
+        // {
+        //     typeError("Array access must be performed on an array", node);
+        //     break;
+        // }
+        // if (!typeEquals(node->kids[1]->type, integerType_ptr))
+        // {
+        //     typeError("Must use Int to determine the index of array element", node);
+        //     break;
+        // }
+        // node->type = alcType(node->kids[0]->type->u.array.elemType->basicType); // type.c
+        // break;
+        if (node->kids[0]->type->basicType != ARRAY_TYPE) {
             typeError("Array access must be performed on an array", node);
             break;
         }
-        if (!typeEquals(node->kids[1]->type, integerType_ptr))
-        {
+        if  (!typeEquals(node->kids[1]->type, integerType_ptr)) {
             typeError("Must use Int to determine the index of array element", node);
             break;
         }
-        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType); // type.c
+        node->type = copyType(node->kids[0]->type->u.array.elemType);
         break;
     case propDecAssign:
         if (!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type) && node->kids[2]->type->basicType != NULL_TYPE)
@@ -590,7 +601,13 @@ void leafExpression(struct tree *node)
 
     // variable base case, Moved to another function this would infinitely loop.
     case IDENTIFIER:
-        // break;
+        struct symEntry *entry = lookupEntry(node->table, node->leaf->text);
+        if (!entry) {
+            typeError("Variable not found", node);
+            break;
+        }
+        node->type = copyType(entry->type);
+        break;
     default:
         break;
     }
@@ -1102,14 +1119,14 @@ void returnCheck(struct tree *node, struct typeInfo *type)
 void arrayDeclaration(struct tree *ident, struct tree *exprList)
 {
 
-    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType)
-    {
-        typeError("Arrays are assigned to conflicting types of arrays.", ident);
-    }
-    else if (strcmp(ident->kids[2]->leaf->text, "Array"))
-    {
-        typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
-    }
+    // if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType)
+    // {
+    //     typeError("Arrays are assigned to conflicting types of arrays.", ident);
+    // }
+    // else if (strcmp(ident->kids[2]->leaf->text, "Array"))
+    // {
+    //     typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
+    // }
 
     if (exprList->prodrule != expressionList)
     {
