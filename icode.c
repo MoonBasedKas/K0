@@ -179,10 +179,26 @@ void basicBlocks(struct tree *node)
         break;
 
     case add:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_ADD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case sub:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_SUB, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case mult:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_MUL, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case div_k:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_DIV, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case mod:
+        // Changet his
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_MOD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
         // should be fairly straight forward
         break;
 

@@ -34,6 +34,7 @@ enum {
   O_SUB,
   O_MUL,  
   O_DIV,  
+  O_MOD,
   O_NEG,
   O_AND,
   O_OR,
