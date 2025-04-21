@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 
         // yydebug = 1;
         yyparse();
+        // Semantic analysis
         buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);
         if (debug == 1)
@@ -156,6 +157,10 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
+        // Code generation
+        // buildICode(root);
+
+        buildICode(root);
         if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
