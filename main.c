@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-
+        fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
@@ -228,7 +228,6 @@ void openGenFile(char *name, char *ext, FILE *f)
     n = strcpy(n, name);
     int advance = 0;
     for(int i = 0; i < strlen(name); i++){
-        printf("writing icode to %s.\n", n);
         if(name[i] == '/'){
             for(int j = 0; j < i; j++){
                 n++;
