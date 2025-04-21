@@ -10,5 +10,4 @@ void assignFollow(struct tree *node);
 void assignOnTrueFalse(struct tree *node);
 void control(struct tree *node);
 void debugICode(char *string, struct tree *node);
-
 #endif

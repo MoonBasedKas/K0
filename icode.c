@@ -117,7 +117,7 @@ void basicBlocks(struct tree *node)
 
     // are we doing short circuting??
     // YES this needs to move then
-    // TOD)
+    // TODO
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
