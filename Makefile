@@ -61,7 +61,7 @@ dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
-	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9
+	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9 *.ic
 
 valgrind: k0
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt

@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        fclose(iTarget);
+        if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
