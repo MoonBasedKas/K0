@@ -62,7 +62,7 @@ void basicBlocks(struct tree *node)
 
     if (node->icodeDone == 0)
     {
-        node->parent->icodeDone = 0;
+        if(node->parent != NULL) node->parent->icodeDone = 0;
         return;
     }
 
