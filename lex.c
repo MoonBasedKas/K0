@@ -10,23 +10,16 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
-int futureToken = 0;
+int lasttoken = 0;
 int savedtoken = 0;
-int evilSemi = 0;
+int saw_newline = 0;
 
-// prints error for unsupported keywords
-void unsupportedKeyword()
-{
-    fprintf(stderr, "File: %s Line:%d The keyword %s is not supported by k0\n", filename, rows, yytext);
-    exit(1);
-}
-
-// prints error for unsupported operators
-void unsupportedOperator()
-{
-    fprintf(stderr, "File: %s Line:%d The operator %s is not supported by k0\n", filename, rows, yytext);
-    exit(1);
-}
+int isender(int tok) {
+    switch (t) {
+        case IDENTIFIER:
+        case RPAREN:
+        case RCURL
+    }
 
 // counts the number of newlines in yytext and adds them to rows
 // used with multiline comments and strings

@@ -43,7 +43,7 @@ fun main() {
         var p0var : Int = 2;
 }
 
-class variable declaration
+// class variable declaration
 fun MakeAPet() {
    //local scope variable declaration. err here on line 49 (no pet!)
   var p : pet = pet();

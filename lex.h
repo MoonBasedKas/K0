@@ -12,7 +12,12 @@ extern int rows;
 extern struct token *nextToken;
 extern struct token *prevToken;
 extern char *filename;
+extern int lasttoken;
+extern int savedtoken;
+extern int saw_newline;
 
+int isender(int tok);
+int isbeginner(int tok);
 
 void unsupportedKeyword();
 void unsupportedOperator();
@@ -30,7 +35,7 @@ int multiLineString(int code);
 int addSemi();
 char *removeUnderscores();
 int freeTokens(int targets, ...);
-int yylex2();
+int yylex2(void);
 
 struct token {
    int category;   /* the integer code returned by yylex */
