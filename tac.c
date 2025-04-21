@@ -8,6 +8,8 @@
 #include "tac.h"
 #include "symTab.h"
 
+FILE *iTarget = NULL;
+
 // Handles names
 char *regionnames[] = {"global", "loc", "class", "lab", "const", "", "none"};
 char *regionName(int i)

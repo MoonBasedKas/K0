@@ -7,6 +7,7 @@
 #include "lex.h"
 #include "symTab.h"
 #include "typeHelpers.h"
+#include "tac.h"
 
 void buildICode(struct tree *node)
 {
