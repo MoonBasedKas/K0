@@ -549,7 +549,7 @@ void control(struct tree *node)
         // TODO
 
     case elvis:
-        // TOOD
+        // TODO
         // i think this goes here
         // idk tho
 
@@ -576,7 +576,11 @@ void control(struct tree *node)
         break;
 
     case returnVal:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                genInstr(O_RET, node->addr, node->kids[1]->addr, NULL)); // tac.c
+        break;
     case RETURN:
+
         // TODO
         // definlty need this thing
         break;
