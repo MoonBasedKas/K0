@@ -92,7 +92,6 @@ void basicBlocks(struct tree *node)
     // maybe this is fine here cause it will just append NULL to the end of the list and then
     // when we get to if latter we can fix it????
     // no that won't work cause we copy this later into the upper code so it can't be fixed latter
-    // fuck
     // maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
     case assignment:
     case assignAdd:
@@ -363,7 +362,7 @@ void assignFollow(struct tree *node)
     case postfixNoExpr:
         // TODO
         // function call
-        // figrue that shit out
+        // figrue that thing out
         //  Are these control flow?
     case postfixDotID:
     case postfixDotIDExpr:
@@ -372,7 +371,7 @@ void assignFollow(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -384,7 +383,7 @@ void assignFollow(struct tree *node)
     case returnVal:
     case RETURN:
         // TODO
-        // definlty need this shit
+        // definlty need this thing
         node->follow = NULL;
         if (node->nkids > 0)
             node->kids[0]->follow = NULL;
@@ -542,7 +541,7 @@ void control(struct tree *node)
     case postfixNoExpr:
         // TODO
         // function call
-        // figrue that shit out
+        // figrue that thing out
 
     case postfixDotID:
     case postfixDotIDExpr:
@@ -551,7 +550,7 @@ void control(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -563,7 +562,7 @@ void control(struct tree *node)
     case returnVal:
     case RETURN:
         // TODO
-        // definlty need this shit
+        // definlty need this thing
         break;
 
     default:
