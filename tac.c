@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "tac.h"
-#include "symTab.h"
+
 
 FILE *iTarget = NULL;
 

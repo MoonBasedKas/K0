@@ -2,7 +2,9 @@
 #ifndef TAC_H
 #define TAC_H
 
-FILE *iTarget;
+#include "symTab.h"
+
+extern FILE *iTarget;
 struct addr {
   int region;
   union {

@@ -1,5 +1,6 @@
 #ifndef ICCODE_H
 #define ICCODE_H
+#include "tree.h"
 
 void buildICode(struct tree *node);
 void localAddr(struct tree *node);

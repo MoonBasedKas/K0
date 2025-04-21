@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include "icode.h"
-#include "tree.h"
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
-#include "tac.h"
 #include "lex.h"
 #include "symTab.h"
 #include "typeHelpers.h"
@@ -21,12 +19,13 @@ void buildICode(struct tree *node)
 
 void localAddr(struct tree *node)
 {
+    struct symEntry *entry = NULL;
     switch (node->prodrule)
     {
     // handles both variable declarations and parameters
     case varDec:
     case varDecQuests:
-        struct symEntry *entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
+        entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
         entry->addr = genLocal(typeSize(entry->type), entry->scope);               // tac.c typeHelpers.c
 
         break;
@@ -44,7 +43,7 @@ void localAddr(struct tree *node)
         // then deal with all the labels at once??
         struct addr *addr = genLabel(); // tac.c
         node->addr = addr;
-        struct symEntry *entry = contains(node->table, node->kids[1]->leaf->text); // symTab.c
+        entry = contains(node->table, node->kids[1]->leaf->text); // symTab.c
         if (entry)
             entry->addr = addr;
         break;
@@ -316,17 +315,18 @@ void assignFirst(struct tree *node)
 
 void assignFollow(struct tree *node)
 {
+    int last = 0;
     // currently just copied all of the prodrules that have control flow
     switch (node->prodrule)
     {
     case forStmntWithVars:
     case forStmnt:
-        int last = node->nkids - 1;
+        last = node->nkids - 1;
         node->kids[last]->follow = node->first;
         break;
 
     case whileStmntCtrlBody:
-        int last = node->nkids - 1;
+        last = node->nkids - 1;
         node->kids[last]->follow = node->first;
         break;
     case whileStmnt:
