@@ -60,9 +60,9 @@ void basicBlocks(struct tree *node)
         basicBlocks(node->kids[i]);
     }
 
-    if (node->icodeDone == 0)
+    if (node->icodeDone == 0 && node->parent != NULL)
     {
-        if(node->parent != NULL) node->parent->icodeDone = 0;
+        node->parent->icodeDone = 0;
         return;
     }
 

@@ -255,7 +255,7 @@ void openGenFile(char *name, char *ext, FILE *f)
             break;
         }
     }
-    
     f = fopen(n, "w");
+    
     
 }
