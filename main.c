@@ -15,6 +15,8 @@
 #include "typeCheck.h"
 #include "symTabHelper.h"
 #include "errorHandling.h"
+#include "tac.h"
+#include "icode.h"
 
 char *filename;
 char temp[100];
@@ -23,7 +25,9 @@ extern struct tree *root;
 extern int printTree(struct tree *root, int depth);
 extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
+extern FILE *iTarget;
 void openFile(char *name);
+void openGenFile(char *name, char *ext, FILE *f);
 void populateTypes();
 void populateStdlib();
 void populateLibraries();
@@ -97,9 +101,11 @@ int main(int argc, char *argv[])
 
         // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
+        openGenFile(fileNames[i], "ic", iTarget);
 
         // yydebug = 1;
         yyparse();
+        // Semantic analysis
         buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);
         if (debug == 1)
@@ -151,7 +157,12 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
+        // Code generation
+        // buildICode(root);
 
+        buildICode(root);
+        tacPrint(root->icode);
+        if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
@@ -208,4 +219,43 @@ void openFile(char *name)
         fprintf(stderr, "File %s cannot be opened.\n", filename);
         exit(1);
     }
+}
+
+/**
+ * @brief A more general way of writing to files
+ * 
+ * @param name 
+ * @param ext 
+ * @param f 
+ */
+void openGenFile(char *name, char *ext, FILE *f)
+{
+    char *n = malloc(strlen(name) + strlen(ext));
+    n = strcpy(n, name);
+    int advance = 0;
+    for(int i = 0; i < strlen(name); i++){
+        if(name[i] == '/'){
+            for(int j = 0; j < i; j++){
+                n++;
+            }
+            advance = 0;
+        } else {
+            advance++;
+        }
+    }
+    
+
+    for(int i = 0; i < strlen(n); i++){
+        if(n[i] == '.'){
+            n[i] = '.';
+            for(int j = 0; j < strlen(ext); j++){
+                n[i + j + 1] = ext[j];
+            }
+            n[i + strlen(ext) + 1] = '\0'; 
+            break;
+        }
+    }
+    
+    f = fopen(n, "w");
+    
 }

@@ -66,6 +66,7 @@ int typeSize(struct typeInfo *type)
         // need to know how many elements in array
         // figure this one out later
         // for now do 8 as a pointer to the array somewhere else
+        // we pass the size in all allocations (Erik 95% sure)
         return 8;
     case BOOL_TYPE:
     case CHAR_TYPE:
@@ -73,8 +74,8 @@ int typeSize(struct typeInfo *type)
 
     case FUNCTION_TYPE:
         // do we need?? and if so what looks like
-    case UNIT_TYPE:  // do we need??
-    case RANGE_TYPE: // do we need?
+    case UNIT_TYPE:  // do we need?? We do not. This was essentially an "all/void" which we don't support.
+    case RANGE_TYPE: // do we need? Number of elements? (1 to 20) - idk
         /* code */
         break;
 
