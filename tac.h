@@ -1,11 +1,8 @@
-/*
- * Three Address Code - skeleton for CSE 423
- */
+
 #ifndef TAC_H
 #define TAC_H
 
 FILE *iTarget;
-
 struct addr {
   int region;
   union {

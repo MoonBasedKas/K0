@@ -57,7 +57,7 @@ symTabHelper.o: symTabHelper.c symTabHelper.h symTab.h tree.h type.h typeHelpers
 errorHandling.o: errorHandling.c errorHandling.h
 	$(CC) $(OBJFLAGS) $<
 
-tac.o: tac.c tac.h
+tac.o: tac.c tac.h symTab.h
 	$(CC) $(OBJFLAGS) $<
 
 icode.o: icode.c icode.h 
