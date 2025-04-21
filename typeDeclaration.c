@@ -10,10 +10,12 @@
 #include "k0gram.tab.h"
 #include "symNonTerminals.h"
 #include "lex.h"
-#include "semanticBuild.h"
+#include "typeDeclaration.h"
 #include "errorHandling.h"
 
 struct tree *createEmptyParam(void);
+static typePtr typeForImportedFunc(const char *name, struct symTab *rootScope);
+static void wildcardImports(struct symTab *table, struct symTab *rootScope);
 
 struct tree *createUnitTypeNode(void)
 {
@@ -32,7 +34,7 @@ struct tree *createUnitTypeNode(void)
 
 static void checkLeafType(struct tree *n)
 {
-    // If it's not a leaf or `leaf` is NULL, do nothing
+    // If it's not a leaf or leaf is NULL, do nothing
     if (n->nkids != 0 || !n->leaf)
     {
         return;
@@ -94,8 +96,27 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[1] = importIdentifier
         kids[2] = importList (optional)
         */
-        struct tree *temp = n->kids[1]->kids[0];
-        temp->type = alcType(FUNCTION_TYPE);
+        // struct tree *temp = n->kids[1]->kids[0];
+        // temp->type = alcType(FUNCTION_TYPE);
+        // assignEntrytype(n->table, temp->leaf->text, temp->type);
+        // break;
+
+        struct tree *temp = n->kids[1];
+        while (temp->nkids > 0)
+            temp = temp->kids[temp->nkids - 1];
+
+        // Looking for stars
+        if (strcmp(temp->leaf->text, "*") == 0) {
+            wildcardImports(n->table, rootScope);
+        break;
+        }
+
+        typePtr sig = typeForImportedFunc(temp->leaf->text, rootScope);
+        if (!sig) {
+            typeError("Imported function not supported by k0", temp);
+            sig = alcType(FUNCTION_TYPE);
+        }
+        temp->type = sig;
         assignEntrytype(n->table, temp->leaf->text, temp->type);
         break;
     }
@@ -111,15 +132,22 @@ void assignType(struct tree *n, struct symTab *rootScope)
         assignEntrytype(n->table, LHS->leaf->text, LHS->type);
 
         struct tree *RHS = n->kids[2];
-        if (RHS->nkids == 0 && RHS->leaf)
-        {
-            if (strcmp(RHS->leaf->text, "*") != 0)
-            {
-                RHS->type = alcType(FUNCTION_TYPE);
-                assignEntrytype(n->table, RHS->leaf->text, RHS->type);
-            }
+
+        while (RHS->nkids > 0)
+            RHS = RHS->kids[RHS->nkids - 1];
+
+        if (strcmp(RHS->leaf->text, "*") == 0) {
+            wildcardImports(n->table, rootScope);
+        break;
         }
 
+        typePtr sig = typeForImportedFunc(RHS->leaf->text, rootScope);
+        if (!sig) {
+            typeError("Imported function not supported by k0", RHS);
+            sig = alcType(FUNCTION_TYPE);
+        }
+        RHS->type = sig;
+        assignEntrytype(n->table, RHS->leaf->text, RHS->type);
         break;
     }
     case varDecQuests: // Sets the entry to nullable.
@@ -158,10 +186,17 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = type
         kids[4] = functionBody
         */
-        n->type = alcFuncType(n->kids[3], n->kids[2]->kids[0], rootScope); // type.c
+     n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        // This is better than the other way
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
+
     case funcDecParamType:
     {
         /*
@@ -171,8 +206,13 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[2] = functionValueParameters
         kids[3] = type
         */
-        n->type = alcFuncType(n->kids[3], n->kids[2], rootScope); // type.c
+        n->type = alcFuncType(n->kids[3], n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
     case funcDecParamBody:
@@ -185,8 +225,13 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = functionBody
         */
         struct tree *unitTypeNode = createUnitTypeNode();
-        n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope); // type.c
+        n->type = alcFuncType(unitTypeNode, n->kids[2], rootScope);
         assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+
+        for (struct param *pp = n->type->u.func.parameters; pp; pp = pp->next) {
+            addSymTab(n->table, pp->name, VARIABLE);
+            assignEntrytype(n->table, pp->name, pp->type);
+        }
         break;
     }
     case funcDecTypeBody:
@@ -240,8 +285,9 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[3] = arrayValues
         */
         {
-
-            n->type = alcArrayType(n->kids[2], n->kids[1]->type); // type.c
+            typePtr generic = n->kids[1]->type;
+            typePtr inner = generic->u.array.elemType;
+            n->type = alcArrayType(n->kids[2], inner); // type.c
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
@@ -252,8 +298,10 @@ void assignType(struct tree *n, struct symTab *rootScope)
         kids[2] = arraySize
         */
         {
-            n->type = alcArrayType(n->kids[2], n->kids[1]->type);
-            assignEntrytype(n->table, n->kids[1]->leaf->text, n->type);
+            typePtr generic = n->kids[1]->type;
+            typePtr inner = generic->u.array.elemType;
+            n->type = alcArrayType(n->kids[2], inner); // type.c
+            assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
 
@@ -285,24 +333,13 @@ void assignType(struct tree *n, struct symTab *rootScope)
             assignEntrytype(n->table, n->kids[1]->kids[0]->leaf->text, n->type);
             break;
         }
-    // case returnVal:
-    // {
-    //     // If we have return expression
-    //     // if (n->nkids >= 2) {
-    //     //     typeCheck(n->kids[1]);
-    //     //     n->type = n->kids[1]->type ? n->kids[1]->type : alcType(UNIT_TYPE);
-    //     // } else {
-    //     //     n->type = alcType(UNIT_TYPE);
-    //     // }
-    //     // break;
-    // }
-    case arrayType:
+        case arrayType:
         /*
         kids[0] = IDENTIFIER
         kids[1] = type
         */
         {
-            n->type = n->kids[1]->type;
+            n->type = alcArrayType(NULL, n->kids[1]->type);
             break;
         }
     case arrayTypeQuests:
@@ -529,4 +566,80 @@ int checkMutability(struct tree *root)
         break;
     }
     return 0;
+}
+
+/**
+ * @brief Returns the type of an imported function that we support.
+ *
+ * @param name
+ * @param rootScope
+ * @return typePtr
+ */
+static typePtr typeForImportedFunc(const char *name, struct symTab *rootScope) {
+    struct param *p;
+
+    if (strcmp(name, "nextInt") == 0) {
+        p = buildfuncParams(1, "bound", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "nextInt", p, 1, rootScope);
+    }
+
+    if (strcmp(name, "cos") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "cos", p, 1, rootScope);
+    }
+    if (strcmp(name, "sin") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "sin", p, 1, rootScope);
+    }
+    if (strcmp(name, "tan") == 0) {
+        p = buildfuncParams(1, "angle", DOUBLE_TYPE);
+        return evilAlcfunctype(DOUBLE_TYPE, "tan", p, 1, rootScope);
+    }
+
+    /* How do we catch overloads?
+    Serious question
+    IDK GLHF
+
+    EVERYTHING IS AN INT CURRENTLY
+    */
+    if (strcmp(name, "abs") == 0) {
+        p = buildfuncParams(1, "value", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "abs", p, 1, rootScope);
+    }
+    if (strcmp(name, "pow") == 0) {
+        p = buildfuncParams(2, "base", INT_TYPE, "exponent", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "pow", p, 2, rootScope);
+    }
+    if (strcmp(name, "max") == 0) {
+        p = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "max", p, 2, rootScope);
+    }
+    if (strcmp(name, "min") == 0) {
+        p = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
+        return evilAlcfunctype(INT_TYPE, "min", p, 2, rootScope);
+    }
+    // unsupported import
+    return NULL;
+}
+
+/**
+ * @brief Registers wildcard imports
+ *
+ * @param table
+ * @param rootScope
+ */
+static void wildcardImports(struct symTab *table, struct symTab *rootScope) {
+
+    // I added nextInt just because why not. Numbers = Maths
+    char *names[] = {"nextInt", "cos", "sin", "tan", "abs", "pow", "max", "min"};
+    for (int i = 0; i < sizeof(names) / sizeof(names[0]); i++) {
+        typePtr sig = typeForImportedFunc(names[i], rootScope);
+        if(!sig) continue;
+
+        if (!contains(table, names[i])) {
+            addSymTab(table, names[i], VARIABLE);
+        }
+        struct symEntry *entry = contains(table, names[i]);
+        entry->type = sig;
+    }
 }

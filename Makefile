@@ -6,7 +6,7 @@ BISON=bison
 HFLAG=-d
 EXEC=k0
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o semanticBuild.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o typeDeclaration.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
@@ -42,7 +42,7 @@ symTab.o: symTab.c symTab.h symTabHelper.h
 type.o: type.c type.h typeHelpers.h
 	$(CC) $(OBJFLAGS) $<
 
-semanticBuild.o: semanticBuild.c type.h symTab.h tree.h symNonTerminals.h typeHelpers.h typeCheck.h
+typeDeclaration.o: typeDeclaration.c typeDeclaration.h type.h symTab.h tree.h symNonTerminals.h typeHelpers.h typeCheck.h
 	$(CC) $(OBJFLAGS) $<
 
 typeHelpers.o: typeHelpers.c typeHelpers.h type.h

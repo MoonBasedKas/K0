@@ -12,12 +12,8 @@
 #include "errorHandling.h"
 
 extern int symError;
+struct symEntry *lookupEntry(struct symTab *scope, char *name);
 
-/**
- * @brief Recursivly assign types to an expression
- *
- * @param node
- */
 void typeCheck(struct tree *node)
 {
     struct symEntry *entry;
@@ -71,25 +67,29 @@ void typeCheck(struct tree *node)
         break;
     case postfixExpr:
         paramTypeCheck(node->kids[0], node->kids[1]);
+        entry = returnType(node->kids[0]);
         break;
     // built in stuff, don't deal with safety here
     case postfixDotID:
-        checkImport(node->kids[0], node->kids[2]);
+        checkImport(node->kids[0], node->kids[2], node->table);
         node->type = copyType(node->kids[2]->type);
         break;
     case postfixSafeDotID:
-        checkImport(node->kids[0], node->kids[3]);
+        checkImport(node->kids[0], node->kids[3], node->table);
         node->type = copyType(node->kids[3]->type);
         break;
     case postfixDotIDExpr:
-        checkImport(node->kids[0], node->kids[2]);
+        checkImport(node->kids[0], node->kids[2], node->table);
         paramTypeCheck(node->kids[2], node->kids[3]);
+        entry = returnType(node->kids[2]);
+        break;
     case postfixSafeDotIDExpr:
-        checkImport(node->kids[0], node->kids[3]);
+        checkImport(node->kids[0], node->kids[3], node->table);
         paramTypeCheck(node->kids[3], node->kids[4]);
+        entry = returnType(node->kids[3]);
         break;
     case postfixDotIDNoExpr:
-        checkImport(node->kids[0], node->kids[2]);
+        checkImport(node->kids[0], node->kids[2], node->table);
         entry = returnType(node->kids[2]);
         if (entry->type->u.func.numParams != 0)
         {
@@ -97,7 +97,7 @@ void typeCheck(struct tree *node)
         }
         break;
     case postfixSafeDotIDNoExpr:
-        checkImport(node->kids[0], node->kids[3]);
+        checkImport(node->kids[0], node->kids[3], node->table);
         entry = returnType(node->kids[3]);
         if (entry->type->u.func.numParams != 0)
         {
@@ -155,6 +155,7 @@ void typeCheck(struct tree *node)
             }
             node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
+        node->type = alcType(BOOL_TYPE);
         if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
@@ -178,6 +179,7 @@ void typeCheck(struct tree *node)
             }
             node->type = copyType(node->kids[2]->type); // typeHelpers.c
         }
+        node->type = alcType(BOOL_TYPE);
         if (!typeEquals(node->kids[1]->type, booleanType_ptr))
         {
             typeError("If condition must be of type Boolean", node);
@@ -265,17 +267,27 @@ void typeCheck(struct tree *node)
     case arrayAccess:
     case postfixArrayAccess:
     case arrayIndex:
-        if (node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
-        {
+        // if (node->kids[0]->type->basicType != arrayAnyType_ptr->basicType)
+        // {
+        //     typeError("Array access must be performed on an array", node);
+        //     break;
+        // }
+        // if (!typeEquals(node->kids[1]->type, integerType_ptr))
+        // {
+        //     typeError("Must use Int to determine the index of array element", node);
+        //     break;
+        // }
+        // node->type = alcType(node->kids[0]->type->u.array.elemType->basicType); // type.c
+        // break;
+        if (node->kids[0]->type->basicType != ARRAY_TYPE) {
             typeError("Array access must be performed on an array", node);
             break;
         }
-        if (!typeEquals(node->kids[1]->type, integerType_ptr))
-        {
+        if  (!typeEquals(node->kids[1]->type, integerType_ptr)) {
             typeError("Must use Int to determine the index of array element", node);
             break;
         }
-        node->type = alcType(node->kids[0]->type->u.array.elemType->basicType); // type.c
+        node->type = copyType(node->kids[0]->type->u.array.elemType);
         break;
     case propDecAssign:
         if (!typeEquals(node->kids[1]->kids[0]->type, node->kids[2]->type) && node->kids[2]->type->basicType != NULL_TYPE)
@@ -391,40 +403,27 @@ int ifAssigned(struct tree *node)
  *
  * @param node
  */
-struct symEntry *returnType(struct tree *node) // change to identifier node
+struct symEntry *returnType(struct tree *idNode)
 {
-    struct symTab *scope = node->table; // symTab.h
-    struct symEntry *entry = NULL;      // symTab.h
-    int found = 0;
-    while (scope->parent != rootScope && found == 0)
-    {
-        printf("scope: %s\n", scope->name);
-        entry = contains(scope, node->leaf->text); // symTab.h
-        if (entry != NULL)
-        {
-            node->parent->type = entry->type->u.func.returnType;
-            found = 1;
-        }
+    struct symEntry *entry = lookupEntry(idNode->table,
+                                         idNode->leaf->text);
+    if (!entry) {
+        typeError("Function not found", idNode);
+        exit(EXIT_FAILURE);
     }
 
-    entry = contains(rootScope, node->leaf->text); // symTab.h
-    if (entry != NULL)
-    {
-        node->parent->type = entry->type->u.func.returnType;
-        found = 1;
-    }
-    if (found == 0)
-    {
-        typeError("Function not found", node);
-        exit(3);
-    }
+    // copy the function’s returnType into the CALL node:
+    idNode->parent->type =
+      copyType(entry->type->u.func.returnType);
+
     return entry;
 }
 
 /**
  * @brief Assigns return type and checks the parameters of a function call expression
  *
- * @param node
+ * @param id
+ * @param exprList
  */
 void paramTypeCheck(struct tree *id, struct tree *exprList)
 {
@@ -441,11 +440,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
         int actualCount = countExprList(exprList);
         if (actualCount != expectedCount)
         {
-            char msg[128];
-            snprintf(msg, sizeof(msg),
-                     "Function '%s' expects %d argument(s), but got %d",
-                     id->leaf->text, expectedCount, actualCount);
-            typeError(msg, id->parent);
+            typeError("Function call has incorrect number of arguments", id);
         }
         return;
     }
@@ -470,6 +465,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
             if (!typeEquals(exprList->kids[0]->type, paramList->type))
             {
                 typeError("Paramater type mismatch", id->parent);
+                return;
             }
             exprList = exprList->kids[1];
             paramList = paramList->next;
@@ -483,6 +479,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
     if (!typeEquals(exprList->type, paramList->type))
     {
         typeError("Paramater type mismatch", id->parent);
+        return;
     }
 }
 
@@ -492,7 +489,7 @@ void paramTypeCheck(struct tree *id, struct tree *exprList)
  * @param import
  * @param name
  */
-void checkImport(struct tree *import, struct tree *element)
+void checkImport(struct tree *import, struct tree *element, struct symTab *scope)
 {
     // if(!import->leaf || !element->leaf) {
     //     typeError("Function call must be a leaf", (import?import:element));
@@ -500,14 +497,13 @@ void checkImport(struct tree *import, struct tree *element)
 
     char *importName = import->leaf->text;
     char *elementName = element->leaf->text;
-
-    if (!contains(rootScope, importName))
+    if (!lookupEntry(scope, importName))
     {
-        typeError("Imported function not found", import);
+        typeError("Variable/Function not found in symbol table", import);
         return;
     }
 
-    if (!contains(rootScope, elementName))
+    if (!lookupEntry(scope, elementName))
     {
         typeError("Imported function not found", element);
         return;
@@ -605,7 +601,13 @@ void leafExpression(struct tree *node)
 
     // variable base case, Moved to another function this would infinitely loop.
     case IDENTIFIER:
-        // break;
+        struct symEntry *entry = lookupEntry(node->table, node->leaf->text);
+        if (!entry) {
+            typeError("Variable not found", node);
+            break;
+        }
+        node->type = copyType(entry->type);
+        break;
     default:
         break;
     }
@@ -1117,14 +1119,14 @@ void returnCheck(struct tree *node, struct typeInfo *type)
 void arrayDeclaration(struct tree *ident, struct tree *exprList)
 {
 
-    if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType)
-    {
-        typeError("Arrays are assigned to conflicting types of arrays.", ident);
-    }
-    else if (strcmp(ident->kids[2]->leaf->text, "Array"))
-    {
-        typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
-    }
+    // if (ident->kids[1]->kids[0]->type->u.array.elemType->basicType != ident->kids[3]->type->basicType)
+    // {
+    //     typeError("Arrays are assigned to conflicting types of arrays.", ident);
+    // }
+    // else if (strcmp(ident->kids[2]->leaf->text, "Array"))
+    // {
+    //     typeError("Cannot assign array to this type, I don't know how you got this error message but congrats?", ident); // TODO Fix this
+    // }
 
     if (exprList->prodrule != expressionList)
     {
@@ -1175,4 +1177,22 @@ int typeMagicAssign(struct tree *left, struct tree *right)
     }
 
     return 0;
+}
+
+/**
+ * @brief Looks up an entry in a symbol table
+ *
+ * @param scope
+ * @param name
+ * @return struct symEntry*
+ */
+struct symEntry *lookupEntry(struct symTab *scope, char *name)
+{
+    struct symEntry *entry;
+    while (scope) {
+        entry = contains(scope, name);
+        if (entry) return entry;
+        scope = scope->parent;
+    }
+    return NULL;
 }

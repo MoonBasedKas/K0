@@ -1,5 +1,5 @@
-#ifndef SEMANTICBUILD_H
-#define SEMANTICBUILD_H
+#ifndef TYPE_DECLARATION_H
+#define TYPE_DECLARATION_H
 
 void assignType(struct tree *n, struct symTab *scope);
 void decTypes(struct tree *node, struct symTab *scope);

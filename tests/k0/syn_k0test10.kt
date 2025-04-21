@@ -1,7 +1,5 @@
 import java.util.Random.nextInt
-import java.lang.Math
-import String.length
-import String.substring
+import java.lang.Math.max
 
 fun main(args: Array<String>) {
     println("Enter a word:")
@@ -20,7 +18,7 @@ fun main(args: Array<String>) {
 
     fun doubleRandom(r: Int): Int {
         val randVal: Int = r.nextInt(100) // range 0..99
-        return Math.max(randVal, 0) * 2
+        return max(randVal, 0) * 2
     }
 
     val randomGen : Int = x.nextInt(100)

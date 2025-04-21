@@ -285,7 +285,6 @@ void populateStdlib(){
     params = buildfuncParams(1, "line", STRING_TYPE);
     temp->type = evilAlcfunctype(UNIT_TYPE, "print", params, 1, rootScope);
 
-
     addSymTab(rootScope, "println", VARIABLE);
     temp = contains(rootScope, "println");
     params = buildfuncParams(1, "line", STRING_TYPE);
@@ -303,7 +302,7 @@ void populateStdlib(){
 
     addSymTab(rootScope, "length", VARIABLE);
     temp = contains(rootScope, "length");
-    temp->type = evilAlcfunctype(INT_TYPE, "println", NULL, 0, rootScope);
+    temp->type = evilAlcfunctype(INT_TYPE, "length", NULL, 0, rootScope);
 
     addSymTab(rootScope, "toString", VARIABLE);
     temp = contains(rootScope, "toString");
@@ -319,35 +318,10 @@ void populateStdlib(){
     params = buildfuncParams(2, "iOne", INT_TYPE, "iTwo", INT_TYPE);
     temp->type = evilAlcfunctype(STRING_TYPE, "substring", params, 2, rootScope);
 
-
     addSymTab(rootScope, "readln", VARIABLE);
     temp = contains(rootScope, "readln");
     temp->type = evilAlcfunctype(STRING_TYPE, "readln", NULL, 0, rootScope);
 }
-
-
-/**
- * @brief Pre adds all libraries in k0
- *
- */
-// void populateLibraries(){
-//     //Predefined libraries
-//     addSymTab(rootScope, "java", PACKAGE); //symTab.c
-//     addSymTab(rootScope, "util", PACKAGE);
-//     addSymTab(rootScope, "lang", PACKAGE);
-//     addSymTab(rootScope, "math", PACKAGE);
-//     addSymTab(rootScope, "Random", PACKAGE);
-
-//     // Functions within predfined libraries.
-//     addSymTab(rootScope, "nextInt", VARIABLE); //symTab.c
-//     addSymTab(rootScope, "abs", VARIABLE);
-//     addSymTab(rootScope, "max", VARIABLE);
-//     addSymTab(rootScope, "min", VARIABLE);
-//     addSymTab(rootScope, "pow", VARIABLE);
-//     addSymTab(rootScope, "cos", VARIABLE);
-//     addSymTab(rootScope, "sin", VARIABLE);
-//     addSymTab(rootScope, "tan", VARIABLE);
-// }
 
 /**
  * @brief Gets the string of a given table type.
