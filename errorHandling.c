@@ -44,3 +44,14 @@ void yyerror (char const *s) {
     fprintf (stderr, "File: %s Line:%d %s - At token %s\n", nextToken->filename, nextToken->lineno, s, nextToken->text);
     exit(2);
 }
+
+// icode stuff
+void debugICode(char *string, struct tree *node)
+{
+    while (node->nkids != 0)
+    {
+        node = node->kids[0];
+    }
+
+    printf("Name: %s Line %d, Debug Message: %s\n", node->leaf->text, node->leaf->lineno, string);
+}
