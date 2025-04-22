@@ -17,7 +17,7 @@ char *regionName(int i)
     return regionnames[i - R_GLOBAL];
 }
 char *opcodenames[] = {
-    "ADD", "SUB", "MUL", "DIV", "NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
+    "ADD", "SUB", "MUL", "DIV", "MOD","NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
     "BLT", "BLE", "BGT", "BGE", "BEQ", "BNE", "BIF", "BNIF", "PARM", "CALL",
     "RETURN"};
 char *opCodeName(int i)
