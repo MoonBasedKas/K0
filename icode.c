@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "icode.h"
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
@@ -41,7 +42,6 @@ void localAddr(struct tree *node)
     case varDecQuests:
         entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
         entry->addr = genLocal(typeSize(entry->type), entry->scope);               // tac.c typeHelpers.c
-
         break;
 
     case funcDecAll:
@@ -82,9 +82,54 @@ void basicBlocks(struct tree *node)
 
     switch (node->prodrule)
     {
+    case funcDecBody: {
+        struct addr *procName = malloc(sizeof(struct addr));
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
+
+        struct addr *label = genLabel();
+        node->addr = label;
+
+        struct instr *code = genInstr(
+            D_PROC,
+            procName,
+            genConst(0),
+            genConst(node->table->varSize)
+        );
+
+        // Label pseudo‑op: lab <label>
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, node->addr, NULL, NULL)
+        );
+
+        // kids[2] is the functionBody node
+        if (node->kids[2] && node->kids[2]->icode) {
+            code = appendInstrList(code, node->kids[2]->icode);
+        }
+
+        node->icode = code;
+        break;
+    }
+    case varDec:
+    case varDecQuests:
+        // kids[0] = identifier, kids[1]=type, kids[2]=initializerExpr
+        if (node->nkids >= 3 && node->kids[2]->icode) {
+            // node->addr was set in localAddr()
+            node->icode = concatInstrList(
+                node->kids[2]->icode,
+                genInstr(O_ASN,
+                         node->addr,
+                         node->kids[2]->addr,
+                         NULL));
+        }
+        break;
     case propDecAssign:
         node->addr = node->kids[1]->kids[0]->addr;
-        node->icode = concatInstrList(node->kids[2]->icode, genInstr(O_ASN, node->addr, node->kids[2]->addr, NULL)); // tac.c
+        node->icode = concatInstrList(node->kids[2]->icode,
+            genInstr(O_ASN, node->addr,
+            node->kids[2]->addr,
+            NULL)); // tac.c
         break;
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
@@ -197,10 +242,22 @@ void basicBlocks(struct tree *node)
     case sub:
     case mult:
     case div_k:
-    case mod:
-        // should be fairly straight forward
+    case mod: {
+        int op = (node->prodrule == add ? O_ADD
+                 : node->prodrule == sub ? O_SUB
+                 : node->prodrule == mult ? O_MUL
+                 : node->prodrule == div_k ? O_DIV
+                 : O_MOD);
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(
+                    concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
+                    genInstr(op,
+                        node->addr,
+                        node->kids[0]->addr,
+                        node->kids[1]->addr)
+        );
         break;
-
+    }
     case prefix:
         // definitly need this one
         // will need sub switch
@@ -282,31 +339,32 @@ void basicBlocks(struct tree *node)
     case ifElse:
     case ifElseIf:
     case elvis:
-    case postfixExpr:
-    case postfixNoExpr:
-    case postfixDotID:
-    case postfixDotIDExpr:
-    case postfixDotIDNoExpr:
-    case postfixSafeDotID:
-    case postfixSafeDotIDExpr:
-    case postfixSafeDotIDNoExpr:
-    case funcBody:
+    // case postfixExpr:
+    // case postfixNoExpr:
+    // case postfixDotID:
+    // case postfixDotIDExpr:
+    // case postfixDotIDNoExpr:
+    // case postfixSafeDotID:
+    // case postfixSafeDotIDExpr:
+    // case postfixSafeDotIDNoExpr:
+    // case funcBody:
     case returnVal:
     case RETURN:
         node->icodeDone = 0;
         node->parent->icodeDone = 0;
         break;
-    default:
-        if (node->nkids == 0)
-        {
-            break;
-        }
-        node->icode = copyInstrList(node->kids[0]->icode); // tac.c
-        for (int i = 1; i < node->nkids; i++)
-        {
-            node->icode = appendInstrList(node->icode, node->kids[i]->icode); // tac.c
+     default: {
+        if (node->nkids > 0) {
+            node->icode = copyInstrList(node->kids[0]->icode);
+            for (int i = 1; i < node->nkids; i++) {
+                node->icode = appendInstrList(
+                    node->icode,
+                    node->kids[i]->icode
+                );
+            }
         }
         break;
+    }
     }
 }
 
@@ -316,7 +374,7 @@ void assignFirst(struct tree *node)
         assignFirst(node->kids[i]);
     }
 
-    /* only gen a .first if this node has icode, its parent does not, 
+    /* only gen a .first if this node has icode, its parent does not,
        and that parent actually exists */
     if ( node->icode != NULL && node->icodeDone  == 1
                              && node->parent     != NULL
