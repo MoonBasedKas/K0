@@ -32,36 +32,38 @@ enum {
   /* Opcodes, per lecture notes */
   O_ADD = 3001,
   O_SUB,
-  O_MUL,  
-  O_DIV,  
+
+  O_MUL,
+  O_DIV,
+
   O_MOD,
   O_NEG,
   O_AND,
   O_OR,
   O_XOR,
-  O_NOT,  
-  O_ASN,  
-  O_ADDR, 
+  O_NOT,
+  O_ASN,
+  O_ADDR,
   O_LCONT,
   O_SCONT,
-  O_GOTO, 
-  O_BLT,  
-  O_BLE,  
-  O_BGT,  
-  O_BGE,   
+  O_GOTO,
+  O_BLT,
+  O_BLE,
+  O_BGT,
+  O_BGE,
   O_BEQ,   //three address instr
   O_BNE,   //three address instr
   O_BIF,   //two address instr -compare hw to 0
   O_BNIF,  //two address instr -compare hw to 0
-  O_PARM, 
-  O_CALL, 
-  O_RET,  
+  O_PARM,
+  O_CALL,
+  O_RET,
   /* declarations/pseudo instructions */
-  D_GLOB, 
-  D_PROC, 
+  D_GLOB,
+  D_PROC,
   D_LOCAL,
   D_LABEL,
-  D_END,  
+  D_END,
   D_PROT  /* prototype "declaration" */
 };
 
