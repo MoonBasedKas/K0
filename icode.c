@@ -253,7 +253,7 @@ void basicBlocks(struct tree *node)
 
     case range:
     case rangeUntil:
-        op = : node->prodrule == range ? O_RNG : O_RNU;
+        op = node->prodrule == range ? O_RNG : O_RNU;
         // TODO determine array size.
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
