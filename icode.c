@@ -25,8 +25,8 @@ void localAddr(struct tree *node)
     // handles both variable declarations and parameters
     case varDec:
     case varDecQuests:
-        entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
-        entry->addr = genLocal(typeSize(entry->type), entry->scope);               // tac.c typeHelpers.c
+        entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
+        entry->addr = genLocal(typeSize(entry->type), entry->scope); // tac.c typeHelpers.c
 
         break;
 
@@ -155,9 +155,24 @@ void basicBlocks(struct tree *node)
         break;
 
     case less:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BLE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case greater:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BGT, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case lessEqual:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BLE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case greaterEqual:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BGE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         // should be straight forward
         break;
 
@@ -179,25 +194,25 @@ void basicBlocks(struct tree *node)
         break;
 
     case add:
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                                  genInstr(O_ADD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_ADD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
     case sub:
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                                  genInstr(O_SUB, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_SUB, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
     case mult:
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                                  genInstr(O_MUL, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_MUL, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
     case div_k:
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                                  genInstr(O_DIV, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_DIV, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
     case mod:
         // Changet his
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                                  genInstr(O_MOD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_MOD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
         // should be fairly straight forward
         break;
@@ -576,8 +591,8 @@ void control(struct tree *node)
         break;
 
     case returnVal:
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
-                genInstr(O_RET, node->addr, node->kids[1]->addr, NULL)); // tac.c
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
         break;
     case RETURN:
 
