@@ -7,9 +7,23 @@
 #include "typeHelpers.h"
 #include "tac.h"
 
+/**
+ * @brief Reset the icodeDone flag for a tree node and all its children.
+ *
+ * This function recursively resets the icodeDone flag for the given node and
+ * all its children. It ensures that the flag is set to 1 for all nodes in the
+ * tree.
+ */
+void resetICodeDone(struct tree *node) {
+    node->icodeDone = 1;
+    for (int i = 0; i < node->nkids; i++)
+        resetICodeDone(node->kids[i]);
+}
+
 void buildICode(struct tree *node)
 {
     localAddr(node);
+    resetICodeDone(node);
     basicBlocks(node);
     assignFirst(node);
     assignFollow(node);
@@ -298,14 +312,17 @@ void basicBlocks(struct tree *node)
 
 void assignFirst(struct tree *node)
 {
-    for (int i = 0; i < node->nkids; i++)
-    {
+     for (int i = 0; i < node->nkids; i++) {
         assignFirst(node->kids[i]);
     }
 
-    if (node->icode != NULL && node->icodeDone == 1 && node->parent->icodeDone == 0) // && or ||?
+    /* only gen a .first if this node has icode, its parent does not, 
+       and that parent actually exists */
+    if ( node->icode != NULL && node->icodeDone  == 1
+                             && node->parent     != NULL
+                             && node->parent->icodeDone == 0 )
     {
-        node->first = genLabel(); // tac.c
+        node->first = genLabel();
     }
 
     // do i need more than this??

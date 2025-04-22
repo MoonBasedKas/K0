@@ -27,7 +27,7 @@ extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
 extern FILE *iTarget;
 void openFile(char *name);
-void openGenFile(char *name, char *ext, FILE *f);
+FILE *openGenFile(char *name, char *ext);
 void populateTypes();
 void populateStdlib();
 void populateLibraries();
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
         // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
-        openGenFile(fileNames[i], "ic", iTarget);
+        iTarget = openGenFile(fileNames[i], "ic");
 
         // yydebug = 1;
         yyparse();
@@ -228,34 +228,24 @@ void openFile(char *name)
  * @param ext 
  * @param f 
  */
-void openGenFile(char *name, char *ext, FILE *f)
+FILE *openGenFile(char *name, char *ext)
 {
-    char *n = malloc(strlen(name) + strlen(ext));
-    n = strcpy(n, name);
-    int advance = 0;
-    for(int i = 0; i < strlen(name); i++){
-        if(name[i] == '/'){
-            for(int j = 0; j < i; j++){
-                n++;
-            }
-            advance = 0;
-        } else {
-            advance++;
-        }
+    /* build output filename */
+    char *n = malloc(strlen(name) + strlen(ext) + 2);
+    if (!n) {
+        perror("malloc");
+        exit(1);
     }
-    
+    strcpy(n, name);
+    char *dot = strrchr(n, '.');
+    if (dot) *dot = '\0';
+    strcat(n, ".");
+    strcat(n, ext);
 
-    for(int i = 0; i < strlen(n); i++){
-        if(n[i] == '.'){
-            n[i] = '.';
-            for(int j = 0; j < strlen(ext); j++){
-                n[i + j + 1] = ext[j];
-            }
-            n[i + strlen(ext) + 1] = '\0'; 
-            break;
-        }
+    FILE *f = fopen(n, "w");
+    if (!f) {
+        perror("opening generated file");
+        exit(1);
     }
-    
-    f = fopen(n, "w");
-    
+    return f;
 }
