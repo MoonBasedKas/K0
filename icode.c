@@ -74,9 +74,9 @@ void basicBlocks(struct tree *node)
         basicBlocks(node->kids[i]);
     }
 
-    if (node->icodeDone == 0)
+    if (node->icodeDone == 0 && node->parent != NULL)
     {
-        if(node->parent != NULL) node->parent->icodeDone = 0;
+        node->parent->icodeDone = 0;
         return;
     }
 
@@ -151,7 +151,6 @@ void basicBlocks(struct tree *node)
     // maybe this is fine here cause it will just append NULL to the end of the list and then
     // when we get to if latter we can fix it????
     // no that won't work cause we copy this later into the upper code so it can't be fixed latter
-    // fuck
     // maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
     case assignment:
     case assignAdd:
@@ -177,7 +176,7 @@ void basicBlocks(struct tree *node)
 
     // are we doing short circuting??
     // YES this needs to move then
-    // TOD)
+    // TODO
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
@@ -239,9 +238,19 @@ void basicBlocks(struct tree *node)
         break;
 
     case add:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_ADD, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case sub:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_SUB, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case mult:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                                  genInstr(O_MUL, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+        break;
     case div_k:
+
     case mod: {
         int op = (node->prodrule == add ? O_ADD
                  : node->prodrule == sub ? O_SUB
@@ -256,6 +265,7 @@ void basicBlocks(struct tree *node)
                         node->kids[0]->addr,
                         node->kids[1]->addr)
         );
+
         break;
     }
     case prefix:
@@ -438,7 +448,7 @@ void assignFollow(struct tree *node)
     case postfixNoExpr:
         // TODO
         // function call
-        // figrue that shit out
+        // figrue that thing out
         //  Are these control flow?
     case postfixDotID:
     case postfixDotIDExpr:
@@ -447,7 +457,7 @@ void assignFollow(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -459,7 +469,7 @@ void assignFollow(struct tree *node)
     case returnVal:
     case RETURN:
         // TODO
-        // definlty need this shit
+        // definlty need this thing
         node->follow = NULL;
         if (node->nkids > 0)
             node->kids[0]->follow = NULL;
@@ -609,7 +619,7 @@ void control(struct tree *node)
         // TODO
 
     case elvis:
-        // TOOD
+        // TODO
         // i think this goes here
         // idk tho
 
@@ -617,7 +627,7 @@ void control(struct tree *node)
     case postfixNoExpr:
         // TODO
         // function call
-        // figrue that shit out
+        // figrue that thing out
 
     case postfixDotID:
     case postfixDotIDExpr:
@@ -626,7 +636,7 @@ void control(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -636,9 +646,13 @@ void control(struct tree *node)
         break;
 
     case returnVal:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
+                genInstr(O_RET, node->addr, node->kids[1]->addr, NULL)); // tac.c
+        break;
     case RETURN:
+
         // TODO
-        // definlty need this shit
+        // definlty need this thing
         break;
 
     default:

@@ -32,8 +32,10 @@ enum {
   /* Opcodes, per lecture notes */
   O_ADD = 3001,
   O_SUB,
+
   O_MUL,
   O_DIV,
+
   O_MOD,
   O_NEG,
   O_AND,
