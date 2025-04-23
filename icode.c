@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "icode.h"
 #include "symNonTerminals.h"
 #include "k0gram.tab.h"
@@ -7,6 +8,7 @@
 #include "symTab.h"
 #include "typeHelpers.h"
 #include "tac.h"
+#include "errorHandling.h"
 
 /**
  * @brief Reset the icodeDone flag for a tree node and all its children.
@@ -27,10 +29,10 @@ void buildICode(struct tree *node)
     localAddr(node);
     resetICodeDone(node);
     basicBlocks(node);
+    control(node);
     assignFirst(node);
     assignFollow(node);
     assignOnTrueFalse(node);
-    control(node);
 }
 
 void localAddr(struct tree *node)
@@ -85,34 +87,42 @@ void basicBlocks(struct tree *node)
     switch (node->prodrule)
     {
     case funcDecBody:
-    {
-        struct addr *procName = malloc(sizeof(struct addr));
-        procName->region = R_NAME;
-        procName->u.name = node->kids[1]->leaf->text;
-
-        struct addr *label = genLabel();
-        node->addr = label;
-
-        struct instr *code = genInstr(
-            D_PROC,
-            procName,
-            genConst(0),
-            genConst(node->table->varSize));
-
-        // Label pseudo‑op: lab <label>
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, node->addr, NULL, NULL));
-
-        // kids[2] is the functionBody node
-        if (node->kids[2] && node->kids[2]->icode)
         {
-            code = appendInstrList(code, node->kids[2]->icode);
-        }
+            struct addr *procName = malloc(sizeof *procName);
+            procName->region = R_NAME;
+            procName->u.name = node->kids[1]->leaf->text;
 
-        node->icode = code;
-        break;
-    }
+            struct instr *code = genInstr(
+                D_PROC,
+                procName,
+                genConst(0),
+                genConst(node->table->varSize)
+            );
+
+            struct addr *codeName = malloc(sizeof *codeName);
+            codeName->region = R_NAME;
+            codeName->u.name = strdup(".code");
+            code = appendInstrList(
+                code,
+                genInstr(D_LABEL, codeName, NULL, NULL)
+            );
+
+            struct instr *entryLabel = genInstr(
+                D_LABEL,
+                procName,
+                NULL,
+                NULL
+            );
+            code = appendInstrList(code, entryLabel);
+
+            if (node->kids[2] && node->kids[2]->icode)
+            {
+                code = appendInstrList(code, node->kids[2]->icode);
+            }
+
+            node->icode = code;
+            break;
+        }
     case varDec:
     case varDecQuests:
         // kids[0] = identifier, kids[1]=type, kids[2]=initializerExpr
@@ -147,7 +157,69 @@ void basicBlocks(struct tree *node)
         node->addr = node->kids[0]->kids[0]->addr;
         node->icode = concatInstrList(node->kids[1]->icode, genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); // tac.c
         break;
+    case postfixExpr:
+        {
+            struct tree *fnNode = node->kids[0];
+            struct tree *argTree = node->kids[1];
+            struct instr *code = NULL;
 
+            /* if it really is an expressionList, walk it;
+               otherwise treat it as a single-expression list */
+            if (argTree->prodrule == expressionList)
+            {
+                if (argTree->icode)
+                    code = copyInstrList(argTree->icode);
+                struct tree *cur = argTree;
+                while (cur->prodrule == expressionList)
+                {
+                    struct tree *oneArg = cur->kids[0];
+                    code = appendInstrList(code,
+                                           genInstr(O_PARM, oneArg->addr, NULL, NULL));
+                    if (cur->nkids == 2)
+                        cur = cur->kids[1];
+                    else
+                        break;
+                }
+            }
+            else
+            {
+                /* single argument */
+                if (argTree->icode)
+                    code = copyInstrList(argTree->icode);
+                code = appendInstrList(code,
+                                       genInstr(O_PARM, argTree->addr, NULL, NULL));
+            }
+
+            int nargs = countExprList(argTree);
+
+            /* build the CALL */
+            struct addr *fnName = malloc(sizeof *fnName);
+            fnName->region = R_NAME;
+            fnName->u.name = fnNode->leaf->text;
+
+            struct addr *retSlot = genLocal(typeSize(node->type), node->table);
+            node->addr = retSlot;
+
+            code = appendInstrList(code,
+                                   genInstr(O_CALL, fnName, genConst(nargs), retSlot));
+
+            node->icode = code;
+            break;
+        }
+    case postfixNoExpr:
+        {
+            struct tree *fnNode = node->kids[0];
+            struct addr *fnName = malloc(sizeof *fnName);
+            fnName->region = R_NAME;
+            fnName->u.name = fnNode->leaf->text;
+
+            struct addr *retSlot = genLocal(typeSize(node->type), node->table);
+            node->addr = retSlot;
+
+            /* zero-arg call */
+            node->icode = genInstr(O_CALL, fnName, genConst(0), retSlot);
+            break;
+        }
     // need to do speceal something for assignment ifs???
     // cause when this happens if hasn't been evaluated yet
     // does that cause problems here or can i leave this and then just deal later???
@@ -232,7 +304,6 @@ void basicBlocks(struct tree *node)
                      node->kids[0]->addr,
                      node->kids[1]->addr));
         break;
-
     case in:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
@@ -327,15 +398,28 @@ void basicBlocks(struct tree *node)
         break;
 
     case CHARACTER_LITERAL:
+        node->addr = genConst(node->leaf->ival);
+        break;
     case REAL_LITERAL:
     case TRUE:
     case FALSE:
     case NULL_K:
-    case LINE_STRING:
-    case MULTILINE_STRING:
-        // need to give these nodes addresses so thier parents can use them
-        // also need to do whatever alloc needed for strings
         break;
+    case LINE_STRING:
+    case MULTILINE_STRING:{
+    int len = strlen(node->leaf->sval) + 1;
+    struct addr *sizeAddr = malloc(sizeof *sizeAddr);
+    sizeAddr->region = R_GLOBAL;
+    sizeAddr->u.offset = len;
+    struct instr *code = genInstr(D_GLOB, sizeAddr, NULL, NULL);
+    struct addr *strAddr = malloc(sizeof *strAddr);
+    strAddr->region = R_NAME;
+    strAddr->u.name = strdup(node->leaf->sval);
+    code = appendInstrList(code, genInstr(D_GLOB, strAddr, NULL, NULL));
+    node->icode = code;
+    node->addr = strAddr;
+    break;
+}
 
     case IDENTIFIER:
         struct symTab *scope = node->table;
@@ -376,15 +460,29 @@ void basicBlocks(struct tree *node)
     // case postfixSafeDotIDExpr:
     // case postfixSafeDotIDNoExpr:
     // case funcBody:
-    case returnVal:
-    case RETURN:
-        node->icodeDone = 0;
-        node->parent->icodeDone = 0;
+    case returnVal: {
+        // kid[0] is the expression being returned
+        struct tree *expr = node->kids[0];
+        // splice in its code…
+        struct instr *code = expr->icode
+            ? copyInstrList(expr->icode)
+            : NULL;
+        // emit the RET with that value we fucking hope
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, expr->addr, NULL, NULL)
+        );
+        node->icode = code;
         break;
-    default:
-    {
-        if (node->nkids > 0)
-        {
+    }
+    case RETURN: {
+        // emit a RET const:0
+        node->icode = genInstr(O_RET, genConst(0), NULL, NULL);
+        break;
+    }
+     default: {
+        if (node->nkids > 0) {
+
             node->icode = copyInstrList(node->kids[0]->icode);
             for (int i = 1; i < node->nkids; i++)
             {
@@ -444,15 +542,28 @@ void assignFollow(struct tree *node)
     // need to do speceal something for assignment ifs???
     case emptyIf:
     case if_k:
-        node->kids[2]->follow = node->follow;
-        break;
-    case ifElse:
-        node->kids[2]->follow = node->kids[4]->first;
-        node->kids[4]->follow = node->follow;
+        node->onTrue = node->kids[2]->first;
+        if (node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        node->onFalse = node->follow;
+        if (node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFollow", node);
+        }
         break;
     case ifElseIf:
-        node->kids[2]->follow = node->kids[4]->first;
-        node->kids[4]->follow = node->follow;
+        node->onTrue = node->kids[2]->first;
+        if (node->onTrue == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[2]);
+        }
+        node->onFalse = node->kids[4]->first;
+        if (node->onFalse == NULL)
+        {
+            debugICode("Missing something in assignFirst", node->kids[4]);
+        }
         break;
 
     case elvis:
@@ -463,12 +574,7 @@ void assignFollow(struct tree *node)
         node->kids[0]->follow = node->kids[1]->first;
         node->kids[1]->follow = node->follow;
         break;
-    case postfixExpr:
-    case postfixNoExpr:
-        // TODO
-        // function call
-        // figrue that thing out
-        //  Are these control flow?
+
     case postfixDotID:
     case postfixDotIDExpr:
     case postfixDotIDNoExpr:
@@ -484,16 +590,6 @@ void assignFollow(struct tree *node)
         // treat like return value??
         // ASSIGNMENT expression
         break;
-
-    case returnVal:
-    case RETURN:
-        // TODO
-        // definlty need this thing
-        node->follow = NULL;
-        if (node->nkids > 0)
-            node->kids[0]->follow = NULL;
-        break;
-
     default:
         break;
     }
@@ -561,32 +657,28 @@ void assignOnTrueFalse(struct tree *node)
     // need to do speceal something for assignment ifs??? since they can be assigned??
     case emptyIf:
     case if_k:
-        node->onTrue = node->kids[2]->first;
+        node->onTrue  = node->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[2]);
+            debugICode("Missing something in assignFirst", node);
         }
         node->onFalse = node->follow;
         if (node->onFalse == NULL)
         {
             debugICode("Missing something in assignFollow", node);
         }
-        break;
-
-    case ifElse:
     case ifElseIf:
-        node->onTrue = node->kids[2]->first;
+        node->onTrue  = node->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[2]);
+            debugICode("Missing something in assignFirst", node);
         }
         node->onFalse = node->kids[4]->first;
         if (node->onFalse == NULL)
         {
-            debugICode("Missing something in assignFollow", node->kids[4]);
+            debugICode("Missing something in assignFirst", node->kids[4]);
         }
         break;
-
     case elvis:
         // true is when the value isn't null, might change latter
         node->onTrue = node->kids[0]->first;
@@ -632,8 +724,58 @@ void control(struct tree *node)
     // YES
     // need to check if parent is assignment and if so add code for it
     case emptyIf:
-    case if_k:
-    case ifElse:
+    case if_k: {
+        // conditional without else
+        struct instr *code = node->kids[0]->icode;
+        struct addr *thenLabel   = genLabel();
+        struct addr *followLabel = genLabel();
+        node->first  = thenLabel;
+        node->follow = followLabel;
+
+        code = appendInstrList(
+            code,
+            genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        code = appendInstrList(code, node->kids[2]->icode);
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
+        node->icode = code;
+        break;
+    }
+    case ifElse: {
+        // conditional with else
+        struct instr *code       = node->kids[0]->icode;
+        struct addr  *thenLabel  = genLabel();
+        struct addr  *elseLabel  = genLabel();
+        struct addr  *followLabel= genLabel();
+        node->first  = thenLabel;
+        node->follow = followLabel;
+
+        code = appendInstrList(
+            code,
+            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        code = appendInstrList(code, node->kids[2]->icode);
+        code = appendInstrList(
+            code,
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, elseLabel, NULL, NULL));
+        code = appendInstrList(code, node->kids[4]->icode);
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
+        node->icode = code;
+        break;
+    }
     case ifElseIf:
         // TODO
 
@@ -677,14 +819,4 @@ void control(struct tree *node)
     default:
         break;
     }
-}
-
-void debugICode(char *string, struct tree *node)
-{
-    while (node->nkids != 0)
-    {
-        node = node->kids[0];
-    }
-
-    printf("Name: %s Line %d, Debug Message: %s\n", node->leaf->text, node->leaf->lineno, string);
 }
