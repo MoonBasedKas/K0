@@ -7,7 +7,6 @@
 #include <string.h>
 #include "tac.h"
 
-
 FILE *iTarget = NULL;
 
 // Handles names
@@ -17,7 +16,9 @@ char *regionName(int i)
     return regionnames[i - R_GLOBAL];
 }
 char *opcodenames[] = {
-    "ADD", "SUB", "MUL", "DIV", "MOD","NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
+
+    "ADD", "SUB", "MUL", "DIV", "MOD", "RNG", "RNU", "IN", "NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
+
     "BLT", "BLE", "BGT", "BGE", "BEQ", "BNE", "BIF", "BNIF", "PARM", "CALL",
     "RETURN"};
 char *opCodeName(int i)
@@ -165,31 +166,31 @@ static void printAddr(struct addr *a)
     switch (a->region)
     {
     case R_GLOBAL:
-        fprintf(iTarget,"global:%d", a->u.offset);
+        fprintf(iTarget, "global:%d", a->u.offset);
         break;
     case R_LOCAL:
-        fprintf(iTarget,"loc:%d", a->u.offset);
+        fprintf(iTarget, "loc:%d", a->u.offset);
         break;
     case R_LABEL:
-        fprintf(iTarget,"label:%d", a->u.offset);
+        fprintf(iTarget, "label:%d", a->u.offset);
         break;
     case R_CONST:
-        fprintf(iTarget,"const:%d", a->u.offset);
+        fprintf(iTarget, "const:%d", a->u.offset);
         break;
     case R_NAME:
         // If .u.name is set, print it; otherwise, fallback to offset.
         if (a->u.name)
         {
-            fprintf(iTarget,"%s", a->u.name);
+            fprintf(iTarget, "%s", a->u.name);
         }
         else
         {
             // "str:0" if offset = 0
-            fprintf(iTarget,"str:%d", a->u.offset);
+            fprintf(iTarget, "str:%d", a->u.offset);
         }
         break;
     default:
-        fprintf(iTarget,"unknown:%d", a->u.offset);
+        fprintf(iTarget, "unknown:%d", a->u.offset);
         break;
     }
 }
@@ -234,74 +235,74 @@ void tacPrint(struct instr *code)
                 // Possibly .code or some other label.
                 if (p->dest && p->dest->region == R_NAME && p->dest->u.name && strcmp(p->dest->u.name, ".code") == 0)
                 {
-                    fprintf(iTarget,".code\n");
+                    fprintf(iTarget, ".code\n");
                 }
                 else
                 {
                     // "lab <dest>"
-                    fprintf(iTarget,"%s ", pseudoName(p->opcode));
+                    fprintf(iTarget, "%s ", pseudoName(p->opcode));
                     if (p->dest)
                     {
                         printAddr(p->dest);
                     }
-                    fprintf(iTarget,"\n");
+                    fprintf(iTarget, "\n");
                 }
             }
             else if (p->opcode == D_PROC)
             {
-                fprintf(iTarget,"proc ");
+                fprintf(iTarget, "proc ");
                 // Usually dest=R_NAME:"main"
                 if (p->dest && p->dest->region == R_NAME && p->dest->u.name)
                 {
-                    fprintf(iTarget,"%s", p->dest->u.name);
+                    fprintf(iTarget, "%s", p->dest->u.name);
                 }
                 else if (p->dest)
                 {
                     printAddr(p->dest);
                 }
 
-                fprintf(iTarget,",");
+                fprintf(iTarget, ",");
 
                 // src1 => param count -> R_CONST
                 if (p->src1 && p->src1->region == R_CONST)
                 {
-                    fprintf(iTarget,"%d", p->src1->u.offset);
+                    fprintf(iTarget, "%d", p->src1->u.offset);
                 }
                 else if (p->src1)
                 {
                     printAddr(p->src1);
                 }
 
-                fprintf(iTarget,",");
+                fprintf(iTarget, ",");
 
                 // src2 => local size -> R_CONST
                 if (p->src2 && p->src2->region == R_CONST)
                 {
-                    fprintf(iTarget,"%d", p->src2->u.offset);
+                    fprintf(iTarget, "%d", p->src2->u.offset);
                 }
                 else if (p->src2)
                 {
                     printAddr(p->src2);
                 }
 
-                fprintf(iTarget,"\n");
+                fprintf(iTarget, "\n");
             }
             else
             {
                 // pseudo-ops print
-                fprintf(iTarget,"\t%s ", pseudoName(p->opcode));
+                fprintf(iTarget, "\t%s ", pseudoName(p->opcode));
                 if (p->dest)
                 {
                     printAddr(p->dest);
                 }
                 if (p->src1)
                 {
-                    fprintf(iTarget,",");
+                    fprintf(iTarget, ",");
                     printAddr(p->src1);
                 }
                 if (p->src2)
                 {
-                    fprintf(iTarget,",");
+                    fprintf(iTarget, ",");
                     printAddr(p->src2);
                 }
             }
@@ -311,30 +312,30 @@ void tacPrint(struct instr *code)
             // ops and stuff prints
             if (p->opcode == O_CALL)
             { // STUPID SPECIFIC FORMATING FOR MY OCD BRAIN
-                fprintf(iTarget,"\tCALL\t");
+                fprintf(iTarget, "\tCALL\t");
 
                 if (p->dest && p->dest->region == R_NAME && p->dest->u.name)
                 {
-                    fprintf(iTarget,"%s", p->dest->u.name);
+                    fprintf(iTarget, "%s", p->dest->u.name);
                 }
                 else if (p->dest)
                 {
                     printAddr(p->dest); // incase
                 }
 
-                fprintf(iTarget,",");
+                fprintf(iTarget, ",");
 
                 // src1 => #params, const:2 -> print just "2" !!!!1!one
                 if (p->src1 && p->src1->region == R_CONST)
                 {
-                    fprintf(iTarget,"%d", p->src1->u.offset);
+                    fprintf(iTarget, "%d", p->src1->u.offset);
                 }
                 else if (p->src1)
                 {
                     printAddr(p->src1);
                 }
 
-                fprintf(iTarget,",");
+                fprintf(iTarget, ",");
 
                 // src2 => return storage -> loc:24
                 if (p->src2)
@@ -342,31 +343,31 @@ void tacPrint(struct instr *code)
                     printAddr(p->src2);
                 }
 
-                fprintf(iTarget,"\n");
+                fprintf(iTarget, "\n");
             }
             else
             {
-                fprintf(iTarget,"\t%s\t", opCodeName(p->opcode));
+                fprintf(iTarget, "\t%s\t", opCodeName(p->opcode));
                 if (p->dest)
                 {
                     printAddr(p->dest);
                 }
                 if (p->src1)
                 {
-                    fprintf(iTarget,",");
+                    fprintf(iTarget, ",");
                     printAddr(p->src1);
                 }
                 if (p->src2)
                 {
-                    fprintf(iTarget,",");
+                    fprintf(iTarget, ",");
                     printAddr(p->src2);
                 }
-                fprintf(iTarget,"\n");
+                fprintf(iTarget, "\n");
             }
         }
         else
         {
-            fprintf(iTarget,"UNKNOWN(%d)\n", p->opcode);
+            fprintf(iTarget, "UNKNOWN(%d)\n", p->opcode);
         }
         p = p->next;
     }

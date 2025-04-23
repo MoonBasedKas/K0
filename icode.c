@@ -17,7 +17,8 @@
  * all its children. It ensures that the flag is set to 1 for all nodes in the
  * tree.
  */
-void resetICodeDone(struct tree *node) {
+void resetICodeDone(struct tree *node)
+{
     node->icodeDone = 1;
     for (int i = 0; i < node->nkids; i++)
         resetICodeDone(node->kids[i]);
@@ -42,8 +43,8 @@ void localAddr(struct tree *node)
     // handles both variable declarations and parameters
     case varDec:
     case varDecQuests:
-        entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
-        entry->addr = genLocal(typeSize(entry->type), entry->scope);               // tac.c typeHelpers.c
+        entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
+        entry->addr = genLocal(typeSize(entry->type), entry->scope); // tac.c typeHelpers.c
         break;
 
     case funcDecAll:
@@ -71,14 +72,15 @@ void localAddr(struct tree *node)
 
 void basicBlocks(struct tree *node)
 {
+    int op = 0;
     for (int i = 0; i < node->nkids; i++)
     {
         basicBlocks(node->kids[i]);
     }
 
-    if (node->icodeDone == 0)
+    if (node->icodeDone == 0 && node->parent != NULL)
     {
-        if(node->parent != NULL) node->parent->icodeDone = 0;
+        node->parent->icodeDone = 0;
         return;
     }
 
@@ -124,7 +126,8 @@ void basicBlocks(struct tree *node)
     case varDec:
     case varDecQuests:
         // kids[0] = identifier, kids[1]=type, kids[2]=initializerExpr
-        if (node->nkids >= 3 && node->kids[2]->icode) {
+        if (node->nkids >= 3 && node->kids[2]->icode)
+        {
             // node->addr was set in localAddr()
             node->icode = concatInstrList(
                 node->kids[2]->icode,
@@ -137,9 +140,9 @@ void basicBlocks(struct tree *node)
     case propDecAssign:
         node->addr = node->kids[1]->kids[0]->addr;
         node->icode = concatInstrList(node->kids[2]->icode,
-            genInstr(O_ASN, node->addr,
-            node->kids[2]->addr,
-            NULL)); // tac.c
+                                      genInstr(O_ASN, node->addr,
+                                               node->kids[2]->addr,
+                                               NULL)); // tac.c
         break;
     case propDecReceiverAssign:
     case propDecTypeParamsAssign:
@@ -223,7 +226,6 @@ void basicBlocks(struct tree *node)
     // maybe this is fine here cause it will just append NULL to the end of the list and then
     // when we get to if latter we can fix it????
     // no that won't work cause we copy this later into the upper code so it can't be fixed latter
-    // fuck
     // maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
     case assignment:
     case assignAdd:
@@ -249,7 +251,7 @@ void basicBlocks(struct tree *node)
 
     // are we doing short circuting??
     // YES this needs to move then
-    // TOD)
+    // TODO
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
@@ -286,47 +288,30 @@ void basicBlocks(struct tree *node)
 
         break;
 
-    case less: {
-    node->addr = genLocal(typeSize(node->type), node->table);
-    node->icode = appendInstrList(
-        concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
-        genInstr(O_BLT,
-                 node->addr,
-                 node->kids[0]->addr,
-                 node->kids[1]->addr));
-    break;
-    }
-    case greater: {
+    case less:
+    case greater:
+    case lessEqual:
+    case greaterEqual:
+        op = (node->prodrule == less           ? O_BLT
+              : node->prodrule == greater      ? O_BGT
+              : node->prodrule == greaterEqual ? O_BGE
+                                               : O_BLE);
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
             concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
-            genInstr(O_BGT,
-                    node->addr,
-                    node->kids[0]->addr,
-                    node->kids[1]->addr));
+            genInstr(op,
+                     node->addr,
+                     node->kids[0]->addr,
+                     node->kids[1]->addr));
         break;
-    }
-    case lessEqual: {
-        node->addr = genLocal(typeSize(node->type), node->table);
-        node->icode = appendInstrList(
-            concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
-            genInstr(O_BLE,
-                    node->addr,
-                    node->kids[0]->addr,
-                    node->kids[1]->addr));
-        break;
-    }
-    case greaterEqual: {
-        node->addr = genLocal(typeSize(node->type), node->table);
-        node->icode = appendInstrList(
-            concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
-            genInstr(O_BGE,
-                    node->addr,
-                    node->kids[0]->addr,
-                    node->kids[1]->addr));
-        break;
-    }
     case in:
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(
+            concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
+            genInstr(O_IN,
+                     node->addr,
+                     node->kids[0]->addr,
+                     node->kids[1]->addr));
         // NOT PART OF FOR LOOP
         // BOOLEAN EXPRESSION
         break;
@@ -339,28 +324,37 @@ void basicBlocks(struct tree *node)
 
     case range:
     case rangeUntil:
-        // does this creat an array of ints???
-        // what it do tho?
+        op = node->prodrule == range ? O_RNG : O_RNU;
+        // TODO determine array size.
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(
+            concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
+            genInstr(op,
+                     node->addr,
+                     node->kids[0]->addr,
+                     node->kids[1]->addr));
         break;
-
     case add:
     case sub:
     case mult:
     case div_k:
-    case mod: {
-        int op = (node->prodrule == add ? O_ADD
-                 : node->prodrule == sub ? O_SUB
-                 : node->prodrule == mult ? O_MUL
-                 : node->prodrule == div_k ? O_DIV
-                 : O_MOD);
+
+    case mod:
+    {
+        op = (node->prodrule == add     ? O_ADD
+              : node->prodrule == sub   ? O_SUB
+              : node->prodrule == mult  ? O_MUL
+              : node->prodrule == div_k ? O_DIV
+
+                                        : O_MOD);
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
-                    concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
-                    genInstr(op,
-                        node->addr,
-                        node->kids[0]->addr,
-                        node->kids[1]->addr)
-        );
+            concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
+            genInstr(op,
+                     node->addr,
+                     node->kids[0]->addr,
+                     node->kids[1]->addr));
+
         break;
     }
     case prefix:
@@ -488,12 +482,13 @@ void basicBlocks(struct tree *node)
     }
      default: {
         if (node->nkids > 0) {
+
             node->icode = copyInstrList(node->kids[0]->icode);
-            for (int i = 1; i < node->nkids; i++) {
+            for (int i = 1; i < node->nkids; i++)
+            {
                 node->icode = appendInstrList(
                     node->icode,
-                    node->kids[i]->icode
-                );
+                    node->kids[i]->icode);
             }
         }
         break;
@@ -503,15 +498,14 @@ void basicBlocks(struct tree *node)
 
 void assignFirst(struct tree *node)
 {
-     for (int i = 0; i < node->nkids; i++) {
+    for (int i = 0; i < node->nkids; i++)
+    {
         assignFirst(node->kids[i]);
     }
 
     /* only gen a .first if this node has icode, its parent does not,
        and that parent actually exists */
-    if ( node->icode != NULL && node->icodeDone  == 1
-                             && node->parent     != NULL
-                             && node->parent->icodeDone == 0 )
+    if (node->icode != NULL && node->icodeDone == 1 && node->parent != NULL && node->parent->icodeDone == 0)
     {
         node->first = genLabel();
     }
@@ -588,7 +582,7 @@ void assignFollow(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -596,7 +590,6 @@ void assignFollow(struct tree *node)
         // treat like return value??
         // ASSIGNMENT expression
         break;
-
     default:
         break;
     }
@@ -787,7 +780,7 @@ void control(struct tree *node)
         // TODO
 
     case elvis:
-        // TOOD
+        // TODO
         // i think this goes here
         // idk tho
 
@@ -795,7 +788,7 @@ void control(struct tree *node)
     case postfixNoExpr:
         // TODO
         // function call
-        // figrue that shit out
+        // figrue that thing out
 
     case postfixDotID:
     case postfixDotIDExpr:
@@ -804,7 +797,7 @@ void control(struct tree *node)
     case postfixSafeDotIDExpr:
     case postfixSafeDotIDNoExpr:
         // TODO
-        // figure all this shit out
+        // figure all this thing out
         // at this point might not need the intital part???
 
     case funcBody:
@@ -814,9 +807,13 @@ void control(struct tree *node)
         break;
 
     case returnVal:
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
+        break;
     case RETURN:
+
         // TODO
-        // definlty need this shit
+        // definlty need this thing
         break;
 
     default:
