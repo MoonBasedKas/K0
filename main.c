@@ -247,7 +247,6 @@ FILE *openGenFile(char *name, char *ext)
         perror("opening generated file");
         exit(1);
     }
-
+    free(n);
     return f;
-
 }

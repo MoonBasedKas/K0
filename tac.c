@@ -58,11 +58,19 @@ struct addr *genLabel()
  */
 struct addr *genLocal(int size, struct symTab *scope)
 {
+    const int SLOT = 8;
+    // Offset-ing maybe?
+    scope->varSize = ((scope->varSize + SLOT - 1) / SLOT) * SLOT;
+
     struct addr *a = malloc(sizeof(struct addr));
+    if(!a) {
+        fprintf(stderr, "out of memory\n");
+        exit(4);
+    }
     memset(a, 0, sizeof(struct addr));
     a->region = R_LOCAL;
     a->u.offset = scope->varSize;
-    scope->varSize += size;
+    scope->varSize += SLOT;
     return a;
 }
 
@@ -206,28 +214,22 @@ void tacPrint(struct instr *code)
              * .string 8 => D_GLOB, dest->region = R_GLOBAL, offset=8
              * "Variable i is %d.\000" => D_GLOB, dest->region=R_NAME, .u.name=...
              */
-            if (p->opcode == D_GLOB)
-            {
-                if (p->dest && p->dest->region == R_GLOBAL && p->dest->u.offset == 8)
-                {
-                    fprintf(iTarget, ".string 8\n");
-                }
-                else if (p->dest && p->dest->region == R_NAME && p->dest->u.name)
-                {
-                    // e.g. "Variable i is %d.\000"
-                    fprintf(iTarget, "\t%s\n", p->dest->u.name);
-                }
-                else
-                {
-                    // Print "glob <addr>"
-                    fprintf(iTarget, "%s ", pseudoName(p->opcode));
-                    if (p->dest)
-                    {
-                        printAddr(p->dest);
-                    }
-                    fprintf(iTarget, "\n");
-                }
+            if (p->opcode == D_GLOB) {
+            if (p->dest && p->dest->region == R_CONST) {
+                /* .string <length> */
+                fprintf(iTarget, ".string %d\n", p->dest->u.offset);
             }
+            else if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
+                /*     "<your literal>\000" */
+                fprintf(iTarget, "\t%s\n", p->dest->u.name);
+            }
+            else {
+                /* fallback for other glob‑style uses */
+                fprintf(iTarget, "%s ", pseudoName(p->opcode));
+                if (p->dest) printAddr(p->dest);
+                fprintf(iTarget, "\n");
+            }
+        }
             else if (p->opcode == D_LABEL)
             {
                 // Possibly .code or some other label.

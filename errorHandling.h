@@ -6,4 +6,7 @@ void unsupportedOperator();
 void typeError(char *message, struct tree *node);
 void yyerror (char const *s);
 
+// icode stuff
+void debugICode(char *string, struct tree *node);
+
 #endif
