@@ -33,6 +33,14 @@ void buildICode(struct tree *node)
     assignFirst(node);
     assignFollow(node);
     assignOnTrueFalse(node);
+    if (node->prodrule == program) {
+        struct instr *all = NULL;
+        for (int i = 0; i < node->nkids; i++) {
+            if (node->kids[i]->icode)
+                all = appendInstrList(all, node->kids[i]->icode);
+        }
+        node->icode = all;
+    }
 }
 
 void localAddr(struct tree *node)
@@ -44,7 +52,8 @@ void localAddr(struct tree *node)
     case varDec:
     case varDecQuests:
         entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
-        entry->addr = genLocal(typeSize(entry->type), entry->scope); // tac.c typeHelpers.c
+        if (entry)
+            entry->addr = genLocal(typeSize(entry->type), entry->scope); // tac.c typeHelpers.c
         break;
 
     case funcDecAll:
@@ -58,18 +67,26 @@ void localAddr(struct tree *node)
         // yes do the label now because then when i do addr in basicBlocks it will be done??
         // no because in basic blocks i can have the same code and it will just assign it to null again and
         // then deal with all the labels at once??
-        struct addr *addr = genLabel(); // tac.c
-        node->addr = addr;
+        struct addr *lbl = genLabel(); // tac.c
+        node->addr = lbl;
         entry = contains(node->table, node->kids[1]->leaf->text); // symTab.c
         if (entry)
-            entry->addr = addr;
+            entry->addr = lbl;
         break;
 
     default:
         break;
     }
+    for (int i = 0; i < node->nkids; i++) {
+        localAddr(node->kids[i]);
+    }
 }
 
+/**
+ * @brief Creates basic blocks for iCode
+ * 
+ * @param node 
+ */
 void basicBlocks(struct tree *node)
 {
     int op = 0;
@@ -86,43 +103,51 @@ void basicBlocks(struct tree *node)
 
     switch (node->prodrule)
     {
-    case funcDecBody:
-        {
-            struct addr *procName = malloc(sizeof *procName);
-            procName->region = R_NAME;
-            procName->u.name = node->kids[1]->leaf->text;
+    case funcDecBody: {
+        // Generate PROC header with correct local size
+        struct addr *procName = malloc(sizeof *procName);
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
 
-            struct instr *code = genInstr(
-                D_PROC,
-                procName,
-                genConst(0),
-                genConst(node->table->varSize)
-            );
+        struct instr *code = genInstr(
+            D_PROC,
+            procName,
+            genConst(0),                     // 0 parameters
+            genConst(node->table->varSize)   // total locals & temps?
+        );
 
-            struct addr *codeName = malloc(sizeof *codeName);
-            codeName->region = R_NAME;
-            codeName->u.name = strdup(".code");
-            code = appendInstrList(
-                code,
-                genInstr(D_LABEL, codeName, NULL, NULL)
-            );
+        // Switch into the .code region
+        struct addr *codeName = malloc(sizeof *codeName);
+        codeName->region = R_NAME;
+        codeName->u.name = strdup(".code");
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, codeName, NULL, NULL)
+        );
 
-            struct instr *entryLabel = genInstr(
-                D_LABEL,
-                procName,
-                NULL,
-                NULL
-            );
-            code = appendInstrList(code, entryLabel);
+        // Entry label for this function
+        struct instr *entryLabel = genInstr(
+            D_LABEL,
+            procName,
+            NULL,
+            NULL
+        );
+        code = appendInstrList(code, entryLabel);
 
-            if (node->kids[2] && node->kids[2]->icode)
-            {
-                code = appendInstrList(code, node->kids[2]->icode);
-            }
-
-            node->icode = code;
-            break;
+        // Body IR
+        if (node->kids[2] && node->kids[2]->icode) {
+            code = appendInstrList(code, node->kids[2]->icode);
         }
+
+        // Implicit return of Unit (const:0)
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, genConst(0), NULL, NULL)
+        );
+
+        node->icode = code;
+        break;
+    }
     case varDec:
     case varDecQuests:
         // kids[0] = identifier, kids[1]=type, kids[2]=initializerExpr
@@ -338,7 +363,6 @@ void basicBlocks(struct tree *node)
     case sub:
     case mult:
     case div_k:
-
     case mod:
     {
         op = (node->prodrule == add     ? O_ADD
@@ -480,15 +504,14 @@ void basicBlocks(struct tree *node)
         node->icode = genInstr(O_RET, genConst(0), NULL, NULL);
         break;
     }
-     default: {
+    default: {
         if (node->nkids > 0) {
-
             node->icode = copyInstrList(node->kids[0]->icode);
-            for (int i = 1; i < node->nkids; i++)
-            {
+            for (int i = 1; i < node->nkids; i++) {
                 node->icode = appendInstrList(
                     node->icode,
-                    node->kids[i]->icode);
+                    node->kids[i]->icode
+                );
             }
         }
         break;
