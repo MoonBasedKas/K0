@@ -10,7 +10,7 @@
 FILE *iTarget = NULL;
 
 // Handles names
-char *regionnames[] = {"global", "loc", "class", "lab", "const", "", "none"};
+char *regionnames[] = {"global", "loc", "class", "lab", "const", "name", "none"};
 char *regionName(int i)
 {
     return regionnames[i - R_GLOBAL];
