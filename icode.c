@@ -33,6 +33,7 @@ void buildICode(struct tree *node)
     assignFirst(node);
     assignFollow(node);
     assignOnTrueFalse(node);
+
     if (node->prodrule == program) {
         struct instr *all = NULL;
         for (int i = 0; i < node->nkids; i++) {
@@ -45,6 +46,10 @@ void buildICode(struct tree *node)
 
 void localAddr(struct tree *node)
 {
+    if (!node->table) {
+        fprintf(stderr, "localAddr: called with null scope\n");
+        exit(1);
+    }
     struct symEntry *entry = NULL;
     switch (node->prodrule)
     {
@@ -52,8 +57,10 @@ void localAddr(struct tree *node)
     case varDec:
     case varDecQuests:
         entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
-        if (entry)
-            entry->addr = genLocal(typeSize(entry->type), entry->scope); // tac.c typeHelpers.c
+        if (entry && entry->scope)
+            entry->addr = genLocal(
+                    typeSize(entry->type),
+                    entry->scope); // tac.c typeHelpers.c
         break;
 
     case funcDecAll:
@@ -70,7 +77,7 @@ void localAddr(struct tree *node)
         struct addr *lbl = genLabel(); // tac.c
         node->addr = lbl;
         entry = contains(node->table, node->kids[1]->leaf->text); // symTab.c
-        if (entry)
+        if (entry && entry->scope)
             entry->addr = lbl;
         break;
 
@@ -146,6 +153,7 @@ void basicBlocks(struct tree *node)
         );
 
         node->icode = code;
+        node->icodeDone = 0;
         break;
     }
     case varDec:
@@ -229,6 +237,7 @@ void basicBlocks(struct tree *node)
                                    genInstr(O_CALL, fnName, genConst(nargs), retSlot));
 
             node->icode = code;
+            node->icodeDone = 0;
             break;
         }
     case postfixNoExpr:
@@ -435,6 +444,7 @@ void basicBlocks(struct tree *node)
     struct addr *sizeAddr = malloc(sizeof *sizeAddr);
     sizeAddr->region = R_GLOBAL;
     sizeAddr->u.offset = len;
+
     struct instr *code = genInstr(D_GLOB, sizeAddr, NULL, NULL);
     struct addr *strAddr = malloc(sizeof *strAddr);
     strAddr->region = R_NAME;
@@ -517,6 +527,8 @@ void basicBlocks(struct tree *node)
         break;
     }
     }
+    if (node->icode != NULL)
+        node->icodeDone = 0;
 }
 
 void assignFirst(struct tree *node)
@@ -525,12 +537,28 @@ void assignFirst(struct tree *node)
     {
         assignFirst(node->kids[i]);
     }
-
-    /* only gen a .first if this node has icode, its parent does not,
-       and that parent actually exists */
-    if (node->icode != NULL && node->icodeDone == 1 && node->parent != NULL && node->parent->icodeDone == 0)
+    // This fixed assignFollow() anticipating a .first for "{" in if_k
+    switch (node->prodrule)
     {
+    case emptyIf:
+    case if_k:
+    case ifElse:
+    case ifElseIf:
+    case forStmnt:
+    case forStmntWithVars:
+    case whileStmnt:
+    case whileStmntCtrlBody:
+    case doWhileStmnt:
+        /* only gen a .first if this node has icode, its parent does not,
+        and that parent actually exists 
+        */
+        if (node->icode && node->parent && node->parent->icode == NULL)
+        {
         node->first = genLabel();
+        }
+        break;
+    default:
+        break;
     }
 
     // do i need more than this??
@@ -565,15 +593,15 @@ void assignFollow(struct tree *node)
     // need to do speceal something for assignment ifs???
     case emptyIf:
     case if_k:
-        node->onTrue = node->kids[2]->first;
+        node->onTrue = node->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[2]);
+            debugICode("if_k(first): Missing something in assignFirst", node->kids[2]);
         }
         node->onFalse = node->follow;
         if (node->onFalse == NULL)
         {
-            debugICode("Missing something in assignFollow", node);
+            debugICode("if_k(follow): Missing something in assignFollow", node);
         }
         break;
     case ifElseIf:
@@ -683,23 +711,24 @@ void assignOnTrueFalse(struct tree *node)
         node->onTrue  = node->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node);
+            debugICode("if_k(T/F):Missing something in assignFirst", node);
         }
         node->onFalse = node->follow;
         if (node->onFalse == NULL)
         {
-            debugICode("Missing something in assignFollow", node);
+            debugICode("if_k(T/F):Missing something in assignFollow", node);
         }
+        break;
     case ifElseIf:
         node->onTrue  = node->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node);
+            debugICode("ifElseIf(T/F):Missing something in assignFirst", node);
         }
         node->onFalse = node->kids[4]->first;
         if (node->onFalse == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[4]);
+            debugICode("ifElseIf(T/F):Missing something in assignFirst", node->kids[4]);
         }
         break;
     case elvis:
@@ -727,6 +756,9 @@ void assignOnTrueFalse(struct tree *node)
 // actual icode using previouly gen labels
 void control(struct tree *node)
 {
+    for (int i = 0; i < node->nkids; i++) {
+        control(node->kids[i]);
+    }
     switch (node->prodrule)
     {
     case forStmntWithVars:
@@ -737,6 +769,7 @@ void control(struct tree *node)
         // idk what to do for array
         // walk down full array and store in register OR of == this element
         // could do it with goto if found but that seems not worth unless huge array
+        break;
 
     case whileStmntCtrlBody:
     case whileStmnt:
@@ -746,6 +779,7 @@ void control(struct tree *node)
     // need to do speceal something for assignment ifs???
     // YES
     // need to check if parent is assignment and if so add code for it
+        break;
     case emptyIf:
     case if_k: {
         // conditional without else
@@ -822,7 +856,7 @@ void control(struct tree *node)
         // TODO
         // figure all this thing out
         // at this point might not need the intital part???
-
+        break;
     case funcBody:
         // TODO
         // treat like return value??

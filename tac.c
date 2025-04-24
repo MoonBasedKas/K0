@@ -58,6 +58,7 @@ struct addr *genLabel()
  */
 struct addr *genLocal(int size, struct symTab *scope)
 {
+
     const int SLOT = 8;
     // Offset-ing maybe?
     scope->varSize = ((scope->varSize + SLOT - 1) / SLOT) * SLOT;
