@@ -537,11 +537,7 @@ void assignFirst(struct tree *node)
     {
         assignFirst(node->kids[i]);
     }
-    if (node->prodrule == if_k) {
-    fprintf(stderr, "[assignFirst] entered IF node, icode=%p, parent.icode=%p\n",
-            (void*)node->icode,
-            node->parent ? (void*)node->parent->icode : NULL);
-    }
+    // This fixed assignFollow() anticipating a .first for "{" in if_k
     switch (node->prodrule)
     {
     case emptyIf:
@@ -555,15 +551,10 @@ void assignFirst(struct tree *node)
     case doWhileStmnt:
         /* only gen a .first if this node has icode, its parent does not,
         and that parent actually exists 
-        This needs modified: We were assigning almost everything icode including terminals
-        (CURLs were a problem)
         */
         if (node->icode && node->parent && node->parent->icode == NULL)
         {
         node->first = genLabel();
-        fprintf(stderr,
-            "assignFirst: symbolname: %s got .first\n",
-            node->symbolname);
         }
         break;
     default:
