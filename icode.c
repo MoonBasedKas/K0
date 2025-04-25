@@ -53,36 +53,71 @@ void localAddr(struct tree *node)
     struct symEntry *entry = NULL;
     switch (node->prodrule)
     {
-    // handles both variable declarations and parameters
-    case varDec:
-    case varDecQuests:
-        entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
-        if (entry && entry->scope)
-            entry->addr = genLocal(
+        // handles both variable declarations and parameters
+        case varDec:
+        case varDecQuests:
+            entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
+            if (entry && entry->scope)
+                entry->addr = genLocal(
+                        typeSize(entry->type),
+                        entry->scope); // tac.c typeHelpers.c
+            break;
+
+        case funcDecAll:
+        case funcDecParamType:
+        case funcDecParamBody:
+        case funcDecTypeBody:
+        case funcDecType:
+        case funcDecBody: {
+            struct addr *lbl = genLabel();
+            node->addr = lbl;
+
+            entry = contains(node->table, node->kids[1]->leaf->text);
+            if (entry)
+                entry->addr = lbl;
+            break;
+        }
+        case propDecAssign: {
+            entry = contains(
+                node->table,
+                node->kids[1]->kids[0]->leaf->text
+            );
+            if (entry)
+                entry->addr = genLocal(
                     typeSize(entry->type),
-                    entry->scope); // tac.c typeHelpers.c
-        break;
+                    node->table
+                );
+            break;
+        }
+        case propDecReceiverAssign: {
+            entry = contains(
+                node->table,
+                node->kids[2]->kids[0]->leaf->text
+            );
+            if (entry)
+                entry->addr = genLocal(
+                    typeSize(entry->type),
+                    node->table
+                );
+        }
+        case propDecTypeParamsAssign: {
+            entry = contains(
+                node->table,
+                node->kids[2]->kids[0]->leaf->text
+            );
+            if (entry)
+                entry->addr = genLocal(typeSize(entry->type), entry->scope);
+            break;
+        }
+        case propDecAll: {
+            entry = contains(node->table, node->kids[3]->kids[0]->leaf->text);
+            if (entry)
+                entry->addr = genLocal(typeSize(entry->type), entry->scope);
+            break;
+        }
 
-    case funcDecAll:
-    case funcDecParamType:
-    case funcDecParamBody:
-    case funcDecTypeBody:
-    case funcDecType:
-    case funcDecBody:
-        // do we do something with functions now or later?
-        // i think we just need labels for functions
-        // yes do the label now because then when i do addr in basicBlocks it will be done??
-        // no because in basic blocks i can have the same code and it will just assign it to null again and
-        // then deal with all the labels at once??
-        struct addr *lbl = genLabel(); // tac.c
-        node->addr = lbl;
-        entry = contains(node->table, node->kids[1]->leaf->text); // symTab.c
-        if (entry && entry->scope)
-            entry->addr = lbl;
-        break;
-
-    default:
-        break;
+        default:
+            break;
     }
     for (int i = 0; i < node->nkids; i++) {
         localAddr(node->kids[i]);
@@ -116,19 +151,26 @@ void basicBlocks(struct tree *node)
     case funcDecTypeBody:
     case funcDecType:
     case funcDecBody: {
-        // Generate PROC header with correct local size
+
+        // grab parameter count from your typeInfo
+        int paramCount = 0;
+        if (node->type && node->type->basicType == FUNCTION_TYPE) {
+            paramCount = node->type->u.func.numParams;
+        }
+
+        // build the PROC header using the real paramCount and varSize
         struct addr *procName = malloc(sizeof *procName);
-        procName->region = R_NAME;
-        procName->u.name = node->kids[1]->leaf->text;
+        procName->region    = R_NAME;
+        procName->u.name    = node->kids[1]->leaf->text;
 
         struct instr *code = genInstr(
             D_PROC,
             procName,
-            genConst(0),                     // 0 parameters
-            genConst(node->table->varSize)   // total locals & temps?
+            genConst(paramCount),              // <— real # of params
+            genConst(node->table->varSize)     // <— real frame size
         );
 
-        // Switch into the .code region
+        // now emit the “.code” marker
         struct addr *codeName = malloc(sizeof *codeName);
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
@@ -137,7 +179,7 @@ void basicBlocks(struct tree *node)
             genInstr(D_LABEL, codeName, NULL, NULL)
         );
 
-        // Entry label for this function
+        // entry label for the function
         struct instr *entryLabel = genInstr(
             D_LABEL,
             procName,
@@ -146,18 +188,16 @@ void basicBlocks(struct tree *node)
         );
         code = appendInstrList(code, entryLabel);
 
-        // Body IR
+        // append the body’s IR and an implicit “return unit”
         if (node->kids[2] && node->kids[2]->icode) {
             code = appendInstrList(code, node->kids[2]->icode);
         }
-
-        // Implicit return of Unit (const:0)
         code = appendInstrList(
             code,
             genInstr(O_RET, genConst(0), NULL, NULL)
         );
 
-        node->icode = code;
+        node->icode     = code;
         node->icodeDone = 0;
         break;
     }
