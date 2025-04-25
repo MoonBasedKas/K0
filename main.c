@@ -105,6 +105,7 @@ int main(int argc, char *argv[])
 
         // yydebug = 1;
         yyparse();
+
         // Semantic analysis
         buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);

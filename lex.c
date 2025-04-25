@@ -10,15 +10,23 @@
 #include "k0gram.tab.h"
 #include "errorHandling.h"
 
+int saw_newline = 0;
+int inserted = 0;
+static int lastToken = 0;
+static int savedToken = 0;
+static int blightToken = 0; // A blight upon my day.
+static YYSTYPE saved_lval, last_lval, magic_lval;
 
-
-//counts the number of newlines in yytext and adds them to rows
-//used with multiline comments and strings
+/**
+ * @brief Counts the number of newlines in yytext and adds them to rows
+ *
+ * @return void
+ */
 void countNewLines()
 {
-    for(int i = 0; i < strlen(yytext); i++)
+    for (int i = 0; i < strlen(yytext); i++)
     {
-        if(yytext[i] == '\n')
+        if (yytext[i] == '\n')
         {
             rows++;
         }
@@ -27,48 +35,55 @@ void countNewLines()
 
 /**
  * @brief Frees tokens implied by
- * 
- * @param targets 
- * @param ... 
- * @return int 
+ *
+ * @param targets
+ * @param ...
+ * @return int
  */
-int freeTokens(int targets, ...){
+int freeTokens(int targets, ...)
+{
     va_list args;
     struct token *temp;
     va_start(args, targets);
-    for (int i = 0; i < targets; i++) {
-       temp = va_arg(args, struct token *);
-       free(temp->text);
-       free(temp);
+    for (int i = 0; i < targets; i++)
+    {
+        temp = va_arg(args, struct token *);
+        free(temp->text);
+        free(temp);
     }
     va_end(args);
 
     return 0;
 }
 
-//allocates a token struct and fills all fields except literal values
+/**
+ * @brief Allocates a token struct and fills all fields except literal values
+ *
+ * @param code
+ * @return int
+ */
 int token(int code)
 {
     prevToken = nextToken;
-    nextToken = (struct token*)malloc(sizeof(struct token));
+    nextToken = (struct token *)malloc(sizeof(struct token));
 
-    if(nextToken == NULL)
+    if (nextToken == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
 
     nextToken->category = code;
-    nextToken->text = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
-    if(nextToken->text == NULL)
+    nextToken->text = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
+    if (nextToken->text == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
     }
     strcpy(nextToken->text, yytext);
     nextToken->lineno = rows;
-    nextToken->filename = (char*) malloc(sizeof(char) * (strlen(filename) + 1));
-    if(nextToken->filename == NULL)
+    nextToken->filename = (char *)malloc(sizeof(char) * (strlen(filename) + 1));
+    if (nextToken->filename == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -82,8 +97,8 @@ int token(int code)
 int leaf(int code)
 {
     token(code);
-
-    yylval.treeptr = alctoken(code, nextToken->text, 0); //tree.c
+    // printf("%s\n", yytext);
+    yylval.treeptr = alctoken(code, nextToken->text, 0); // tree.c
     yylval.treeptr->leaf = nextToken;
 
     return code;
@@ -113,7 +128,7 @@ int intLiteral(int code)
 int longLiteral(int code)
 {
     int len = strlen(yytext);
-    yytext[len-1] = '\0';
+    yytext[len - 1] = '\0';
     intLiteral(code);
     changeSymbolName("longLiteral");
 
@@ -139,7 +154,7 @@ int hexLiteral(int code)
 int floatLiteral(int code)
 {
     int len = strlen(yytext);
-    yytext[len-1] = '\0';
+    yytext[len - 1] = '\0';
     doubleLiteral(code);
     changeSymbolName("floatLiteral");
 
@@ -168,9 +183,9 @@ int stringLiteral(int code)
     leaf(code);
     changeSymbolName("stringLiteral");
 
-    nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
+    nextToken->sval = (char *)malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
-    if(nextToken->sval == NULL)
+    if (nextToken->sval == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -179,13 +194,13 @@ int stringLiteral(int code)
     char *nextCharLex = nextToken->text;
     char *nextCharLit = nextToken->sval;
 
-    //skip intial "
+    // skip intial "
     nextCharLex++;
 
-    while(*nextCharLex != '"')
+    while (*nextCharLex != '"')
     {
         // if not the start of escape sequence transfer letter
-        if(*nextCharLex != '\\')
+        if (*nextCharLex != '\\')
         {
             *nextCharLit = *nextCharLex;
         }
@@ -232,7 +247,7 @@ int stringLiteral(int code)
         nextCharLit++;
     }
 
-    //don't forget the null character
+    // don't forget the null character
     *nextCharLit = '\0';
 
     return code;
@@ -246,9 +261,9 @@ int multiLineString(int code)
     leaf(code);
     changeSymbolName("multilineStringLiteral");
 
-    nextToken->sval = (char *) malloc(sizeof(char) * (strlen(nextToken->text) + 1));
+    nextToken->sval = (char *)malloc(sizeof(char) * (strlen(nextToken->text) + 1));
 
-    if(nextToken->sval == NULL)
+    if (nextToken->sval == NULL)
     {
         fprintf(stderr, "Malloc failed\n");
         exit(1);
@@ -259,42 +274,44 @@ int multiLineString(int code)
 
     int len = strlen(nextToken->text);
 
-    //copy string without the triple quotes
-    for(int i = 3; i < len - 3; i++)
+    // copy string without the triple quotes
+    for (int i = 3; i < len - 3; i++)
     {
         *nextCharLit = nextCharLex[i];
         nextCharLit++;
     }
-    //don't forget to close the string
+    // don't forget to close the string
     *nextCharLit = '\0';
-
 
     return code;
 }
 
-char * removeUnderscores()
+char *removeUnderscores()
 {
     char *nextCharLex = nextToken->text;
-    char *nextCharLit = (char*) malloc(sizeof(char) * (strlen(yytext) + 1));
+    char *nextCharLit = (char *)malloc(sizeof(char) * (strlen(yytext) + 1));
     int i = 0;
-    for(int j = 0; nextCharLex[i] != '\0'; i++)
+    for (int j = 0; nextCharLex[i] != '\0'; i++)
     {
-        if(*nextCharLex == '_')
+        if (*nextCharLex == '_')
         {
             j++;
         }
         else
         {
-            nextCharLit[i] = nextCharLex[j+i];
+            nextCharLit[i] = nextCharLex[j + i];
         }
     }
     nextCharLit[i] = '\0';
     return nextCharLit;
 }
 
-int addSemi(){
-    if (!nextToken) return 0; // Null
-    switch(nextToken->category){
+int addSemi()
+{
+    if (!nextToken)
+        return 0; // Null
+    switch (nextToken->category)
+    {
         case INTEGER_LITERAL:
         case HEX_LITERAL:
         case REAL_LITERAL:
@@ -323,4 +340,188 @@ int addSemi(){
         default:
             return 0; // False
     }
+}
+
+/**
+ * @brief Checks if a token is the end of a statement
+ *
+ * @param tok
+ * @return true
+ */
+bool isEndOfStmt(int tok) {
+    switch (tok) {
+        case INTEGER_LITERAL:
+        case HEX_LITERAL:
+        case REAL_LITERAL:
+        case CHARACTER_LITERAL:
+        case TRUE:
+        case FALSE:
+        case IDENTIFIER:
+        case LINE_STRING:
+        case BREAK:
+        case CONTINUE:
+        case RETURN:
+        case MULTILINE_STRING:
+        case INCR:
+        case DECR:    
+        case RSQUARE:
+        case RPAREN:
+        case RCURL:
+        case SEMICOLON:
+        case NULL_K:
+        case BYTE:
+        case INT:
+        case DOUBLE:
+        case BOOL:
+        case CHAR:
+        case STRING:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/**
+ * @brief Which tokens should start a fresh statement
+ *
+ * @param tok
+ * @return bool
+ */
+bool isBeginOfStmt(int tok) {
+    switch (tok) {
+    case IF:
+    case FOR:
+    case WHILE:
+    case DO:
+    case IDENTIFIER:  // e.g. a bare expression statement
+    case RETURN:
+    case BREAK:
+    case CONTINUE:
+    case LPAREN:
+    case RCURL: // This pushes the problem to var in line 24
+    case VAR: //case VAL: This pushes the problem to z on line 70
+    case FUN:
+    case VAL:
+        return true;
+      default:
+        return false;
+    }
+}
+
+extern int yylex(void);
+//#undef yylex
+//#define k0_yylex yylex
+
+int k0_yylex(void) {
+    return yylex();
+}
+
+/**
+ * @brief Wrapper for yylex
+ *
+ * TODO: Need to have a way to check past and future.
+ *
+ * @return int
+ */
+int yylex3(void) {
+    int tok = 0;
+    if (savedToken) {
+        fprintf(stderr,
+                "Replay savedToken=%d\n",
+                savedToken);
+        if (saved_lval.treeptr) {
+            fprintf(stderr,
+                    "        symbolname=\"%s\"\n",
+                    saved_lval.treeptr->symbolname);
+        }
+        yylval = saved_lval;
+        tok = savedToken;
+        savedToken = 0;
+        lastToken  = tok;
+        return tok;
+    }
+
+    tok = k0_yylex();
+    // fprintf(stderr,
+    //        "Got raw tok=%d, lastToken=%d, saw_newline=%d at line %d\n",
+    //        tok, lastToken, saw_newline, rows);
+
+    if (saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(tok)) {
+        savedToken = tok;
+        saved_lval = yylval;
+        // fprintf(stderr,
+        //         "Saving lookahead tok=%d\n",
+        //         savedToken);
+        if (saved_lval.treeptr) {
+            // fprintf(stderr,
+            //         "        saved symbolname=\"%s\"\n",
+            //         saved_lval.treeptr->symbolname);
+        }
+        tok = SEMICOLON;
+        saw_newline = 0;
+        fprintf(stderr, "Injecting SEMICOLON instead\n");
+        return savedToken;
+    }
+
+    
+    lastToken  = tok;
+    return tok;
+}
+
+/**
+ * 
+ */
+int yylex2(void){
+    int tok = 0; // Carrier of the semis
+    char *temp = NULL;
+    // Preloading
+    if(lastToken == 0){
+        lastToken = k0_yylex();
+        last_lval = yylval;
+    }
+
+    // Avoid yylex
+    if (inserted == 1){
+        inserted = 0;
+        yylval = last_lval;
+        tok = lastToken;
+        last_lval = saved_lval;
+        lastToken = savedToken;
+        printf("%s\n", yylval.treeptr->leaf->text);
+        return tok;
+    }
+
+    savedToken = k0_yylex(); // Messages from the future
+    saved_lval = yylval;
+
+
+    
+
+    if(saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(savedToken)){
+        temp = yytext;
+        yytext = ";";
+        tok = leaf(SEMICOLON);
+        yytext = temp;
+        
+        blightToken = lastToken;
+        magic_lval = last_lval;
+        last_lval = yylval;
+        lastToken = tok;
+        tok = blightToken;
+        yylval = magic_lval;
+        saw_newline = 0;
+        inserted = 1; // The answer is always more global variables
+        printf("%s\n", yylval.treeptr->leaf->text);
+        return tok;
+    }
+    
+
+    // BEGIN THE GREAT SHIFTING
+    saw_newline = 0;
+    yylval = last_lval;
+    tok = lastToken;
+    last_lval = saved_lval;
+    lastToken = savedToken;
+    printf("%s\n", yylval.treeptr->leaf->text);
+    return tok;
 }
