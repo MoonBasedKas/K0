@@ -391,6 +391,7 @@ bool isBeginOfStmt(int tok) {
     case CONTINUE:
     case RCURL: // This pushes the problem to var in line 24
     case VAR: //case VAL: This pushes the problem to z on line 70
+    case FUN:
     case VAL:
         return true;
       default:
@@ -507,6 +508,7 @@ int yylex2(void){
     
 
     // BEGIN THE GREAT SHIFTING
+    saw_newline = 0;
     yylval = last_lval;
     tok = lastToken;
     last_lval = saved_lval;
