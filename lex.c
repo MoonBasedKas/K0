@@ -354,6 +354,8 @@ bool isEndOfStmt(int tok) {
         case HEX_LITERAL:
         case REAL_LITERAL:
         case CHARACTER_LITERAL:
+        case TRUE:
+        case FALSE:
         case IDENTIFIER:
         case LINE_STRING:
         case BREAK:
