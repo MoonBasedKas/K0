@@ -57,10 +57,15 @@ void localAddr(struct tree *node)
         case varDec:
         case varDecQuests:
             entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
-            if (entry && entry->scope)
+            if (entry) {
+                struct symTab *scope = node->table;
+                while (scope->parent) {
+                    scope = scope->parent;
+                }
                 entry->addr = genLocal(
                         typeSize(entry->type),
-                        entry->scope); // tac.c typeHelpers.c
+                        scope); // tac.c typeHelpers.c
+            }
             break;
 
         case funcDecAll:
