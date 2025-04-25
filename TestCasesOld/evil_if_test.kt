@@ -58,7 +58,7 @@ fun ifelse() : Int {
 }
 
 
-fun elif(){
+fun elif(): Int{
     if (1 == 1){
         return 1;
     } else if (1==1){
