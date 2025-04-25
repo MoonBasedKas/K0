@@ -366,6 +366,7 @@ bool isEndOfStmt(int tok) {
         case RPAREN:
         case RCURL:
         case SEMICOLON:
+        case NULL_K:
             return true;
         default:
             return false;
@@ -390,6 +391,7 @@ bool isBeginOfStmt(int tok) {
     case CONTINUE:
     case RCURL: // This pushes the problem to var in line 24
     case VAR: //case VAL: This pushes the problem to z on line 70
+    case VAL:
         return true;
       default:
         return false;
