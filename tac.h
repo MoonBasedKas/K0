@@ -21,8 +21,9 @@ struct addr
 #define R_CLASS 2003  /* can assemble as relative to the 'this' register */
 #define R_LABEL 2004  /* pseudo-region for labels in the code region */
 #define R_CONST 2005  /* pseudo-region for immediate mode constants */
-#define R_NAME 2006   /* pseudo-region for source names */
-#define R_NONE 2007   /* pseudo-region for unused addresses */
+#define R_STRING 2006     /* pseudo-region for strings */
+#define R_NAME 2007   /* pseudo-region for source names */
+#define R_NONE 2008   /* pseudo-region for unused addresses */
 
 struct instr
 {
@@ -84,4 +85,5 @@ struct addr *genLocal(int size, struct symTab *scope);
 struct addr *genConst(int val);
 void tacPrint(struct instr *code);
 void freeInstrList(struct instr *list);
+void recordStringLiteral(const char *raw);
 #endif

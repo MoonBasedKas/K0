@@ -10,7 +10,7 @@
 FILE *iTarget = NULL;
 
 // Handles names
-char *regionnames[] = {"global", "loc", "class", "lab", "const", "name", "none"};
+char *regionnames[] = {"global", "loc", "class", "lab", "const", "str", "name", "none"};
 char *regionName(int i)
 {
     return regionnames[i - R_GLOBAL];
@@ -155,6 +155,29 @@ struct instr *concatInstrList(struct instr *l1, struct instr *l2)
 }
 
 /**
+ *  Stuff for grabbing the string list for easier printing
+ *  D_GLOB printed where it wanted
+ *  fuck D_GLOB
+ */
+
+struct StringLit {
+    char *s;
+    int   len;
+    struct StringLit *next;
+};
+
+static struct StringLit *stringHead = NULL;
+
+
+void recordStringLiteral(const char *raw) {
+    struct StringLit *n = malloc(sizeof *n);
+    n->len  = strlen(raw) + 1;
+    n->s    = strdup(raw);
+    n->next = stringHead;
+    stringHead = n;
+}
+
+/**
  * @brief Print the address in a human-readable format.
  *
  * @param a The address to print.
@@ -178,6 +201,13 @@ static void printAddr(struct addr *a)
     case R_CONST:
         fprintf(iTarget, "const:%d", a->u.offset);
         break;
+    case R_STRING: // Catch like below
+        if (a->u.name) {
+            fprintf(iTarget, "\"%s\"", a->u.name);
+        } else {
+            fprintf(iTarget, "str:%d", a->u.offset);
+        }
+        break;
     case R_NAME:
         // If .u.name is set, print it; otherwise, fallback to offset.
         if (a->u.name)
@@ -197,6 +227,20 @@ static void printAddr(struct addr *a)
 }
 
 /**
+ * @brief Drops the string section
+ * 
+ * This was easier than trying to align everything in a cursed IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE
+ * @param out
+ */
+void dumpStringSection(FILE *out) {
+    for (struct StringLit *p = stringHead; p; p = p->next) {
+        // one .string directive per literal
+        fprintf(out, ".string %d\n", p->len);
+        fprintf(out, "\t\"%s\"\n", p->s);
+    }
+}
+
+/**
  * @brief Print the TAC code out
  *
  * @param code The TAC list to print.
@@ -204,172 +248,87 @@ static void printAddr(struct addr *a)
 void tacPrint(struct instr *code)
 {
     struct instr *p = code;
+
+    // first emit all string literals
+    dumpStringSection(iTarget);
+
     while (p)
     {
-
-        // Handle pseudo first (D_GLOB, D_PROC, etc.)
-        if (p->opcode >= D_GLOB && p->opcode <= D_PROT)
+        // skip the string length + data pair since we already dumped them
+        if (p->opcode == D_GLOB
+            && p->dest && p->dest->region == R_CONST
+            && p->next && p->next->opcode == D_GLOB
+            && p->next->dest && p->next->dest->region == R_STRING)
         {
-
-            /*
-             * .string 8 => D_GLOB, dest->region = R_GLOBAL, offset=8
-             * "Variable i is %d.\000" => D_GLOB, dest->region=R_NAME, .u.name=...
-             */
-            if (p->opcode == D_GLOB) {
-            if (p->dest && p->dest->region == R_CONST) {
-                /* .string <length> */
-                fprintf(iTarget, ".string %d\n", p->dest->u.offset);
-            }
-            else if (p->dest && p->dest->region == R_NAME && p->dest->u.name) {
-                /*     "<your literal>\000" */
-                fprintf(iTarget, "\t%s\n", p->dest->u.name);
-            }
-            else {
-                /* fallback for other glob‑style uses */
-                fprintf(iTarget, "%s ", pseudoName(p->opcode));
-                if (p->dest) printAddr(p->dest);
-                fprintf(iTarget, "\n");
-            }
+            p = p->next->next;
+            continue;
         }
-            else if (p->opcode == D_LABEL)
+
+        // skip any lone string length entry
+        if (p->opcode == D_GLOB
+            && p->dest && p->dest->region == R_CONST)
+        {
+            p = p->next;
+            continue;
+        }
+
+        if (p->opcode == D_PROC)
+        {
+            // procedure header
+            fprintf(iTarget, "proc ");
+            printAddr(p->dest);
+            fprintf(iTarget, ",%d,%d\n",
+                    p->src1->u.offset,
+                    p->src2->u.offset);
+        }
+        else if (p->opcode == D_LABEL)
+        {
+            // code section or label
+            if (p->dest->region == R_NAME
+                && strcmp(p->dest->u.name, ".code") == 0)
             {
-                // Possibly .code or some other label.
-                if (p->dest && p->dest->region == R_NAME && p->dest->u.name && strcmp(p->dest->u.name, ".code") == 0)
-                {
-                    fprintf(iTarget, ".code\n");
-                }
-                else
-                {
-                    // "lab <dest>"
-                    fprintf(iTarget, "%s ", pseudoName(p->opcode));
-                    if (p->dest)
-                    {
-                        printAddr(p->dest);
-                    }
-                    fprintf(iTarget, "\n");
-                }
-            }
-            else if (p->opcode == D_PROC)
-            {
-                fprintf(iTarget, "proc ");
-                // Usually dest=R_NAME:"main"
-                if (p->dest && p->dest->region == R_NAME && p->dest->u.name)
-                {
-                    fprintf(iTarget, "%s", p->dest->u.name);
-                }
-                else if (p->dest)
-                {
-                    printAddr(p->dest);
-                }
-
-                fprintf(iTarget, ",");
-
-                // src1 => param count -> R_CONST
-                if (p->src1 && p->src1->region == R_CONST)
-                {
-                    fprintf(iTarget, "%d", p->src1->u.offset);
-                }
-                else if (p->src1)
-                {
-                    printAddr(p->src1);
-                }
-
-                fprintf(iTarget, ",");
-
-                // src2 => local size -> R_CONST
-                if (p->src2 && p->src2->region == R_CONST)
-                {
-                    fprintf(iTarget, "%d", p->src2->u.offset);
-                }
-                else if (p->src2)
-                {
-                    printAddr(p->src2);
-                }
-
-                fprintf(iTarget, "\n");
+                fprintf(iTarget, ".code\n");
             }
             else
             {
-                // pseudo-ops print
-                fprintf(iTarget, "\t%s ", pseudoName(p->opcode));
-                if (p->dest)
-                {
-                    printAddr(p->dest);
-                }
-                if (p->src1)
-                {
-                    fprintf(iTarget, ",");
-                    printAddr(p->src1);
-                }
-                if (p->src2)
-                {
-                    fprintf(iTarget, ",");
-                    printAddr(p->src2);
-                }
+                fprintf(iTarget, "lab ");
+                printAddr(p->dest);
+                fprintf(iTarget, "\n");
             }
+        }
+        else if (p->opcode >= D_GLOB && p->opcode <= D_PROT)
+        {
+            // other pseudo-ops
+            fprintf(iTarget, "\t%s ", pseudoName(p->opcode));
+            if (p->dest)  printAddr(p->dest);
+            if (p->src1) { fprintf(iTarget, ","); printAddr(p->src1); }
+            if (p->src2) { fprintf(iTarget, ","); printAddr(p->src2); }
+            fprintf(iTarget, "\n");
+        }
+        else if (p->opcode == O_CALL)
+        {
+            // call instruction
+            fprintf(iTarget, "\tCALL\t");
+            printAddr(p->dest);
+            fprintf(iTarget, ",%d,", p->src1->u.offset);
+            printAddr(p->src2);
+            fprintf(iTarget, "\n");
         }
         else if (p->opcode >= O_ADD && p->opcode <= O_RET)
         {
-            // ops and stuff prints
-            if (p->opcode == O_CALL)
-            { // STUPID SPECIFIC FORMATING FOR MY OCD BRAIN
-                fprintf(iTarget, "\tCALL\t");
-
-                if (p->dest && p->dest->region == R_NAME && p->dest->u.name)
-                {
-                    fprintf(iTarget, "%s", p->dest->u.name);
-                }
-                else if (p->dest)
-                {
-                    printAddr(p->dest); // incase
-                }
-
-                fprintf(iTarget, ",");
-
-                // src1 => #params, const:2 -> print just "2" !!!!1!one
-                if (p->src1 && p->src1->region == R_CONST)
-                {
-                    fprintf(iTarget, "%d", p->src1->u.offset);
-                }
-                else if (p->src1)
-                {
-                    printAddr(p->src1);
-                }
-
-                fprintf(iTarget, ",");
-
-                // src2 => return storage -> loc:24
-                if (p->src2)
-                {
-                    printAddr(p->src2);
-                }
-
-                fprintf(iTarget, "\n");
-            }
-            else
-            {
-                fprintf(iTarget, "\t%s\t", opCodeName(p->opcode));
-                if (p->dest)
-                {
-                    printAddr(p->dest);
-                }
-                if (p->src1)
-                {
-                    fprintf(iTarget, ",");
-                    printAddr(p->src1);
-                }
-                if (p->src2)
-                {
-                    fprintf(iTarget, ",");
-                    printAddr(p->src2);
-                }
-                fprintf(iTarget, "\n");
-            }
+            // arithmetic or branch
+            fprintf(iTarget, "\t%s\t", opCodeName(p->opcode));
+            if (p->dest)  printAddr(p->dest);
+            if (p->src1) { fprintf(iTarget, ","); printAddr(p->src1); }
+            if (p->src2) { fprintf(iTarget, ","); printAddr(p->src2); }
+            fprintf(iTarget, "\n");
         }
         else
         {
+            // anything else
             fprintf(iTarget, "UNKNOWN(%d)\n", p->opcode);
         }
+
         p = p->next;
     }
 }
