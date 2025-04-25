@@ -91,8 +91,8 @@ void localAddr(struct tree *node)
 
 /**
  * @brief Creates basic blocks for iCode
- * 
- * @param node 
+ *
+ * @param node
  */
 void basicBlocks(struct tree *node)
 {
@@ -110,6 +110,11 @@ void basicBlocks(struct tree *node)
 
     switch (node->prodrule)
     {
+    case funcDecAll:
+    case funcDecParamType:
+    case funcDecParamBody:
+    case funcDecTypeBody:
+    case funcDecType:
     case funcDecBody: {
         // Generate PROC header with correct local size
         struct addr *procName = malloc(sizeof *procName);
@@ -438,22 +443,28 @@ void basicBlocks(struct tree *node)
     case FALSE:
     case NULL_K:
         break;
-    case LINE_STRING:
-    case MULTILINE_STRING:{
-    int len = strlen(node->leaf->sval) + 1;
-    struct addr *sizeAddr = malloc(sizeof *sizeAddr);
-    sizeAddr->region = R_GLOBAL;
-    sizeAddr->u.offset = len;
 
-    struct instr *code = genInstr(D_GLOB, sizeAddr, NULL, NULL);
-    struct addr *strAddr = malloc(sizeof *strAddr);
-    strAddr->region = R_NAME;
-    strAddr->u.name = strdup(node->leaf->sval);
-    code = appendInstrList(code, genInstr(D_GLOB, strAddr, NULL, NULL));
-    node->icode = code;
-    node->addr = strAddr;
-    break;
-}
+    case LINE_STRING:
+    case MULTILINE_STRING:
+    {
+        int len = strlen(node->leaf->sval) + 1;
+
+        // Calculate the size of the string
+        struct addr *sizeAddr = malloc(sizeof *sizeAddr);
+        sizeAddr->region = R_CONST;
+        sizeAddr->u.offset = len;
+        struct instr *code = genInstr(D_GLOB, sizeAddr, NULL, NULL);
+
+        // Create the string address with our dedicated String region
+        struct addr *strAddr = malloc(sizeof *strAddr);
+        strAddr->region = R_STRING;
+        strAddr->u.name = strdup(node->leaf->sval);
+        code = appendInstrList(code, genInstr(D_GLOB, strAddr, NULL, NULL));
+        recordStringLiteral(node->leaf->sval); // tac.c for printing
+        node->icode = code;
+        node->addr = strAddr;
+        break;
+    }
 
     case IDENTIFIER:
         struct symTab *scope = node->table;
@@ -550,7 +561,7 @@ void assignFirst(struct tree *node)
     case whileStmntCtrlBody:
     case doWhileStmnt:
         /* only gen a .first if this node has icode, its parent does not,
-        and that parent actually exists 
+        and that parent actually exists
         */
         if (node->icode && node->parent && node->parent->icode == NULL)
         {
