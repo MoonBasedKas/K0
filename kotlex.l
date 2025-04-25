@@ -71,7 +71,7 @@ directive               "# "{integer_literal}" "\"{identifier}\"
 
 %%
 
-{new_line}										{ rows++; saw_newline = 1; }
+{new_line}										{ rows++; saw_newline = 1;}
 
 {white_space}									{ /* Discard white space */ }
 {line_comment}          						{ /* Discard comments */  }

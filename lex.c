@@ -11,9 +11,11 @@
 #include "errorHandling.h"
 
 int saw_newline = 0;
+int inserted = 0;
 static int lastToken = 0;
 static int savedToken = 0;
-static YYSTYPE saved_lval;
+static int blightToken = 0; // A blight upon my day.
+static YYSTYPE saved_lval, last_lval, magic_lval;
 
 /**
  * @brief Counts the number of newlines in yytext and adds them to rows
@@ -95,7 +97,7 @@ int token(int code)
 int leaf(int code)
 {
     token(code);
-
+    // printf("%s\n", yytext);
     yylval.treeptr = alctoken(code, nextToken->text, 0); // tree.c
     yylval.treeptr->leaf = nextToken;
 
@@ -348,24 +350,25 @@ int addSemi()
  */
 bool isEndOfStmt(int tok) {
     switch (tok) {
-    case INTEGER_LITERAL:
-    case HEX_LITERAL:
-    case REAL_LITERAL:
-    case CHARACTER_LITERAL:
-    case IDENTIFIER:
-    case LINE_STRING:
-    case BREAK:
-    case CONTINUE:
-    case RETURN:
-    case MULTILINE_STRING:
-    case INCR:
-    case DECR:
-    case RSQUARE:
-    case RPAREN:
-    case RCURL:
-        return true;
-      default:
-        return false;
+        case INTEGER_LITERAL:
+        case HEX_LITERAL:
+        case REAL_LITERAL:
+        case CHARACTER_LITERAL:
+        case IDENTIFIER:
+        case LINE_STRING:
+        case BREAK:
+        case CONTINUE:
+        case RETURN:
+        case MULTILINE_STRING:
+        case INCR:
+        case DECR:    
+        case RSQUARE:
+        case RPAREN:
+        case RCURL:
+        case SEMICOLON:
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -385,8 +388,8 @@ bool isBeginOfStmt(int tok) {
     case RETURN:
     case BREAK:
     case CONTINUE:
-    // case RCURL: This pushes the problem to var in line 24
-    // case VAR: case VAL: This pushes the problem to z on line 70
+    case RCURL: // This pushes the problem to var in line 24
+    case VAR: //case VAL: This pushes the problem to z on line 70
         return true;
       default:
         return false;
@@ -408,9 +411,8 @@ int k0_yylex(void) {
  *
  * @return int
  */
-int yylex2(void) {
-    int tok;
-
+int yylex3(void) {
+    int tok = 0;
     if (savedToken) {
         fprintf(stderr,
                 "Replay savedToken=%d\n",
@@ -428,26 +430,85 @@ int yylex2(void) {
     }
 
     tok = k0_yylex();
-    fprintf(stderr,
-           "Got raw tok=%d, lastToken=%d, saw_newline=%d at line %d\n",
-           tok, lastToken, saw_newline, rows);
+    // fprintf(stderr,
+    //        "Got raw tok=%d, lastToken=%d, saw_newline=%d at line %d\n",
+    //        tok, lastToken, saw_newline, rows);
 
     if (saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(tok)) {
         savedToken = tok;
         saved_lval = yylval;
-        fprintf(stderr,
-                "Saving lookahead tok=%d\n",
-                savedToken);
+        // fprintf(stderr,
+        //         "Saving lookahead tok=%d\n",
+        //         savedToken);
         if (saved_lval.treeptr) {
-            fprintf(stderr,
-                    "        saved symbolname=\"%s\"\n",
-                    saved_lval.treeptr->symbolname);
+            // fprintf(stderr,
+            //         "        saved symbolname=\"%s\"\n",
+            //         saved_lval.treeptr->symbolname);
         }
         tok = SEMICOLON;
+        saw_newline = 0;
         fprintf(stderr, "Injecting SEMICOLON instead\n");
+        return savedToken;
     }
 
-    saw_newline = 0;
+    
     lastToken  = tok;
+    return tok;
+}
+
+/**
+ * 
+ */
+int yylex2(void){
+    int tok = 0; // Carrier of the semis
+    char *temp = NULL;
+    // Preloading
+    if(lastToken == 0){
+        lastToken = k0_yylex();
+        last_lval = yylval;
+    }
+
+    // Avoid yylex
+    if (inserted == 1){
+        inserted = 0;
+        yylval = last_lval;
+        tok = lastToken;
+        last_lval = saved_lval;
+        lastToken = savedToken;
+        printf("%s\n", yylval.treeptr->leaf->text);
+        return tok;
+    }
+
+    savedToken = k0_yylex(); // Messages from the future
+    saved_lval = yylval;
+
+
+    
+
+    if(saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(savedToken)){
+        temp = yytext;
+        yytext = ";";
+        tok = leaf(SEMICOLON);
+        yytext = temp;
+        
+        blightToken = lastToken;
+        magic_lval = last_lval;
+        last_lval = yylval;
+        lastToken = tok;
+        tok = blightToken;
+        yylval = magic_lval;
+        saw_newline = 0;
+        inserted = 1; // The answer is always more global variables
+        printf("%s\n", yylval.treeptr->leaf->text);
+        return tok;
+    }
+    
+
+    // BEGIN THE GREAT SHIFTING
+    yylval = last_lval;
+    tok = lastToken;
+    last_lval = saved_lval;
+    lastToken = savedToken;
+    printf("%s\n", yylval.treeptr->leaf->text);
     return tok;
 }

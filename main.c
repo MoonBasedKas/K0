@@ -100,6 +100,7 @@ int main(int argc, char *argv[])
 
         // yydebug = 1;
         yyparse();
+        printTree(root, 0);
         buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);
         if (debug == 1)
