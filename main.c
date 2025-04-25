@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 
         // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
-        iTarget = openGenFile(fileNames[i], "ic");
+        //iTarget = openGenFile(fileNames[i], "ic");
 
         // yydebug = 1;
         yyparse();
@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
         giveTables(root);
         if (debug == 1)
             findNullTables(root);
+        verifyDeclared(root, rootScope); // symTabHelper.c
         struct symEntry *x = NULL;
         if ((x = contains(rootScope, "nextInt")) != NULL)
             x->type = alcType(INT_TYPE);
@@ -125,7 +126,7 @@ int main(int argc, char *argv[])
         typeCheck(root);
         checkNullability(root);
         checkMutability(root);
-        verifyDeclared(root, rootScope); // symTabHelper.c
+
         if (symError != 0 && debug == 0)
             return 3; // If something is undeclared.
 
@@ -158,12 +159,10 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        // Code generation
-        // buildICode(root);
 
-        buildICode(root);
-        tacPrint(root->icode);
-        if (iTarget != NULL) fclose(iTarget);
+        // buildICode(root);
+        // tacPrint(root->icode);
+        // if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
