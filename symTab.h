@@ -1,5 +1,5 @@
-#ifndef symTab_H
-#define symTAB_H
+#ifndef SYMTAB_H
+#define SYMTAB_H
 #include "tree.h"
 
 

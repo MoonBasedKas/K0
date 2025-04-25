@@ -15,6 +15,8 @@
 #include "typeCheck.h"
 #include "symTabHelper.h"
 #include "errorHandling.h"
+#include "tac.h"
+#include "icode.h"
 
 char *filename;
 char temp[100];
@@ -23,7 +25,9 @@ extern struct tree *root;
 extern int printTree(struct tree *root, int depth);
 extern void freeTree(struct tree *node);
 extern int yylex_destroy(void);
+extern FILE *iTarget;
 void openFile(char *name);
+FILE *openGenFile(char *name, char *ext);
 void populateTypes();
 void populateStdlib();
 void populateLibraries();
@@ -97,10 +101,12 @@ int main(int argc, char *argv[])
 
         // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
+        iTarget = openGenFile(fileNames[i], "ic");
 
         // yydebug = 1;
         yyparse();
-        printTree(root, 0);
+
+        // Semantic analysis
         buildSymTabs(root, rootScope); // symTabHelper.c
         giveTables(root);
         if (debug == 1)
@@ -152,7 +158,12 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
+        // Code generation
+        // buildICode(root);
 
+        buildICode(root);
+        tacPrint(root->icode);
+        if (iTarget != NULL) fclose(iTarget);
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
@@ -209,4 +220,34 @@ void openFile(char *name)
         fprintf(stderr, "File %s cannot be opened.\n", filename);
         exit(1);
     }
+}
+
+/**
+ * @brief A more general way of writing to files
+ * 
+ * @param name 
+ * @param ext 
+ * @param f 
+ */
+FILE *openGenFile(char *name, char *ext)
+{
+    /* build output filename */
+    char *n = malloc(strlen(name) + strlen(ext) + 2);
+    if (!n) {
+        perror("malloc");
+        exit(1);
+    }
+    strcpy(n, name);
+    char *dot = strrchr(n, '.');
+    if (dot) *dot = '\0';
+    strcat(n, ".");
+    strcat(n, ext);
+
+    FILE *f = fopen(n, "w");
+    if (!f) {
+        perror("opening generated file");
+        exit(1);
+    }
+    free(n);
+    return f;
 }

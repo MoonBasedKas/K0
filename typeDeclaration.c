@@ -367,6 +367,7 @@ void assignType(struct tree *n, struct symTab *rootScope)
 struct tree *createEmptyParam(void)
 {
     struct tree *emptyParam = malloc(sizeof(struct tree));
+    memset(emptyParam, 0, sizeof(struct tree));
     if (emptyParam == NULL)
     {
         fprintf(stderr, "Failed to allocate memory for empty parameter node.\n");

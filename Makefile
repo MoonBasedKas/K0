@@ -6,7 +6,7 @@ BISON=bison
 HFLAG=-d
 EXEC=k0
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o typeDeclaration.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o typeDeclaration.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o tac.o icode.o
 	$(CC) $(CFLAGS) $^ -o $@
 
 main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
@@ -57,11 +57,17 @@ symTabHelper.o: symTabHelper.c symTabHelper.h symTab.h tree.h type.h typeHelpers
 errorHandling.o: errorHandling.c errorHandling.h
 	$(CC) $(OBJFLAGS) $<
 
+tac.o: tac.c symTab.h tac.h 
+	$(CC) $(OBJFLAGS) $<
+
+icode.o: icode.c icode.h 
+	$(CC) $(OBJFLAGS) $<
+
 dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
 clean:
-	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9
+	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9 *.ic
 
 valgrind: k0
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
