@@ -231,40 +231,6 @@ int checkExistance(struct tree *node, struct symTab *scope){
 }
 
 /**
- * @brief If the math module is called add its functions to global.
- * This is done because I don't want scope looking to have a time
- * complexity of O(n).
- *
- * @return int
- */
-// int addMathModule(){
-//     struct symEntry *temp = NULL;
-//     addSymTab(rootScope, "abs", VARIABLE); //symTab.c
-//     temp = contains(rootScope, "abs");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "max", VARIABLE);
-//     temp = contains(rootScope, "max");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "min", VARIABLE);
-//     temp = contains(rootScope, "min");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "pow", VARIABLE);
-//     temp = contains(rootScope, "pow");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "cos", VARIABLE);
-//     temp = contains(rootScope, "cos");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "sin", VARIABLE);
-//     temp = contains(rootScope, "sin");
-//     temp->type = alcType(FUNCTION_TYPE);
-//     addSymTab(rootScope, "tan", VARIABLE);
-//     temp = contains(rootScope, "tan");
-//     temp->type = alcType(FUNCTION_TYPE);
-
-//     return 0;
-// }
-
-/**
  * @brief Removed everything except for Array.
  *
  */
