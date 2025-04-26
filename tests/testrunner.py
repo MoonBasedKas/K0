@@ -50,7 +50,7 @@ class test:
         self.targets = []
         self.executable = "../k0"
         self.subArgs = []
-        
+
         self.success = 0
         self.lex = 0
         self.syntax = 0
@@ -63,7 +63,7 @@ class test:
     def parseDirectory(self, directory, files):
         for fp in files:
             self.addTarget(f"{directory}/{fp}", f"{directory}:None")
-    
+
     def addTarget(self, file, expected):
         self.targets.append(data(file, expected))
 
@@ -74,10 +74,10 @@ class test:
     runs tests
     """
     def executeTests(self):
-        for tar in self.targets: 
+        for tar in self.targets:
             print(tar.file)
             tar.execute(self.executable, self.subArgs)
-        
+
         print("Test results")
         for tar in self.targets:
             print("-----")
@@ -133,17 +133,17 @@ class data:
             cmd.append(arg)
 
         result = subprocess.run(cmd, capture_output=True)
-        
+
         self.resultData = result
         self.result = result.returncode
-        
+
 testData = test() # Bad coding practice but I need the POWER!
 
 def main():
     global testData
     args = sys.argv
     args.pop(0) # Removes first elem
-    if args == []: 
+    if args == []:
         defaultCase()
         return 0
     else:
@@ -159,8 +159,8 @@ def main():
                 testData.loadOption(temp)
             elif temp == "-stdout":
                 testData.setStdout(True)
-        
-            
+
+
         defaultCase()
         return 0
 
@@ -172,19 +172,20 @@ def defaultCase():
     global testData
 
     error = os.listdir("./errors")
-    kotlin = os.listdir("./kotlin")
+    # kotlin = os.listdir("./kotlin")
     k0 = os.listdir("./k0")
+    testsOld = os.listdir("./TestCasesOld")
 
     if error != []: testData.parseDirectory("./errors", error)
-    if kotlin != []: testData.parseDirectory("./kotlin", kotlin)
+    # if kotlin != []: testData.parseDirectory("./kotlin", kotlin)
     if k0 != []: testData.parseDirectory("./k0", k0)
-
+    if testsOld != []: testData.parseDirectory("./TestCasesOld", testsOld)
     testData.executeTests()
 
     return 0
 
 """
-Tired of your code being written like its the 1960's? With this new invention 
+Tired of your code being written like its the 1960's? With this new invention
 any string can be turned into the RAINBOW*.
 
 * just one specific color.

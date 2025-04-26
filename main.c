@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
     int symtab = 0;
     int fileCount = 0;
     int debug = 0;
-
+    int ic = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
     if (fileNames == NULL)
     {
@@ -67,6 +67,10 @@ int main(int argc, char *argv[])
         {
             debug = 1;
         }
+        else if (!strcmp(argv[i], "-ic"))
+        {
+            ic = 1;
+        }
         else if (!strcmp(argv[i], "-help"))
         {
             printf("Usage ./k0 [option]|[file] ...\n");
@@ -75,6 +79,7 @@ int main(int argc, char *argv[])
             printf("-dot: Generates a dot file, needs to be compiled.\n");
             printf("-tree: View the syntax tree of the program.\n");
             printf("-symtab: View the symbol tables.\n");
+            printf("-ic: View the intermediate code.\n");
             printf("-debug: One does not reveal what their debug command does.\n");
         }
         else
@@ -86,7 +91,7 @@ int main(int argc, char *argv[])
 
     if (fileCount == 0)
     {
-        fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
+        fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] [-ic] {filename1} {filename2} ...\n");
         free(fileNames);
         exit(1);
     }
@@ -101,7 +106,6 @@ int main(int argc, char *argv[])
 
         // checks that the file name is legal and opens the file
         openFile(fileNames[i]);
-        iTarget = openGenFile(fileNames[i], "ic");
 
         // yydebug = 1;
         yyparse();
@@ -126,6 +130,8 @@ int main(int argc, char *argv[])
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); // symTabHelper.c
+        buildICode(root);
+
         if (symError != 0 && debug == 0)
             return 3; // If something is undeclared.
 
@@ -158,12 +164,12 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        // Code generation
-        // buildICode(root);
-
-        buildICode(root);
-        tacPrint(root->icode);
-        if (iTarget != NULL) fclose(iTarget);
+        if (ic)
+        {
+            iTarget = openGenFile(fileNames[i], "ic");
+            tacPrint(root->icode);
+            if (iTarget != NULL) fclose(iTarget);
+        }
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
@@ -224,10 +230,10 @@ void openFile(char *name)
 
 /**
  * @brief A more general way of writing to files
- * 
- * @param name 
- * @param ext 
- * @param f 
+ *
+ * @param name
+ * @param ext
+ * @param f
  */
 FILE *openGenFile(char *name, char *ext)
 {
