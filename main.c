@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
         giveTables(root);
         if (debug == 1)
             findNullTables(root);
+        verifyDeclared(root, rootScope); // symTabHelper.c
         struct symEntry *x = NULL;
         if ((x = contains(rootScope, "nextInt")) != NULL)
             x->type = alcType(INT_TYPE);
