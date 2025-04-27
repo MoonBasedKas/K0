@@ -74,3 +74,5 @@ add_globals:
 4:
 
 ===== Observations =====
+
+Globals as declared explictly in assembly unlike locals which are fetched via rbp.

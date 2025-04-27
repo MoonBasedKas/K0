@@ -54,3 +54,5 @@ local_add:
 4:
 
 ===== Observations =====
+
+Locals are fetched via the rbp.
