@@ -80,3 +80,5 @@ main:
 
 ===== Discussion =====
 
+It appears stdin can just be directly called in assembly for when we need a buffer 
+to write to. The buffer is declared to be 64 and an additional 8 for the pointer.

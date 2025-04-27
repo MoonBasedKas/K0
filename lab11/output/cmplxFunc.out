@@ -93,3 +93,5 @@ main:
 
 ===== Discussion =====
 
+We can see short circuting where there are jump statements that will cause a jump so long as the first 
+statement is true. Then at the end as expected for control flow there will be a jump instruction.
