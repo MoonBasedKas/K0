@@ -1,3 +1,14 @@
+===== Source: expressions3.c =====
+
+int main(){
+    int x = 0;
+    for(int i = 0; i < 20; i++){
+        x += i;
+    }
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
 	.file	"for.c"
 	.text
 	.globl	main
@@ -47,4 +58,9 @@ main:
 	.align 8
 4:
 
+===== Discussion =====
 
+Interestingly while in the for loop we compare if something is less than the instruction is a 
+jump if less than or equal and the comparison is made with 19 instead of 20. The add instruction for the 
+i is done at the very end of the control flow of the main loop rather than the comparison. This works 
+very similar to how a while loop looks and if you were not told this was a for loop you wouldn't know.
