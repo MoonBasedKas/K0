@@ -100,3 +100,5 @@ main:
 ===== Discussion =====
 
 
+Interestingly when leaving a function we pop the rbp. Finally the result is written into the 
+eax register for the simple function.
