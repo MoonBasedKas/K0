@@ -155,3 +155,12 @@ main:
 4:
 
 ===== Observations =====
+
+Return instructions are simply done via ret and called via their name. (Yeah, thats 
+how assembly works...)
+
+The return value is stored in eax/rax (also how assembly works).
+
+The main takeaway would seem that we will need to move the rax value when 
+written into a varaible into where ever its written. Then after each call 
+restore the parameter registers to the value stored in the stack.
