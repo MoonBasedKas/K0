@@ -33,6 +33,7 @@ x:
 4:
 
 ===== Discussion =====
+We can see how the global x is declared, it's incredibly verbose however is given an identifier.
 
 To note (or not) that some things here are sectioned off by gcc, but not for our eyes:
 .file {...}

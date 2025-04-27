@@ -93,3 +93,12 @@ main:
 
 ===== Discussion =====
 
+
+Interestingly these assignments are done directly on the stack itself. 
+
+A pecular instruction is imulq	$1431655766, %rdx, %rdx. Which then the 
+is followed by a shift right. Another unique instruction to keep in mind is 
+sarl which is shrl but keeps the sign. I'm guessing that these instructions 
+are used for the modulo operator.
+
+Increments are done via the add instruction rather than the dec/inc instruction.

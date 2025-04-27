@@ -77,3 +77,6 @@ main:
 
 ===== Discussion =====
 
+We can see how while loops function with two different control flows. First one for the loop which 
+will then break down into one for the comparison where then if true it'll jump back into it. We can 
+also see how values for new varaibles are loaded and assigned as needed.

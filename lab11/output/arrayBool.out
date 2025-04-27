@@ -85,3 +85,8 @@ main:
 
 ===== Discussion =====
 
+The ! operator seems to be done with xoring the value with 1. Arrays of booleans
+are done with a singular byte and are offset by that one byte kinda like a string.
+
+setne could also be called for the ! operator as that follows the current trend of set[char]
+being used for comparisons.
