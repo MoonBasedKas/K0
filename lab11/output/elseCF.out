@@ -168,3 +168,29 @@ main:
 
 ===== Discussion =====
 
+Each function makes it's own .globl section
+.type for each function gives name and what it is @function
+example adjust:
+label adjust:
+cfi_startproc (Call Frame Information) called at beginning of function
+	- Note: CFA (Canonical Frame Address) Defined as the value of the stack pointer
+	at the call site in the previous frame.
+	- cfi stuff is for debugging, but if we _stratproc we need to _endproc (close)
+
+End Branch 64
+Base Pointer
+
+movl %edi, -4(%rbp)
+	- This is the param x moving into the local slot
+we then compare x against 10
+- Jump if x <= 10 we jump to label .L2
+If we didn't jump (x > 10), we subtract 10 from "x" (at -4(%rbp))
+If we jumped we add 10 to x
+
+We jump to .L3
+	- This is post IF/else
+
+we move whatever's in our x (local -4(%rbp)) into %eax is the return register
+
+Note: Local labels .LFB0 and .LFE0
+	"B"egin, "E"nd → Each proc runs up number 0, 1, 2, etc.
