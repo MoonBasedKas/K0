@@ -195,3 +195,5 @@ main:
 
 ===== Discussion =====
 
+Standard proc decs and calls. Reminder leq = Load Effective Address:
+	designated mem loc → target mem loc

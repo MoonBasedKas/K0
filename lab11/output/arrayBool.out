@@ -87,6 +87,12 @@ main:
 
 The ! operator seems to be done with xoring the value with 1. Arrays of booleans
 are done with a singular byte and are offset by that one byte kinda like a string.
+(movb)
 
 setne could also be called for the ! operator as that follows the current trend of set[char]
 being used for comparisons.
+
+    movq    %fs:40, %rax
+    movq    %rax, -8(%rbp)
+
+This is important, and the "canary" that Dr. J talked about in class. We're "protecting" the stack here.
