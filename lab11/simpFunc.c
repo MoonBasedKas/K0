@@ -1,21 +1,13 @@
 #include <stdbool.h>
 #include <string.h>
 
-int main() {
+int add(int a, int b) {
+    return a + b;
+}
+
+void main() {
     int a = 1;
     int b = 2;
-    int c = a + b;
-    return c;
-}
-
-bool foo() {
-    return true;
-}
-
-double bar() {
-    return 1.0;
-}
-
-char* baz() {
-    return "Hello, World!";
+    int c = add(a, b);
+    printf("add(%d, %d) = %d\n", a, b, c);
 }
