@@ -90,3 +90,10 @@ main:
 
 ===== Discussion =====
 
+cltd is called which upon further research converts a signed long into a 
+signed double long.
+
+sete and setg appear to be used for the comparison oppertor we have near the end of main.
+
+The result of modulo appears to be stored in the edx/rdx register.
+

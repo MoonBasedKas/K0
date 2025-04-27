@@ -97,5 +97,9 @@ main:
 	.align 8
 4:
 
+<<<<<<< HEAD
 ===== Discussion =====
 
+=======
+===== Observations =====
+>>>>>>> f95b743df3c395283001032e674ba316f3100b8a

@@ -83,3 +83,5 @@ main:
 
 ===== Discussion =====
 
+sete seems to be used for boolean comparisons. Arguments are loaded as expected 
+in assembly and called via name@PLT for libraries.

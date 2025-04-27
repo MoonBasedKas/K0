@@ -76,3 +76,4 @@ add_globals:
 
 ===== Discussion =====
 
+Globals as declared explictly in assembly unlike locals which are fetched via rbp.

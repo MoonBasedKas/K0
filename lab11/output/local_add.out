@@ -56,3 +56,4 @@ local_add:
 
 ===== Discussion =====
 
+Locals are fetched via the rbp.
