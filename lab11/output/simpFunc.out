@@ -12,6 +12,7 @@ void main() {
     int c = add(a, b);
     printf("add(%d, %d) = %d\n", a, b, c);
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"simpFunc.c"
@@ -95,3 +96,7 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
+

@@ -1,0 +1,15 @@
+LAB11 Readme
+
+Our script will create .out files for all of our "test" cases to be translated
+
+./assembly_daddy.sh
+
+An ./output/ directory will be created, and named .out files will be populated with the C code, followed by its Assembly code, and finalized with a discussion area.
+
+Output files can be cleaned with:
+
+./assembly_daddy.sh -c   or  -clean
+
+.out files and this Readme can be merged into a single file with:
+
+./assembly_daddy.sh -m  or -merge

@@ -11,6 +11,7 @@ int main() {
     printf("sum=%d diff=%d prod=%d\n", sum, diff, prod);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"expressions.c"
@@ -76,3 +77,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

@@ -7,6 +7,7 @@ int x;
 void add_globals() {
     x = y + z;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"global_add.c"
@@ -72,3 +73,7 @@ add_globals:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
+Globals as declared explictly in assembly unlike locals which are fetched via rbp.

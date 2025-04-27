@@ -10,6 +10,7 @@ int main() {
     printf("%d %zu\n", eq, len);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"builtIns_string.c"
@@ -79,3 +80,8 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
+sete seems to be used for boolean comparisons. Arguments are loaded as expected 
+in assembly and called via name@PLT for libraries.

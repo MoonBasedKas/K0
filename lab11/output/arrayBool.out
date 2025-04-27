@@ -9,6 +9,7 @@ int main() {
     printf("%d %d\n", arr[0], arr[1]);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"arrayBool.c"
@@ -81,3 +82,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

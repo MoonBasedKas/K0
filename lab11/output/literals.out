@@ -10,6 +10,7 @@ int main() {
     printf("%d %f %c\n", i, d, c);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"literals.c"
@@ -73,3 +74,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

@@ -7,6 +7,7 @@ int main() {
     printf("%s %s\n", arr[0], arr[1]);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"arrayStr.c"
@@ -75,3 +76,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

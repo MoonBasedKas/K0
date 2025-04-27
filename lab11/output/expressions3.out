@@ -11,6 +11,7 @@ int main() {
     printf("logic=%d mix=%d\n", logic, mix);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"expressions3.c"
@@ -95,3 +96,10 @@ main:
 3:
 	.align 8
 4:
+
+<<<<<<< HEAD
+===== Discussion =====
+
+=======
+===== Observations =====
+>>>>>>> f95b743df3c395283001032e674ba316f3100b8a

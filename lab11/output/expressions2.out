@@ -13,6 +13,7 @@ int main() {
     printf("quot=%d mod=%d gt=%d eq=%d\n", quot, mod, gt, eq);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"expressions2.c"
@@ -86,3 +87,13 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
+cltd is called which upon further research converts a signed long into a 
+signed double long.
+
+sete and setg appear to be used for the comparison oppertor we have near the end of main.
+
+The result of modulo appears to be stored in the edx/rdx register.
+

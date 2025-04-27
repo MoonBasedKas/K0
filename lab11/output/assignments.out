@@ -16,6 +16,7 @@ int main(void) {
     printf("a=%d, b=%d, c=%d\n", a, b, c);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"assignments.c"
@@ -89,3 +90,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

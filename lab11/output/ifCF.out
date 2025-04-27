@@ -21,6 +21,7 @@ void main() {
    if(troofhurts(1, 1) == false) {
     printf("rip\n"); }
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"ifCF.c"
@@ -149,3 +150,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

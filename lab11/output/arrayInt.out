@@ -12,6 +12,7 @@ int main() {
     printf("%d\n", x);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"arrayInt.c"
@@ -98,3 +99,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

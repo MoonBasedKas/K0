@@ -30,6 +30,7 @@ int main() {
 
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"multiFunc.c"
@@ -191,3 +192,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

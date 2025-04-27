@@ -9,6 +9,7 @@ int main() {
     printf("%s\n", buf);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"builtIns_io.c"
@@ -76,3 +77,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+

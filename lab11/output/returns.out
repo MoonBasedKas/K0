@@ -23,6 +23,7 @@ int main() {
     printf("%d %d %d\n", a, b, c);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"returns.c"
@@ -153,3 +154,14 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
+Return instructions are simply done via ret and called via their name. (Yeah, thats 
+how assembly works...)
+
+The return value is stored in eax/rax (also how assembly works).
+
+The main takeaway would seem that we will need to move the rax value when 
+written into a varaible into where ever its written. Then after each call 
+restore the parameter registers to the value stored in the stack.

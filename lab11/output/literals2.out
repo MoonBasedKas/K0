@@ -9,6 +9,7 @@ int main() {
     printf("%s\n%s\n", s1, s2);
     return 0;
 }
+
 ===== Assembly (gcc -S) =====
 
 	.file	"literals2.c"
@@ -69,3 +70,6 @@ main:
 3:
 	.align 8
 4:
+
+===== Discussion =====
+
