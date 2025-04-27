@@ -97,9 +97,9 @@ main:
 	.align 8
 4:
 
-<<<<<<< HEAD
 ===== Discussion =====
 
-=======
-===== Observations =====
->>>>>>> f95b743df3c395283001032e674ba316f3100b8a
+Once again we can see short circuting at play to attempt to optimize result evualation. For the ands 
+it will jump if the condition is false and if true it won't and will just skip the entire comparison 
+instead writing the expected value. Once again we can see the use of the cltd instruction for a 
+long to be converted into a double long.

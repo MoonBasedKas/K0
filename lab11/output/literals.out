@@ -77,3 +77,6 @@ main:
 
 ===== Discussion =====
 
+Once again we can see the xmm registers used, If im correct these are specifically used for floats.
+Interestingly 3.14 is not moved or used for anything. Then we can see that the X is moved into a 
+register as 88.

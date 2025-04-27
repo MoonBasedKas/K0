@@ -75,3 +75,5 @@ main:
 
 ===== Discussion =====
 
+xmm0 registers are used for this specific library. Interestingly there are no calls 
+to functions in the library.

@@ -35,3 +35,4 @@ x:
 ===== Discussion =====
 
 
+We can see how the global x is declared, it's incredibly verbose however is given an identifier.

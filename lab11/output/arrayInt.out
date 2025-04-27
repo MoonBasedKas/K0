@@ -102,3 +102,5 @@ main:
 
 ===== Discussion =====
 
+The eax register is zero outed early on. Then the values are pushed onto it in chunks of 
+4 due to the size of an integer.

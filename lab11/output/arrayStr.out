@@ -79,3 +79,6 @@ main:
 
 ===== Discussion =====
 
+It seems like strings are done via pointers to the strings value. The strings are declared 
+earlier on. They are loaded via a leaq instruction which makes sense as its load effective address 
+of a quad.
