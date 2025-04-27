@@ -1,0 +1,2444 @@
+===== README =====
+LAB11 Readme
+
+Our script will create .out files for all of our "test" cases to be translated
+
+./assembly_daddy.sh
+
+An ./output/ directory will be created, and named .out files will be populated with the C code, followed by its Assembly code, and finalized with a discussion area.
+
+Output files can be cleaned with:
+
+./assembly_daddy.sh -c   or  -clean
+
+.out files and this Readme can be merged into a single file with:
+
+./assembly_daddy.sh -m  or -merge
+
+===== Source: sooperBasic.c =====
+
+int x;
+
+===== Assembly (gcc -S) =====
+
+	.file	"sooperBasic.c"
+	.text
+	.globl	x
+	.bss
+	.align 4
+	.type	x, @object
+	.size	x, 4
+x:
+	.zero	4
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+We can see how the global x is declared, it's incredibly verbose however is given an identifier.
+
+To note (or not) that some things here are sectioned off by gcc, but not for our eyes:
+.file {...}
+.text {...}
+.globl {...}
+.bss {
+	.align
+	...
+label:
+	.zero
+	...
+}
+.ident {...}
+etc
+
+From the top:
+File loaded → Creates symbol table
+One global variable x
+No basic blocks (.bss)
+Alignment is for 2^4 = 16 bytes
+x is an object, not a function
+x is 4 bytes
+
+label x:
+.zero 4: zeros out 4 bytes for x (x = 0)
+
+.ident adds a comment string into a special place in the file
+- I couldn't find anything about this in the AMD docs, but found an .ident  note in
+the oracle docs
+
+section switching but ...
+The first section is telling the assembler that the stack is non-executable
+The second section is telling the assembler (maybe linker) that there's upcoming metadata?
+
+@progbits is a flag that says this section contains program data
+But the stuff I read online (stackoverflow and some obscure bb thread on a .org) said that the particular
+flag we have means "non-executable". idk
+
+the .longs are byte offsets between the respective labels. I'm not sure why 0x3 (hex 3) is used
+
+
+===== Source: simpFunc.c =====
+
+#include <stdio.h>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+void main() {
+    int a = 1;
+    int b = 2;
+    int c = add(a, b);
+    printf("add(%d, %d) = %d\n", a, b, c);
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"simpFunc.c"
+	.text
+	.globl	add
+	.type	add, @function
+add:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	movl	%esi, -8(%rbp)
+	movl	-4(%rbp), %edx
+	movl	-8(%rbp), %eax
+	addl	%edx, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	add, .-add
+	.section	.rodata
+.LC0:
+	.string	"add(%d, %d) = %d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$1, -12(%rbp)
+	movl	$2, -8(%rbp)
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%edx, %esi
+	movl	%eax, %edi
+	call	add
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %ecx
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	nop
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+
+Interestingly when leaving a function we pop the rbp. Finally the result is written into the 
+eax register for the simple function.
+
+===== Source: multiFunc.c =====
+
+#include <stdio.h>
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int square(int x) {
+    return x * x;
+}
+
+
+int square_of_sum(int a, int b) {
+    int s = add(a, b);
+    return square(s);
+}
+
+int main() {
+    int x = 2, y = 3;
+
+    int s = add(x, y);
+    printf("add(%d, %d) = %d\n", x, y, s);
+
+    int sq = square(s);
+    printf("square(%d) = %d\n", s, sq);
+
+    int sos = square_of_sum(x, y);
+    printf("square_of_sum(%d, %d) = %d\n", x, y, sos);
+
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"multiFunc.c"
+	.text
+	.globl	add
+	.type	add, @function
+add:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	movl	%esi, -8(%rbp)
+	movl	-4(%rbp), %edx
+	movl	-8(%rbp), %eax
+	addl	%edx, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	add, .-add
+	.globl	square
+	.type	square, @function
+square:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	movl	-4(%rbp), %eax
+	imull	%eax, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	square, .-square
+	.globl	square_of_sum
+	.type	square_of_sum, @function
+square_of_sum:
+.LFB2:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$24, %rsp
+	movl	%edi, -20(%rbp)
+	movl	%esi, -24(%rbp)
+	movl	-24(%rbp), %edx
+	movl	-20(%rbp), %eax
+	movl	%edx, %esi
+	movl	%eax, %edi
+	call	add
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %eax
+	movl	%eax, %edi
+	call	square
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE2:
+	.size	square_of_sum, .-square_of_sum
+	.section	.rodata
+.LC0:
+	.string	"add(%d, %d) = %d\n"
+.LC1:
+	.string	"square(%d) = %d\n"
+.LC2:
+	.string	"square_of_sum(%d, %d) = %d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB3:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movl	$2, -20(%rbp)
+	movl	$3, -16(%rbp)
+	movl	-16(%rbp), %edx
+	movl	-20(%rbp), %eax
+	movl	%edx, %esi
+	movl	%eax, %edi
+	call	add
+	movl	%eax, -12(%rbp)
+	movl	-12(%rbp), %ecx
+	movl	-16(%rbp), %edx
+	movl	-20(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	-12(%rbp), %eax
+	movl	%eax, %edi
+	call	square
+	movl	%eax, -8(%rbp)
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	-16(%rbp), %edx
+	movl	-20(%rbp), %eax
+	movl	%edx, %esi
+	movl	%eax, %edi
+	call	square_of_sum
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %ecx
+	movl	-16(%rbp), %edx
+	movl	-20(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC2(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE3:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Standard proc decs and calls. Reminder leq = Load Effective Address:
+	designated mem loc → target mem loc
+
+===== Source: cmplxFunc.c =====
+
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+
+int main(int argc, char* argv[]) {
+    int x, y, z;
+    x = 1;
+    y = 2;
+    z = 3;
+    if (x < y || y < z) {
+        printf("Hello, World!\n");
+    }
+    else {
+        printf("Goodbye, World!\n");
+    }
+    return 0;
+}
+
+
+
+
+===== Assembly (gcc -S) =====
+
+	.file	"cmplxFunc.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"Hello, World!"
+.LC1:
+	.string	"Goodbye, World!"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB6:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movl	%edi, -20(%rbp)
+	movq	%rsi, -32(%rbp)
+	movl	$1, -12(%rbp)
+	movl	$2, -8(%rbp)
+	movl	$3, -4(%rbp)
+	movl	-12(%rbp), %eax
+	cmpl	-8(%rbp), %eax
+	jl	.L2
+	movl	-8(%rbp), %eax
+	cmpl	-4(%rbp), %eax
+	jge	.L3
+.L2:
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	call	puts@PLT
+	jmp	.L4
+.L3:
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	call	puts@PLT
+.L4:
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE6:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+We can see short circuting where there are jump statements that will cause a jump so long as the first 
+statement is true. Then at the end as expected for control flow there will be a jump instruction.
+
+===== Source: assignments.c =====
+
+#include <stdio.h>
+
+int main(void) {
+    int a = 5;
+    int b;
+    b = a;
+    a += 3;
+    b -= 2;
+    int c = a % 3;
+
+    a++;
+    b--;
+
+    printf("a=%d, b=%d, c=%d\n", a, b, c);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"assignments.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"a=%d, b=%d, c=%d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$5, -12(%rbp)
+	movl	-12(%rbp), %eax
+	movl	%eax, -8(%rbp)
+	addl	$3, -12(%rbp)
+	subl	$2, -8(%rbp)
+	movl	-12(%rbp), %eax
+	movslq	%eax, %rdx
+	imulq	$1431655766, %rdx, %rdx
+	shrq	$32, %rdx
+	movl	%eax, %esi
+	sarl	$31, %esi
+	movl	%edx, %ecx
+	subl	%esi, %ecx
+	movl	%ecx, %edx
+	addl	%edx, %edx
+	addl	%ecx, %edx
+	subl	%edx, %eax
+	movl	%eax, -4(%rbp)
+	addl	$1, -12(%rbp)
+	subl	$1, -8(%rbp)
+	movl	-4(%rbp), %ecx
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+
+Interestingly these assignments are done directly on the stack itself. 
+
+A pecular instruction is imulq	$1431655766, %rdx, %rdx. Which then the 
+is followed by a shift right. Another unique instruction to keep in mind is 
+sarl which is shrl but keeps the sign. I'm guessing that these instructions 
+are used for the modulo operator.
+
+Increments are done via the add instruction rather than the dec/inc instruction.
+
+More info:
+ movl    -12(%rbp), %eax
+ → Load "a" for the "a % 3
+
+ movslq  %eax, %rdx
+ → This is a sign-extension, getting ready for 64-bit multiplication
+
+ TECHNOLOGY IS MATH-MAGIC:
+ Ok so apperently there's a "magic" number
+
+ 	imulq	$1431655766, %rdx, %rdx
+
+	This multiplies rdx by this magic number and then:
+	
+	shrq	$32, %rdx
+
+	Bit shifts to the right and we get the correct answer
+
+I had no idea. Very cool.
+
+===== Source: ifCF.c =====
+
+#include <stdio.h>
+#include <stdbool.h>
+
+bool troof(int x, int y) {
+    if (x < y)
+        return true;
+}
+
+bool troofhurts(double x, double y) {
+    if (x != y)
+        return false;
+}
+
+void main() {
+   if(troof(1, 2) == true)
+   {
+    printf("Moana was an ok movie\n");
+   }
+   if(troofhurts(1, 1) == false) {
+    printf("rip\n"); }
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"ifCF.c"
+	.text
+	.globl	troof
+	.type	troof, @function
+troof:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	movl	%esi, -8(%rbp)
+	movl	-4(%rbp), %eax
+	cmpl	-8(%rbp), %eax
+	jge	.L2
+	movl	$1, %eax
+	jmp	.L1
+.L2:
+.L1:
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	troof, .-troof
+	.globl	troofhurts
+	.type	troofhurts, @function
+troofhurts:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movsd	%xmm0, -8(%rbp)
+	movsd	%xmm1, -16(%rbp)
+	movsd	-8(%rbp), %xmm0
+	ucomisd	-16(%rbp), %xmm0
+	jp	.L8
+	movsd	-8(%rbp), %xmm0
+	ucomisd	-16(%rbp), %xmm0
+	je	.L5
+.L8:
+	movl	$0, %eax
+	jmp	.L4
+.L5:
+.L4:
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	troofhurts, .-troofhurts
+	.section	.rodata
+.LC0:
+	.string	"Moana was an ok movie"
+.LC2:
+	.string	"rip"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB2:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	$2, %esi
+	movl	$1, %edi
+	call	troof
+	testb	%al, %al
+	je	.L10
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	call	puts@PLT
+.L10:
+	movsd	.LC1(%rip), %xmm0
+	movq	.LC1(%rip), %rax
+	movapd	%xmm0, %xmm1
+	movq	%rax, %xmm0
+	call	troofhurts
+	xorl	$1, %eax
+	testb	%al, %al
+	je	.L12
+	leaq	.LC2(%rip), %rax
+	movq	%rax, %rdi
+	call	puts@PLT
+.L12:
+	nop
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE2:
+	.size	main, .-main
+	.section	.rodata
+	.align 8
+.LC1:
+	.long	0
+	.long	1072693248
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+I feel like after analyzing the rest of the files alphabetically, this is super straight forward.
+
+If only I knew how to code...
+-Erik
+
+===== Source: elseCF.c =====
+
+#include <stdio.h>
+
+int adjust(int x) {
+    if (x > 10)
+        x = x - 10;
+    else
+        x = x + 10;
+    return x;
+}
+
+int classify(int x) {
+    if (x < 0)
+        x = -1;
+    else if (x == 0)
+        x = 0;
+    else
+        x = 1;
+    return x;
+}
+
+int main(void) {
+    int a = adjust(5);
+    int b = adjust(20);
+
+    int ca = classify(a);
+    int cb = classify(b);
+
+    printf("a = %d, classify(a) = %d\n", a, ca);
+    printf("b = %d, classify(b) = %d\n", b, cb);
+
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"elseCF.c"
+	.text
+	.globl	adjust
+	.type	adjust, @function
+adjust:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	cmpl	$10, -4(%rbp)
+	jle	.L2
+	subl	$10, -4(%rbp)
+	jmp	.L3
+.L2:
+	addl	$10, -4(%rbp)
+.L3:
+	movl	-4(%rbp), %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	adjust, .-adjust
+	.globl	classify
+	.type	classify, @function
+classify:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	cmpl	$0, -4(%rbp)
+	jns	.L6
+	movl	$-1, -4(%rbp)
+	jmp	.L7
+.L6:
+	cmpl	$0, -4(%rbp)
+	jne	.L8
+	movl	$0, -4(%rbp)
+	jmp	.L7
+.L8:
+	movl	$1, -4(%rbp)
+.L7:
+	movl	-4(%rbp), %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	classify, .-classify
+	.section	.rodata
+.LC0:
+	.string	"a = %d, classify(a) = %d\n"
+.LC1:
+	.string	"b = %d, classify(b) = %d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB2:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$5, %edi
+	call	adjust
+	movl	%eax, -16(%rbp)
+	movl	$20, %edi
+	call	adjust
+	movl	%eax, -12(%rbp)
+	movl	-16(%rbp), %eax
+	movl	%eax, %edi
+	call	classify
+	movl	%eax, -8(%rbp)
+	movl	-12(%rbp), %eax
+	movl	%eax, %edi
+	call	classify
+	movl	%eax, -4(%rbp)
+	movl	-8(%rbp), %edx
+	movl	-16(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	-4(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE2:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Each function makes it's own .globl section
+.type for each function gives name and what it is @function
+example adjust:
+label adjust:
+cfi_startproc (Call Frame Information) called at beginning of function
+	- Note: CFA (Canonical Frame Address) Defined as the value of the stack pointer
+	at the call site in the previous frame.
+	- cfi stuff is for debugging, but if we _stratproc we need to _endproc (close)
+
+End Branch 64
+Base Pointer
+
+movl %edi, -4(%rbp)
+	- This is the param x moving into the local slot
+we then compare x against 10
+- Jump if x <= 10 we jump to label .L2
+If we didn't jump (x > 10), we subtract 10 from "x" (at -4(%rbp))
+If we jumped we add 10 to x
+
+We jump to .L3
+	- This is post IF/else
+
+we move whatever's in our x (local -4(%rbp)) into %eax is the return register
+
+Note: Local labels .LFB0 and .LFE0
+	"B"egin, "E"nd → Each proc runs up number 0, 1, 2, etc.
+
+===== Source: whileCF.c =====
+
+int main() {
+    int i = 0;
+    while (i < 5) {
+        i++;
+    }
+
+    int j = 0;
+    while (j < 5) {
+        if (j == 2)
+            j += 2;
+        j++;
+    }
+
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"whileCF.c"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	$0, -8(%rbp)
+	jmp	.L2
+.L3:
+	addl	$1, -8(%rbp)
+.L2:
+	cmpl	$4, -8(%rbp)
+	jle	.L3
+	movl	$0, -4(%rbp)
+	jmp	.L4
+.L6:
+	cmpl	$2, -4(%rbp)
+	jne	.L5
+	addl	$2, -4(%rbp)
+.L5:
+	addl	$1, -4(%rbp)
+.L4:
+	cmpl	$4, -4(%rbp)
+	jle	.L6
+	movl	$0, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+We can see how while loops function with two different control flows. First one for the loop which 
+will then break down into one for the comparison where then if true it'll jump back into it. We can 
+also see how values for new varaibles are loaded and assigned as needed.
+
+===== Source: expressions.c =====
+
+#include <stdio.h>
+
+int main() {
+    int a = 10;
+    int b = 3;
+    int sum  = a + b;
+    int diff = a - b;
+    int prod = a * b;
+    printf("sum=%d diff=%d prod=%d\n", sum, diff, prod);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"expressions.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"sum=%d diff=%d prod=%d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movl	$10, -20(%rbp)
+	movl	$3, -16(%rbp)
+	movl	-20(%rbp), %edx
+	movl	-16(%rbp), %eax
+	addl	%edx, %eax
+	movl	%eax, -12(%rbp)
+	movl	-20(%rbp), %eax
+	subl	-16(%rbp), %eax
+	movl	%eax, -8(%rbp)
+	movl	-20(%rbp), %eax
+	imull	-16(%rbp), %eax
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %ecx
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+These all use instructions which we'd expected for this there is nothing out of place.
+
+===== Source: expressions2.c =====
+
+#include <stdio.h>
+#include <stdbool.h>
+
+int main() {
+    int a    = 10;
+    int b    = 3;
+    int quot = a / b;
+    int mod  = a % b;
+    bool gt  = a > b;
+    bool eq  = a == b;
+    printf("quot=%d mod=%d gt=%d eq=%d\n", quot, mod, gt, eq);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"expressions2.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"quot=%d mod=%d gt=%d eq=%d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movl	$10, -16(%rbp)
+	movl	$3, -12(%rbp)
+	movl	-16(%rbp), %eax
+	cltd
+	idivl	-12(%rbp)
+	movl	%eax, -8(%rbp)
+	movl	-16(%rbp), %eax
+	cltd
+	idivl	-12(%rbp)
+	movl	%edx, -4(%rbp)
+	movl	-16(%rbp), %eax
+	cmpl	-12(%rbp), %eax
+	setg	%al
+	movb	%al, -18(%rbp)
+	movl	-16(%rbp), %eax
+	cmpl	-12(%rbp), %eax
+	sete	%al
+	movb	%al, -17(%rbp)
+	movzbl	-17(%rbp), %esi
+	movzbl	-18(%rbp), %ecx
+	movl	-4(%rbp), %edx
+	movl	-8(%rbp), %eax
+	movl	%esi, %r8d
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+cltd is called which upon further research converts a signed long into a 
+signed double long.
+
+sete and setg appear to be used for the comparison oppertor we have near the end of main.
+
+The result of modulo appears to be stored in the edx/rdx register.
+
+
+
+===== Source: expressions3.c =====
+
+#include <stdio.h>
+#include <stdbool.h>
+
+int main() {
+    int  a     = 10;
+    int  b     = 3;
+    bool logic = (a > 5 && b < 5) || !(a == 10);
+    int  mix   = (a + b) - (a * b) + ((a % b) * (a - b));
+    printf("logic=%d mix=%d\n", logic, mix);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"expressions3.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"logic=%d mix=%d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$10, -12(%rbp)
+	movl	$3, -8(%rbp)
+	cmpl	$5, -12(%rbp)
+	jle	.L2
+	cmpl	$4, -8(%rbp)
+	jle	.L3
+.L2:
+	cmpl	$10, -12(%rbp)
+	je	.L4
+.L3:
+	movl	$1, %eax
+	jmp	.L5
+.L4:
+	movl	$0, %eax
+.L5:
+	movb	%al, -13(%rbp)
+	andb	$1, -13(%rbp)
+	movl	-12(%rbp), %edx
+	movl	-8(%rbp), %eax
+	addl	%eax, %edx
+	movl	-12(%rbp), %eax
+	imull	-8(%rbp), %eax
+	movl	%edx, %ecx
+	subl	%eax, %ecx
+	movl	-12(%rbp), %eax
+	cltd
+	idivl	-8(%rbp)
+	movl	-12(%rbp), %eax
+	subl	-8(%rbp), %eax
+	imull	%edx, %eax
+	addl	%ecx, %eax
+	movl	%eax, -4(%rbp)
+	movzbl	-13(%rbp), %eax
+	movl	-4(%rbp), %edx
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Once again we can see short circuting at play to attempt to optimize result evualation. For the ands 
+it will jump if the condition is false and if true it won't and will just skip the entire comparison 
+instead writing the expected value. Once again we can see the use of the cltd instruction for a 
+long to be converted into a double long.
+
+===== Source: literals.c =====
+
+#include <stdio.h>
+
+int main() {
+    int    i = 42;
+    double d = 3.14;
+    char   c = 'X';
+
+    printf("%d %f %c\n", i, d, c);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"literals.c"
+	.text
+	.section	.rodata
+.LC1:
+	.string	"%d %f %c\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$42, -12(%rbp)
+	movsd	.LC0(%rip), %xmm0
+	movsd	%xmm0, -8(%rbp)
+	movb	$88, -13(%rbp)
+	movsbl	-13(%rbp), %edx
+	movq	-8(%rbp), %rcx
+	movl	-12(%rbp), %eax
+	movq	%rcx, %xmm0
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$1, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.section	.rodata
+	.align 8
+.LC0:
+	.long	1374389535
+	.long	1074339512
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Once again we can see the xmm registers used, If im correct these are specifically used for floats.
+Interestingly 3.14 is not moved or used for anything. Then we can see that the X is moved into a 
+register as 88.
+
+This is correct. xmm are the precision registers. Coincidently I used them in CSE221 and then had to explain to John and Rakibul why. -E
+
+===== Source: literals2.c =====
+
+#include <stdio.h>
+
+int main() {
+    const char *s1 = "Hello, world!";
+    const char *s2 = "This is a\nmulti-line\nstring.";
+
+    printf("%s\n%s\n", s1, s2);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"literals2.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"Hello, world!"
+.LC1:
+	.string	"This is a\nmulti-line\nstring."
+.LC2:
+	.string	"%s\n%s\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	leaq	.LC0(%rip), %rax
+	movq	%rax, -16(%rbp)
+	leaq	.LC1(%rip), %rax
+	movq	%rax, -8(%rbp)
+	movq	-8(%rbp), %rdx
+	movq	-16(%rbp), %rax
+	movq	%rax, %rsi
+	leaq	.LC2(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+We can see that strings are declared globally and tagged. They are loaded onto the stack 
+as pointers to the strings.
+
+===== Source: local_add.c =====
+
+int local_add(int y, int z) {
+    int x;
+    x = y + z;
+    return x;
+}
+
+
+===== Assembly (gcc -S) =====
+
+	.file	"local_add.c"
+	.text
+	.globl	local_add
+	.type	local_add, @function
+local_add:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -20(%rbp)
+	movl	%esi, -24(%rbp)
+	movl	-20(%rbp), %edx
+	movl	-24(%rbp), %eax
+	addl	%edx, %eax
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	local_add, .-local_add
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Locals are fetched via the rbp.
+
+
+===== Source: global_add.c =====
+
+int y = 2;
+int z = 3;
+int x;
+
+void add_globals() {
+    x = y + z;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"global_add.c"
+	.text
+	.globl	y
+	.data
+	.align 4
+	.type	y, @object
+	.size	y, 4
+y:
+	.long	2
+	.globl	z
+	.align 4
+	.type	z, @object
+	.size	z, 4
+z:
+	.long	3
+	.globl	x
+	.bss
+	.align 4
+	.type	x, @object
+	.size	x, 4
+x:
+	.zero	4
+	.text
+	.globl	add_globals
+	.type	add_globals, @function
+add_globals:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	y(%rip), %edx
+	movl	z(%rip), %eax
+	addl	%edx, %eax
+	movl	%eax, x(%rip)
+	nop
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	add_globals, .-add_globals
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Globals as declared explictly in assembly unlike locals which are fetched via rbp.
+
+
+===== Source: arrayBool.c =====
+
+#include <stdio.h>
+#include <stdbool.h>
+
+int main() {
+    bool arr[2] = {true, false};
+    arr[1] = !arr[0];
+    printf("%d %d\n", arr[0], arr[1]);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"arrayBool.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"%d %d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movq	%fs:40, %rax
+	movq	%rax, -8(%rbp)
+	xorl	%eax, %eax
+	movb	$1, -10(%rbp)
+	movb	$0, -9(%rbp)
+	movzbl	-10(%rbp), %eax
+	movzbl	%al, %eax
+	testl	%eax, %eax
+	setne	%al
+	xorl	$1, %eax
+	movzbl	%al, %eax
+	andl	$1, %eax
+	movb	%al, -9(%rbp)
+	movzbl	-9(%rbp), %eax
+	movzbl	%al, %edx
+	movzbl	-10(%rbp), %eax
+	movzbl	%al, %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	movq	-8(%rbp), %rdx
+	subq	%fs:40, %rdx
+	je	.L3
+	call	__stack_chk_fail@PLT
+.L3:
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+The ! operator seems to be done with xoring the value with 1. Arrays of booleans
+are done with a singular byte and are offset by that one byte kinda like a string.
+(movb)
+
+setne could also be called for the ! operator as that follows the current trend of set[char]
+being used for comparisons.
+
+    movq    %fs:40, %rax
+    movq    %rax, -8(%rbp)
+
+This is important, and the "canary" that Dr. J talked about in class. We're "protecting" the stack here.
+
+===== Source: arrayInt.c =====
+
+#include <stdio.h>
+
+int get_first(int arr[]) {
+    return arr[0];
+}
+
+int main() {
+    int arr[] = {1, 2, 3};
+    int x = get_first(arr);
+    printf("%d\n", x);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"arrayInt.c"
+	.text
+	.globl	get_first
+	.type	get_first, @function
+get_first:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movq	%rdi, -8(%rbp)
+	movq	-8(%rbp), %rax
+	movl	(%rax), %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	get_first, .-get_first
+	.section	.rodata
+.LC0:
+	.string	"%d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movq	%fs:40, %rax
+	movq	%rax, -8(%rbp)
+	xorl	%eax, %eax
+	movl	$1, -20(%rbp)
+	movl	$2, -16(%rbp)
+	movl	$3, -12(%rbp)
+	leaq	-20(%rbp), %rax
+	movq	%rax, %rdi
+	call	get_first
+	movl	%eax, -24(%rbp)
+	movl	-24(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	movq	-8(%rbp), %rdx
+	subq	%fs:40, %rdx
+	je	.L5
+	call	__stack_chk_fail@PLT
+.L5:
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+The eax register is zero outed early on. Then the values are pushed onto it in chunks of 
+4 due to the size of an integer.
+
+===== Source: arrayStr.c =====
+
+#include <stdio.h>
+
+int main() {
+    const char *arr[] = {"foo", "bar"};
+    printf("%s %s\n", arr[0], arr[1]);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"arrayStr.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"foo"
+.LC1:
+	.string	"bar"
+.LC2:
+	.string	"%s %s\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	movq	%fs:40, %rax
+	movq	%rax, -8(%rbp)
+	xorl	%eax, %eax
+	leaq	.LC0(%rip), %rax
+	movq	%rax, -32(%rbp)
+	leaq	.LC1(%rip), %rax
+	movq	%rax, -24(%rbp)
+	movq	-24(%rbp), %rdx
+	movq	-32(%rbp), %rax
+	movq	%rax, %rsi
+	leaq	.LC2(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	movq	-8(%rbp), %rdx
+	subq	%fs:40, %rdx
+	je	.L3
+	call	__stack_chk_fail@PLT
+.L3:
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+It seems like strings are done via pointers to the strings value. The strings are declared 
+earlier on. They are loaded via a leaq instruction which makes sense as its load effective address 
+of a quad.
+
+===== Source: builtIns_io.c =====
+
+#include <stdio.h>
+
+int main() {
+    char buf[64];
+    fgets(buf, 64, stdin);
+    printf("%s", buf);
+    printf("%s\n", buf);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"builtIns_io.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"%s"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$80, %rsp
+	movq	%fs:40, %rax
+	movq	%rax, -8(%rbp)
+	xorl	%eax, %eax
+	movq	stdin(%rip), %rdx
+	leaq	-80(%rbp), %rax
+	movl	$64, %esi
+	movq	%rax, %rdi
+	call	fgets@PLT
+	leaq	-80(%rbp), %rax
+	movq	%rax, %rsi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	leaq	-80(%rbp), %rax
+	movq	%rax, %rdi
+	call	puts@PLT
+	movl	$0, %eax
+	movq	-8(%rbp), %rdx
+	subq	%fs:40, %rdx
+	je	.L3
+	call	__stack_chk_fail@PLT
+.L3:
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+It appears stdin can just be directly called in assembly for when we need a buffer 
+to write to. The buffer is declared to be 64 and an additional 8 for the pointer.
+
+===== Source: builtIns_string.c =====
+
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    const char *s = "test";
+    int eq = strcmp(s, "test") == 0;
+    size_t len = strlen(s);
+    printf("%d %zu\n", eq, len);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"builtIns_string.c"
+	.text
+	.section	.rodata
+.LC0:
+	.string	"test"
+.LC1:
+	.string	"%d %zu\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$32, %rsp
+	leaq	.LC0(%rip), %rax
+	movq	%rax, -16(%rbp)
+	movq	-16(%rbp), %rax
+	leaq	.LC0(%rip), %rdx
+	movq	%rdx, %rsi
+	movq	%rax, %rdi
+	call	strcmp@PLT
+	testl	%eax, %eax
+	sete	%al
+	movzbl	%al, %eax
+	movl	%eax, -20(%rbp)
+	movq	-16(%rbp), %rax
+	movq	%rax, %rdi
+	call	strlen@PLT
+	movq	%rax, -8(%rbp)
+	movq	-8(%rbp), %rdx
+	movl	-20(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+sete seems to be used for boolean comparisons. Arguments are loaded as expected 
+in assembly and called via name@PLT for libraries.
+
+
+===== Source: builtIns_math.c =====
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int main() {
+    int a = abs(-5);
+    double m = fmax(2.0, 3.0);
+    printf("%d %f\n", a, m);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"builtIns_math.c"
+	.text
+	.section	.rodata
+.LC1:
+	.string	"%d %f\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB6:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$5, -12(%rbp)
+	movsd	.LC0(%rip), %xmm0
+	movsd	%xmm0, -8(%rbp)
+	movq	-8(%rbp), %rdx
+	movl	-12(%rbp), %eax
+	movq	%rdx, %xmm0
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$1, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE6:
+	.size	main, .-main
+	.section	.rodata
+	.align 8
+.LC0:
+	.long	0
+	.long	1074266112
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+xmm0 registers are used for this specific library. Interestingly there are no calls 
+to functions in the library.
+
+I looked into it:
+gcc recognizes abs() as a macro → It handled abs(-5) = 5 at compile
+fmax is also a built-in and performed a "constant-fold" → Happens if both ops are consts
+
+V. cool stuff
+
+===== Source: returns.c =====
+
+#include <stdio.h>
+
+int return_const() {
+    return 42;
+}
+
+int return_expr(int x, int y) {
+    return x * 2 + y;
+}
+
+int return_cond(int x) {
+    if (x < 0)
+        return -x;
+    return x;
+}
+
+int main() {
+    int a = return_const();
+    int b = return_expr(3, 4);
+    int c = return_cond(-5);
+    printf("%d %d %d\n", a, b, c);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"returns.c"
+	.text
+	.globl	return_const
+	.type	return_const, @function
+return_const:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	$42, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	return_const, .-return_const
+	.globl	return_expr
+	.type	return_expr, @function
+return_expr:
+.LFB1:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	movl	%esi, -8(%rbp)
+	movl	-4(%rbp), %eax
+	leal	(%rax,%rax), %edx
+	movl	-8(%rbp), %eax
+	addl	%edx, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE1:
+	.size	return_expr, .-return_expr
+	.globl	return_cond
+	.type	return_cond, @function
+return_cond:
+.LFB2:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	%edi, -4(%rbp)
+	cmpl	$0, -4(%rbp)
+	jns	.L6
+	movl	-4(%rbp), %eax
+	negl	%eax
+	jmp	.L7
+.L6:
+	movl	-4(%rbp), %eax
+.L7:
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE2:
+	.size	return_cond, .-return_cond
+	.section	.rodata
+.LC0:
+	.string	"%d %d %d\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB3:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$0, %eax
+	call	return_const
+	movl	%eax, -12(%rbp)
+	movl	$4, %esi
+	movl	$3, %edi
+	call	return_expr
+	movl	%eax, -8(%rbp)
+	movl	$-5, %edi
+	call	return_cond
+	movl	%eax, -4(%rbp)
+	movl	-4(%rbp), %ecx
+	movl	-8(%rbp), %edx
+	movl	-12(%rbp), %eax
+	movl	%eax, %esi
+	leaq	.LC0(%rip), %rax
+	movq	%rax, %rdi
+	movl	$0, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE3:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Return instructions are simply done via ret and called via their name. (Yeah, thats 
+how assembly works...)
+
+The return value is stored in eax/rax (also how assembly works).
+
+The main takeaway would seem that we will need to move the rax value when 
+written into a varaible into where ever its written. Then after each call 
+restore the parameter registers to the value stored in the stack.
+
+
+===== Source: for.c =====
+
+int main(){
+    int x = 0;
+    for(int i = 0; i < 20; i++){
+        x += i;
+    }
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+	.file	"for.c"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB0:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	movl	$0, -8(%rbp)
+	movl	$0, -4(%rbp)
+	jmp	.L2
+.L3:
+	movl	-4(%rbp), %eax
+	addl	%eax, -8(%rbp)
+	addl	$1, -4(%rbp)
+.L2:
+	cmpl	$19, -4(%rbp)
+	jle	.L3
+	movl	$0, %eax
+	popq	%rbp
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE0:
+	.size	main, .-main
+	.ident	"GCC: (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+Interestingly while in the for loop we compare if something is less than the instruction is a 
+jump if less than or equal and the comparison is made with 19 instead of 20. The add instruction for the 
+i is done at the very end of the control flow of the main loop rather than the comparison. This works 
+very similar to how a while loop looks and if you were not told this was a for loop you wouldn't know.
