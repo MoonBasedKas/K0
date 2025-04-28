@@ -1,0 +1,85 @@
+===== Source: builtIns_math.c =====
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+
+int main() {
+    int a = abs(-5);
+    double m = fmax(2.0, 3.0);
+    printf("%d %f\n", a, m);
+    return 0;
+}
+
+===== Assembly (gcc -S) =====
+
+	.file	"builtIns_math.c"
+	.text
+	.section	.rodata
+.LC1:
+	.string	"%d %f\n"
+	.text
+	.globl	main
+	.type	main, @function
+main:
+.LFB6:
+	.cfi_startproc
+	endbr64
+	pushq	%rbp
+	.cfi_def_cfa_offset 16
+	.cfi_offset 6, -16
+	movq	%rsp, %rbp
+	.cfi_def_cfa_register 6
+	subq	$16, %rsp
+	movl	$5, -12(%rbp)
+	movsd	.LC0(%rip), %xmm0
+	movsd	%xmm0, -8(%rbp)
+	movq	-8(%rbp), %rdx
+	movl	-12(%rbp), %eax
+	movq	%rdx, %xmm0
+	movl	%eax, %esi
+	leaq	.LC1(%rip), %rax
+	movq	%rax, %rdi
+	movl	$1, %eax
+	call	printf@PLT
+	movl	$0, %eax
+	leave
+	.cfi_def_cfa 7, 8
+	ret
+	.cfi_endproc
+.LFE6:
+	.size	main, .-main
+	.section	.rodata
+	.align 8
+.LC0:
+	.long	0
+	.long	1074266112
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+
+xmm0 registers are used for this specific library. Interestingly there are no calls 
+to functions in the library.
+
+I looked into it:
+gcc recognizes abs() as a macro → It handled abs(-5) = 5 at compile
+fmax is also a built-in and performed a "constant-fold" → Happens if both ops are consts
+
+V. cool stuff

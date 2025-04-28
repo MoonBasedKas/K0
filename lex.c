@@ -363,7 +363,7 @@ bool isEndOfStmt(int tok) {
         case RETURN:
         case MULTILINE_STRING:
         case INCR:
-        case DECR:    
+        case DECR:
         case RSQUARE:
         case RPAREN:
         case RCURL:
@@ -398,8 +398,8 @@ bool isBeginOfStmt(int tok) {
     case BREAK:
     case CONTINUE:
     case LPAREN:
-    case RCURL: // This pushes the problem to var in line 24
-    case VAR: //case VAL: This pushes the problem to z on line 70
+    case RCURL:
+    case VAR:
     case FUN:
     case VAL:
         return true;
@@ -409,67 +409,13 @@ bool isBeginOfStmt(int tok) {
 }
 
 extern int yylex(void);
-//#undef yylex
-//#define k0_yylex yylex
 
 int k0_yylex(void) {
     return yylex();
 }
 
 /**
- * @brief Wrapper for yylex
  *
- * TODO: Need to have a way to check past and future.
- *
- * @return int
- */
-int yylex3(void) {
-    int tok = 0;
-    if (savedToken) {
-        fprintf(stderr,
-                "Replay savedToken=%d\n",
-                savedToken);
-        if (saved_lval.treeptr) {
-            fprintf(stderr,
-                    "        symbolname=\"%s\"\n",
-                    saved_lval.treeptr->symbolname);
-        }
-        yylval = saved_lval;
-        tok = savedToken;
-        savedToken = 0;
-        lastToken  = tok;
-        return tok;
-    }
-
-    tok = k0_yylex();
-    // fprintf(stderr,
-    //        "Got raw tok=%d, lastToken=%d, saw_newline=%d at line %d\n",
-    //        tok, lastToken, saw_newline, rows);
-
-    if (saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(tok)) {
-        savedToken = tok;
-        saved_lval = yylval;
-        // fprintf(stderr,
-        //         "Saving lookahead tok=%d\n",
-        //         savedToken);
-        if (saved_lval.treeptr) {
-            // fprintf(stderr,
-            //         "        saved symbolname=\"%s\"\n",
-            //         saved_lval.treeptr->symbolname);
-        }
-        tok = SEMICOLON;
-        saw_newline = 0;
-        fprintf(stderr, "Injecting SEMICOLON instead\n");
-        return savedToken;
-    }
-
-    
-    lastToken  = tok;
-    return tok;
-}
-
-/**
- * 
  */
 int yylex2(void){
     int tok = 0; // Carrier of the semis
@@ -487,22 +433,18 @@ int yylex2(void){
         tok = lastToken;
         last_lval = saved_lval;
         lastToken = savedToken;
-        printf("%s\n", yylval.treeptr->leaf->text);
         return tok;
     }
 
     savedToken = k0_yylex(); // Messages from the future
     saved_lval = yylval;
-
-
-    
-
-    if(saw_newline && isEndOfStmt(lastToken) && isBeginOfStmt(savedToken)){
+    if(saw_newline && lastToken != SEMICOLON && isEndOfStmt(lastToken) && isBeginOfStmt(savedToken)){
         temp = yytext;
         yytext = ";";
         tok = leaf(SEMICOLON);
+
         yytext = temp;
-        
+
         blightToken = lastToken;
         magic_lval = last_lval;
         last_lval = yylval;
@@ -511,10 +453,10 @@ int yylex2(void){
         yylval = magic_lval;
         saw_newline = 0;
         inserted = 1; // The answer is always more global variables
-        printf("%s\n", yylval.treeptr->leaf->text);
+
         return tok;
     }
-    
+
 
     // BEGIN THE GREAT SHIFTING
     saw_newline = 0;
@@ -522,6 +464,5 @@ int yylex2(void){
     tok = lastToken;
     last_lval = saved_lval;
     lastToken = savedToken;
-    printf("%s\n", yylval.treeptr->leaf->text);
     return tok;
 }

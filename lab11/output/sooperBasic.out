@@ -1,0 +1,75 @@
+===== Source: sooperBasic.c =====
+
+int x;
+
+===== Assembly (gcc -S) =====
+
+	.file	"sooperBasic.c"
+	.text
+	.globl	x
+	.bss
+	.align 4
+	.type	x, @object
+	.size	x, 4
+x:
+	.zero	4
+	.ident	"GCC: (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0"
+	.section	.note.GNU-stack,"",@progbits
+	.section	.note.gnu.property,"a"
+	.align 8
+	.long	1f - 0f
+	.long	4f - 1f
+	.long	5
+0:
+	.string	"GNU"
+1:
+	.align 8
+	.long	0xc0000002
+	.long	3f - 2f
+2:
+	.long	0x3
+3:
+	.align 8
+4:
+
+===== Discussion =====
+We can see how the global x is declared, it's incredibly verbose however is given an identifier.
+
+To note (or not) that some things here are sectioned off by gcc, but not for our eyes:
+.file {...}
+.text {...}
+.globl {...}
+.bss {
+	.align
+	...
+label:
+	.zero
+	...
+}
+.ident {...}
+etc
+
+From the top:
+File loaded → Creates symbol table
+One global variable x
+No basic blocks (.bss)
+Alignment is for 2^4 = 16 bytes
+x is an object, not a function
+x is 4 bytes
+
+label x:
+.zero 4: zeros out 4 bytes for x (x = 0)
+
+.ident adds a comment string into a special place in the file
+- I couldn't find anything about this in the AMD docs, but found an .ident  note in
+the oracle docs
+
+section switching but ...
+The first section is telling the assembler that the stack is non-executable
+The second section is telling the assembler (maybe linker) that there's upcoming metadata?
+
+@progbits is a flag that says this section contains program data
+But the stuff I read online (stackoverflow and some obscure bb thread on a .org) said that the particular
+flag we have means "non-executable". idk
+
+the .longs are byte offsets between the respective labels. I'm not sure why 0x3 (hex 3) is used
