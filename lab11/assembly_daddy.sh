@@ -44,6 +44,7 @@ if [[ "$1" == "-m" || "$1" == "--merge" ]]; then
     builtIns_string
     builtIns_math
     returns
+    for
   )
 
   # loop in order
@@ -79,11 +80,11 @@ for src in *.c; do
     echo
     echo "===== Assembly (gcc -S) ====="
     echo
-    gcc -S "$src" -o - 
+    gcc -S "$src" -o -
 
     echo
     echo "===== Discussion ====="
-    echo 
+    echo
   } > "$out"
 
   echo "  → Wrote source+asm to $out" # alt+26 numpad

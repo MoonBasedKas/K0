@@ -77,3 +77,9 @@ main:
 
 xmm0 registers are used for this specific library. Interestingly there are no calls 
 to functions in the library.
+
+I looked into it:
+gcc recognizes abs() as a macro → It handled abs(-5) = 5 at compile
+fmax is also a built-in and performed a "constant-fold" → Happens if both ops are consts
+
+V. cool stuff
