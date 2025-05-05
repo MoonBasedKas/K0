@@ -2,12 +2,34 @@
 #include "lex.h"
 #include "dot.h"
 #include "k0gram.tab.h"
+#include "type.h"
+#include "typeHelpers.h"
 #include "errorHandling.h"
 
 extern const char *yyname(int sym);
 char *escape(const char *s);
 // TODO: add in yyname(int)
-
+/**
+ * @brief Color code our shit
+ * 
+ * @param t
+ * @return const char*
+ */
+static const char *typeColor(typePtr t) {
+    if (!t) return "lightgray";
+    switch (t->basicType) {
+      case INT_TYPE:      return "lightblue";
+      case DOUBLE_TYPE:   return "lightcyan";
+      case BOOL_TYPE:     return "lightgreen";
+      case CHAR_TYPE:     return "pink";
+      case STRING_TYPE:   return "lime";
+      case ARRAY_TYPE:    return "goldenrod1";
+      case FUNCTION_TYPE: return "crimson";
+      case UNIT_TYPE:     return "darkkhaki";
+      case RANGE_TYPE:    return "orange";
+      default:            return "gray";
+    }
+}
 /**
  * @brief Writes a dot file from our generated graph
  *
@@ -37,12 +59,24 @@ int writeLeaf(FILE *f, struct tree *root){
     char *escapedText = escape(root->leaf->text);
 
     const char *tokenName = yyname(root->leaf->category);
-
-    fprintf(f, "N%d[shape=box style=dotted label=\"%s\\n text=%s\\n lineno=%d\"];\n",
+    const char *typeStr = typeName(root->type);
+    const char *fillColor = typeColor(root->type);
+    fprintf(f,
+            "N%d [\n"
+            "  shape=box,\n"
+            "  style=\"filled,dotted\",\n"
+            "  fillcolor=\"%s\",\n"
+            "  label=\"%s\\n"
+            "         text=%s\\n"
+            "         lineno=%d\\n"
+            "         type=%s\"\n"
+            "];\n",
             root->id,
+            fillColor,
             tokenName,
             escapedText,
-            root->leaf->lineno);
+            root->leaf->lineno,
+            typeStr);
     free(escapedText);
     return 0;
 }
@@ -55,7 +89,20 @@ int writeLeaf(FILE *f, struct tree *root){
  * @return int
  */
 int writeNode(FILE *f, struct tree *root){
-    fprintf(f, "N%d[shape=box label=\"%s\"];\n", root->id, root->symbolname );
+    const char *typeStr = typeName(root->type);
+    const char *fillColor = typeColor(root->type);
+    fprintf(f,
+            "N%d [\n"
+            "  shape=box,\n"
+            "  style=filled,\n"
+            "  fillcolor=\"%s\",\n"
+            "  label=\"%s\\n"
+            "         type=%s\"\n"
+            "];\n",
+            root->id,
+            fillColor,
+            root->symbolname,
+            typeStr);
 
     return 0;
 }
