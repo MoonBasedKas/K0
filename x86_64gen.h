@@ -1,6 +1,8 @@
 #ifndef x86_64gen_H
 #define x86_64gen_H
 #include "tac.h"
+#include<stdlib.h>
+#include<stdio.h>
 
 struct regdescrip {
     char name[12]; // name to use in codegen, e.g. "%rbx"
@@ -15,8 +17,8 @@ struct addr_descrip {
 
 
 int getreg();
-int instructionTranslate();
-
+int translateIcToAsm();
+int writeAsm();
 
 
 

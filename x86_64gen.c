@@ -6,7 +6,11 @@ int getreg(){
 
 }
 
+int translateIcToAsm(){
 
-int scrollOfTranslation(){
-    
+}
+
+
+int writeAsm(FILE *fp){
+
 }

@@ -187,9 +187,8 @@ int main(int argc, char *argv[])
             if (iTarget != NULL) fclose(iTarget);
         }
         // translateIcToAsm()
+        // writeAsm()
         
-        
-        // system("gcc ./file.o -o file")
         // Need to grab base file name.
         // Need to generate the .s file.
         if (s){ // Generates .s
