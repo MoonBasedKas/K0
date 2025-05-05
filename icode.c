@@ -608,9 +608,10 @@ void assignFirst(struct tree *node)
         /* only gen a .first if this node has icode, its parent does not,
         and that parent actually exists
         */
+       node->first = genLabel();
         if (node->icode && node->parent && node->parent->icode == NULL)
         {
-        node->first = genLabel();
+            node->first = genLabel();
         }
         break;
     default:
@@ -639,6 +640,9 @@ void assignFollow(struct tree *node)
         node->kids[last]->follow = node->first;
         break;
     case whileStmnt:
+        last = node->nkids - 1;
+        node->kids[last]->follow = node->first;
+        
         break;
     case doWhileStmnt:
         int body = 1;
@@ -661,20 +665,20 @@ void assignFollow(struct tree *node)
         }
         break;
     case ifElseIf:
-        node->onTrue = node->kids[2]->first;
+        // node->onTrue = node->kids[2]->first;
         if (node->onTrue == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[2]);
+            debugICode("ifelseif: Missing something in assignFirst", node->kids[2]);
         }
         node->onFalse = node->kids[4]->first;
         if (node->onFalse == NULL)
         {
-            debugICode("Missing something in assignFirst", node->kids[4]);
+            debugICode("ifelseif: Missing something in assignFirst", node->kids[4]);
         }
         break;
 
     case elvis:
-        // TODO
+        // TODO:
         // i think this goes here
         // idk tho
         //  go left: null -> right side first block, fall down

@@ -35,13 +35,18 @@ int symError = 0;
 
 int main(int argc, char *argv[])
 {
-
+    char *as;
+    char *ld;
+    char *gcc;
+    
     int dot = 0; // False
     int tree = 0;
     int symtab = 0;
     int fileCount = 0;
     int debug = 0;
     int ic = 0;
+    int c = 0;
+    int s = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
     if (fileNames == NULL)
     {
@@ -70,6 +75,14 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[i], "-ic"))
         {
             ic = 1;
+        }
+        else if (!strcmp(argv[i], "-s"))
+        {
+            s = 1;
+        }
+        else if (!strcmp(argv[i], "-c"))
+        {
+            c = 1;
         }
         else if (!strcmp(argv[i], "-help"))
         {
@@ -165,12 +178,34 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        if (ic)
+        if (ic || 1 == 1) // TODO: remove this when assignment is done.
         {
             iTarget = openGenFile(fileNames[i], "ic");
+            
             tacPrint(root->icode);
+            printf("%p\n", root->icode);
             if (iTarget != NULL) fclose(iTarget);
         }
+        // translateIcToAsm()
+        
+        
+        // system("gcc ./file.o -o file")
+        // Need to grab base file name.
+        // Need to generate the .s file.
+        if (s){ // Generates .s
+            continue;
+        } else if(c){ // Generates .o
+            system("as --gstabs+ -o file.o file.s");
+            system("ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o hello.o -lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system("rm ./file.s");
+        } else { // Generates executable.
+            system("as --gstabs+ -o file.o file.s");
+            system("ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o hello.o -lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system("gcc file.o");
+            system("rm ./file.s");
+            system("rm ./file.o");
+        }
+
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
