@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
         checkNullability(root);
         checkMutability(root);
         verifyDeclared(root, rootScope); // symTabHelper.c
-        //buildICode(root);
+        buildICode(root);
 
         if (symError != 0 && debug == 0)
             return 3; // If something is undeclared.
