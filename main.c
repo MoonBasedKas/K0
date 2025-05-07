@@ -30,18 +30,25 @@ void openFile(char *name);
 FILE *openGenFile(char *name, char *ext);
 void populateTypes();
 void populateStdlib();
+char *getFileName(char *f, char *ext);
 void populateLibraries();
 int symError = 0;
 
 int main(int argc, char *argv[])
 {
-
+    char *dio = malloc(4096);
+    char *as;
+    char *ld;
+    char *gcc;
+    
     int dot = 0; // False
     int tree = 0;
     int symtab = 0;
     int fileCount = 0;
     int debug = 0;
     int ic = 0;
+    int c = 0;
+    int s = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
     if (fileNames == NULL)
     {
@@ -49,6 +56,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // The great cmd argument obtainer.
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-dot"))
@@ -70,6 +78,14 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[i], "-ic"))
         {
             ic = 1;
+        }
+        else if (!strcmp(argv[i], "-s"))
+        {
+            s = 1;
+        }
+        else if (!strcmp(argv[i], "-c"))
+        {
+            c = 1;
         }
         else if (!strcmp(argv[i], "-help"))
         {
@@ -165,12 +181,52 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        if (ic)
+        if (ic || 1 == 1) // TODO: remove this when assignment is done.
         {
             iTarget = openGenFile(fileNames[i], "ic");
+            
             tacPrint(root->icode);
+            printf("%p\n", root->icode);
             if (iTarget != NULL) fclose(iTarget);
         }
+        // translateIcToAsm()
+        // writeAsm();
+        
+        // The great file generator.
+        if (s){ // Generates .s and stop
+            continue;
+        } else if(c){ // Generates .o
+            strcpy(dio, "as --gstabs+ -o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+        } else { // Generates executable.
+            strcpy(dio, "as --gstabs+ -o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "gcc ");
+            strcat(dio, getFileName(fileNames[i], "o"));
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "o"));
+            system(dio);
+        }
+
         freeTable(rootScope); // symTab.c
         fclose(yyin);
         freeTree(root); // tree.c
@@ -257,4 +313,19 @@ FILE *openGenFile(char *name, char *ext)
     }
     free(n);
     return f;
+}
+
+/**
+ * @brief Generates a file name with a given extension.
+ * 
+ * @param f 
+ * @param ext 
+ * @return char* 
+ */
+char *getFileName(char *f, char *ext){
+    char *fName = malloc(512);
+    fName = strrchr(f, ".");
+    strcat(fName, ".");
+    strcat(fName, ext);
+    return fName;
 }
