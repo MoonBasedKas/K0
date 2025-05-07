@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // The great cmd argument obtainer.
     for (int i = 1; i < argc; i++)
     {
         if (!strcmp(argv[i], "-dot"))
@@ -189,10 +190,9 @@ int main(int argc, char *argv[])
             if (iTarget != NULL) fclose(iTarget);
         }
         // translateIcToAsm()
-        // writeAsm()
+        // writeAsm();
         
-        // Need to grab base file name.
-        // Need to generate the .s file.
+        // The great file generator.
         if (s){ // Generates .s and stop
             continue;
         } else if(c){ // Generates .o
