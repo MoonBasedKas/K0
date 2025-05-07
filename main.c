@@ -30,11 +30,13 @@ void openFile(char *name);
 FILE *openGenFile(char *name, char *ext);
 void populateTypes();
 void populateStdlib();
+char *getFileName(char *f, char *ext);
 void populateLibraries();
 int symError = 0;
 
 int main(int argc, char *argv[])
 {
+    char *dio = malloc(4096);
     char *as;
     char *ld;
     char *gcc;
@@ -191,18 +193,38 @@ int main(int argc, char *argv[])
         
         // Need to grab base file name.
         // Need to generate the .s file.
-        if (s){ // Generates .s
+        if (s){ // Generates .s and stop
             continue;
         } else if(c){ // Generates .o
-            system("as --gstabs+ -o file.o file.s");
-            system("ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o hello.o -lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
-            system("rm ./file.s");
+            strcpy(dio, "as --gstabs+ -o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
         } else { // Generates executable.
-            system("as --gstabs+ -o file.o file.s");
-            system("ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o hello.o -lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
-            system("gcc file.o");
-            system("rm ./file.s");
-            system("rm ./file.o");
+            strcpy(dio, "as --gstabs+ -o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcat(dio, getFileName(fileNames[i], "o "));
+            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "s"));
+            system(dio);
+            strcpy(dio, "gcc ");
+            strcat(dio, getFileName(fileNames[i], "o"));
+            system(dio);
+            strcpy(dio, "rm ");
+            strcat(dio, getFileName(fileNames[i], "o"));
+            system(dio);
         }
 
         freeTable(rootScope); // symTab.c
@@ -291,4 +313,19 @@ FILE *openGenFile(char *name, char *ext)
     }
     free(n);
     return f;
+}
+
+/**
+ * @brief Generates a file name with a given extension.
+ * 
+ * @param f 
+ * @param ext 
+ * @return char* 
+ */
+char *getFileName(char *f, char *ext){
+    char *fName = malloc(512);
+    fName = strrchr(f, ".");
+    strcat(fName, ".");
+    strcat(fName, ext);
+    return fName;
 }
