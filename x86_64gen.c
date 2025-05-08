@@ -309,6 +309,58 @@ int translateIcToAsm() {
             case O_GOTO:
                 emit("\tjmp L%d", p->src1->u.offset);
                 break;
+            case O_PARM:
+                int r;
+                ensureInGPR(p->dest, &r);
+                emit("\tpushq\t%s", regs[r].name);
+                freeGPR(r);
+                break;
+            case O_CALL:
+                emit("\tcall\t%s@PLT", p->dest->u.name);
+                if (p->src2) {
+                    struct addr *ret = p->src2;
+                    switch (ret->region) {
+                        case R_LOCAL:
+                            emit("\tmovq\t%%rax, -%d(%%rbp)", ret->u.offset);
+                            break;
+                        case R_GLOBAL:
+                            emit("\tmovq\t%%rax, %s(%%rip)", ret->u.name);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            case O_RET:
+                int r;
+                ensureInGPR(p->src1, &r);
+                switch (p->dest->region) {
+                    case R_LOCAL:
+                        emit("\tmovq\t%s, -%d(%%rbp)", regs[r].name, p->dest->u.offset);
+                        break;
+                    case R_GLOBAL:
+                        emit("\tmovq\t%s, %s(%%rip)", regs[r].name, p->dest->u.name);
+                        break;
+                    default:
+                        break;
+                }
+                freeGPR(r);
+                break;
+            case O_ASN:
+                int r;
+                ensureInGPR(p->src1, &r);
+                switch (p->dest->region) {
+                    case R_LOCAL:
+                        emit("\tmovq\t%s, -%d(%%rbp)", regs[r].name, p->dest->u.offset);
+                        break;
+                    case R_GLOBAL:
+                        emit("\tmovq\t%s, %s(%%rip)", regs[r].name, p->dest->u.name);
+                        break;
+                    default:
+                        break;
+                }
+                freeGPR(r);
+                break;
             case O_BEQ: case O_BNE: case O_BLT:  case O_BLE:
             case O_BGT: case O_BGE:
                 int r1, r2;
