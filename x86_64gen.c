@@ -36,13 +36,13 @@ void initRegs(void){
         strncpy(regs[i].name, gprNames[i], sizeof(regs[i].name));
         regs[i].name[sizeof(regs[i].name) - 1] = '\0';
         regs[i].status = 0;
-        regs[i].addr = NULL;
+        regs[i].a = NULL;
     }
     for (int i = 0; i < NUM_XMM; i++){
         strncpy(xmmRegs[i].name, xmmNames[i], sizeof(xmmRegs[i].name));
         xmmRegs[i].name[sizeof(xmmRegs[i].name) - 1] = '\0';
         xmmRegs[i].status = 0;
-        xmmRegs[i].addr = NULL;
+        xmmRegs[i].a = NULL;
     }
 }
 
@@ -61,6 +61,17 @@ void initAddrDescrip(void){
  */
 struct addr_descrip *getAddrDesc(struct addr *a){
     // Create new for now, need lookup later
+    struct addr_descrip *d = malloc(sizeof(*d));
+    if (!d){
+        fprintf(stderr, "Failed to allocate memory for addr_descrip\n");
+        exit(1);
+    }
+    d->status = 1;
+    d->r = NULL;
+    d->a = *a;
+    // Add to list dumbass
+    d->next = addrMap;
+    addrMap = d;
     return d;
 }
 
@@ -69,7 +80,14 @@ struct addr_descrip *getAddrDesc(struct addr *a){
  *  @return Index of free GPR
  */
 int getGPR(void){
-
+    for (int i = 0; i < NUM_GPR; i++){
+        if (regs[i].status == 0){
+            regs[i].status = 1;
+            return i;
+        }
+    }
+    fprintf(stderr, "No free GPRs left\n");
+    exit(1);
 }
 
 /**
@@ -77,7 +95,9 @@ int getGPR(void){
  *  @param idx Index of GPR to free
  */
 void freeGPR(int idx){
-
+    if (idx < 0 || idx >= NUM_GPR) return;
+    regs[idx].status = 0;
+    regs[idx].a = NULL;
 }
 
 /**
@@ -85,7 +105,14 @@ void freeGPR(int idx){
  *  @return Index of free XMM
  */
 int getXMM(void){
-
+    for (int i = 0; i < NUM_XMM; i++){
+        if (xmmRegs[i].status == 0){
+            xmmRegs[i].status = 1;
+            return i;
+        }
+    }
+    fprintf(stderr, "No free XMMs left\n");
+    exit(1);
 }
 
 /**
@@ -93,7 +120,9 @@ int getXMM(void){
  *  @param idx Index of XMM to free
  */
 void freeXMM(int idx){
-
+    if (idx < 0 || idx >= NUM_XMM) return;
+    xmmRegs[idx].status = 0;
+    xmmRegs[idx].a = NULL;
 }
 
 /**
@@ -103,7 +132,11 @@ void freeXMM(int idx){
  *  @return 1 if address is in GPR, 0 otherwise
  */
 int ensureInGPR(struct addr *a, int *outReg){
-
+    int r = getGPR();
+    regs[r].a = a;
+    // TODO: Need to insert movq to load from memory to regs[r].name I think
+    *outReg = r;
+    return 0;
 }
 
 /**
@@ -113,7 +146,11 @@ int ensureInGPR(struct addr *a, int *outReg){
  *  @return 1 if address is in XMM, 0 otherwise
  */
 int ensureInXMM(struct addr *a, int *outReg){
-
+    int r = getXMM();
+    xmmRegs[r].a = a;
+    // TODO: Same as above
+    *outReg = r;
+    return 0;
 }
 
 /**
@@ -121,7 +158,7 @@ int ensureInXMM(struct addr *a, int *outReg){
  *  @param a Address to spill
  */
 void spillAddr(struct addr *a){
-
+    // TODO idk how to do this yet
 }
 
 /**
@@ -129,12 +166,16 @@ void spillAddr(struct addr *a){
  *  @return 1 if translation is successful, 0 otherwise
  */
 int translateIcToAsm(){
-
+    initRegs();
+    initAddrDescrip();
+    // TODO walk the TAC list and pump instructions out
+    return 0;
 }
 
 /**
  *  @brief Write x86-64 assembly to file
  */
 int writeAsm(FILE *fp){
-
+    // TODO: output .text and .rodata sections and buffered asm
+    return 0;
 }
