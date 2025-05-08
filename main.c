@@ -333,7 +333,7 @@ FILE *openGenFile(char *name, char *ext)
 char *getFileName(char *f, char *ext)
 {
     char *fName = malloc(512);
-    fName = strrchr(f, ".");
+    fName = strrchr(f, '.');
     strcat(fName, ".");
     strcat(fName, ext);
     return fName;
