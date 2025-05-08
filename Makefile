@@ -6,10 +6,10 @@ BISON=bison
 HFLAG=-d
 EXEC=k0
 
-k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o typeDeclaration.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o tac.o icode.o
+k0: main.o lex.yy.o lex.o k0gram.tab.o tree.o dot.o symTab.o typeDeclaration.o type.o typeHelpers.o typeCheck.o symTabHelper.o errorHandling.o tac.o icode.o x86_64gen.o
 	$(CC) $(CFLAGS) $^ -o $@
 
-main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h
+main.o: main.c lex.h k0gram.tab.h dot.h tree.h symTab.h x86_64gen.h
 	$(CC) $(OBJFLAGS) $<
 
 lex.o: lex.c lex.h
@@ -63,6 +63,9 @@ tac.o: tac.c symTab.h tac.h
 icode.o: icode.c icode.h 
 	$(CC) $(OBJFLAGS) $<
 
+x86_64gen.o: x86_64gen.c x86_64gen.h tac.h tree.h symTab.h type.h
+	$(CC) $(OBJFLAGS) $<
+
 dotify:
 	dot -Tpng dotfile.dot > dotfile.png
 
@@ -70,7 +73,7 @@ clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9 *.ic
 
 valgrind: k0
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 ./tests/drJTests/gotos.kt
 
-zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/ gdb.sh
-	zip -r hw5.zip $^
+zip: *.c *.h k0gram.y kotlex.l Makefile README tests/
+	zip -r hw7.zip $^
