@@ -620,6 +620,22 @@ void basicBlocks(struct tree *node)
     // these need to be null for later
     case forStmntWithVars:
     case forStmnt:
+        node->icode = node->kids[1]->icode;
+
+        thenLabel = genLabel();
+        followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
         break;
     case whileStmntCtrlBody:
         node->icode = node->kids[1]->icode;
