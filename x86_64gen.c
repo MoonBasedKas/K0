@@ -28,6 +28,9 @@ static const char *xmmNames[NUM_XMM] = {
     "%xmm4", "%xmm5", "%xmm6", "%xmm7"
 };
 
+/**
+ *  @brief Initialize register pools
+ */
 void initRegs(void){
     for (int i = 0; i < NUM_GPR; i++){
         strncpy(regs[i].name, gprNames[i], sizeof(regs[i].name));
@@ -43,48 +46,95 @@ void initRegs(void){
     }
 }
 
+/**
+ *  @brief Initialize address map
+ */
 void initAddrDescrip(void){
     // TODO
     addrMap = NULL;
 }
 
+/**
+ *  @brief Get address descriptor
+ *  @param a Address to get descriptor for
+ *  @return Address descriptor
+ */
 struct addr_descrip *getAddrDesc(struct addr *a){
     // Create new for now, need lookup later
     return d;
 }
 
+/**
+ *  @brief Get free GPR
+ *  @return Index of free GPR
+ */
 int getGPR(void){
 
 }
 
+/**
+ *  @brief Free GPR
+ *  @param idx Index of GPR to free
+ */
 void freeGPR(int idx){
 
 }
 
+/**
+ *  @brief Get free XMM
+ *  @return Index of free XMM
+ */
 int getXMM(void){
 
 }
 
+/**
+ *  @brief Free XMM
+ *  @param idx Index of XMM to free
+ */
 void freeXMM(int idx){
 
 }
 
+/**
+ *  @brief Ensure address is in GPR
+ *  @param a Address to ensure in GPR
+ *  @param outReg Output register index
+ *  @return 1 if address is in GPR, 0 otherwise
+ */
 int ensureInGPR(struct addr *a, int *outReg){
 
 }
 
+/**
+ *  @brief Ensure address is in XMM
+ *  @param a Address to ensure in XMM
+ *  @param outReg Output register index
+ *  @return 1 if address is in XMM, 0 otherwise
+ */
 int ensureInXMM(struct addr *a, int *outReg){
 
 }
 
+/**
+ *  @brief Spill address to memory
+ *  @param a Address to spill
+ */
 void spillAddr(struct addr *a){
 
 }
 
+/**
+ *  @brief Translate IR to x86-64 assembly
+ *  @return 1 if translation is successful, 0 otherwise
+ */
 int translateIcToAsm(){
 
 }
 
+/**
+ *  @brief Write x86-64 assembly to file
+ */
 int writeAsm(FILE *fp){
 
 }
