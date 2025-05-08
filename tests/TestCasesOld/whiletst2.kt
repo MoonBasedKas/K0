@@ -1,6 +1,6 @@
-fun random(x: Int) : Boolean {
+fun random(x: Int) {
    val d20 : Int = 1
-   return d20 != 20
+//    return d20 != 20
 }
 
 fun main() {
@@ -24,7 +24,8 @@ fun main() {
 	}
 
 	// While loop with function call
-	while (random(1)) {
+	random(1)
+	while (1 != 1) {
 		println("X")
 	}
 
