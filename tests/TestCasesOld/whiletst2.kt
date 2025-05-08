@@ -1,5 +1,6 @@
 fun random(x: Int) {
    val d20 : Int = 1
+   d20 = 1 + d20
 //    return d20 != 20
 }
 
