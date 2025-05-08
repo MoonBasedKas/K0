@@ -20,9 +20,9 @@ struct addr_descrip *addrMap = NULL;
 static const char *gprNames[NUM_GPR] = {
     "%rax", "%rbx", "%rcx",
     "%rdx", "%rsi", "%rdi",
-    "%rbp", "%rsp", "%r8",
-    "%r9", "%r10", "%r11",
-    "%r12", "%r13"
+    "%r8", "%r9", "%r10",
+    "%r11", "%r12", "%r13",
+    "%r14", "%r15"
 };
 
 static const char *xmmNames[NUM_XMM] = {
@@ -102,6 +102,17 @@ void initAddrDescrip(void){
  *  @return Address descriptor
  */
 struct addr_descrip *getAddrDesc(struct addr *a) {
+
+    // Lookup
+    for (struct addr_descrip *d = addrMap; d; d = d->next) {
+        if (d->a.region == a->region
+        && d->a.u.offset == a->u.offset
+        && (a->u.name == NULL || strcmp(d->a.u.name, a->u.name) == 0)) {
+            return d;
+        }
+    }
+
+    // Create new descriptor
     struct addr_descrip *d = malloc(sizeof(*d));
     if (!d){
         fprintf(stderr, "Failed to allocate memory for addr_descrip\n");
@@ -226,10 +237,10 @@ int ensureInXMM(struct addr *a, int *outReg) {
     xmmRegs[r].a = a;
     switch (a->region){
         case R_LOCAL:
-            emit("\tmovq\t-%d(%%rbp), %s", a->u.offset, xmmRegs[r].name);
+            emit("\tmovsd\t-%d(%%rbp), %s", a->u.offset, xmmRegs[r].name);
             break;
         case R_GLOBAL:
-            emit("\tmovq\t%s(%%rip), %s", a->u.name, xmmRegs[r].name);
+            emit("\tmovsd\t%s(%%rip), %s", a->u.name, xmmRegs[r].name);
             break;
         default:
             emit("\t# unknown region %d in ensureInXMM()", a->region);
@@ -287,6 +298,7 @@ int translateIcToAsm() {
     for (p = root->icode; p; p = p->next){
         switch (p->opcode){
             case D_PROC:
+            {
                 char *fname = p->dest->u.name;
                 int locals = p->src1->u.offset;
                 emit(".globl %s", fname);
@@ -297,6 +309,7 @@ int translateIcToAsm() {
                     emit("\tsubq\t$%d, %%rsp", locals);
                 }
                 break;
+            }
             case D_END:
                 if (p->src1->u.offset > 0)
                     emit("\taddq\t$%d, %%rsp", p->src1->u.offset);
@@ -307,48 +320,54 @@ int translateIcToAsm() {
                 emit("L%d:", p->dest->u.offset);
                 break;
             case O_GOTO:
-                emit("\tjmp L%d", p->src1->u.offset);
+                emit("\tjmp\tL%d", p->dest->u.offset);
                 break;
             case O_PARM:
+            {
                 int r;
-                ensureInGPR(p->dest, &r);
+                ensureInGPR(p->src1, &r);
                 emit("\tpushq\t%s", regs[r].name);
                 freeGPR(r);
                 break;
+            }
             case O_CALL:
+            {
+                int nargs = p->src1->u.offset;
                 emit("\tcall\t%s@PLT", p->dest->u.name);
+                if (nargs > 0) {
+                    emit("\taddq\t$%d, %%rsp", nargs * 8);
+                }
                 if (p->src2) {
-                    struct addr *ret = p->src2;
-                    switch (ret->region) {
+                    struct addr_descrip *retDesc = getAddrDesc(p->src2);
+                    retDesc->r = NULL;
+                    switch (retDesc->a.region) {
                         case R_LOCAL:
-                            emit("\tmovq\t%%rax, -%d(%%rbp)", ret->u.offset);
+                            emit("\tmovq\t%%rax, -%d(%%rbp)", p->src2->u.offset);
                             break;
                         case R_GLOBAL:
-                            emit("\tmovq\t%%rax, %s(%%rip)", ret->u.name);
+                            emit("\tmovq\t%%rax, %s(%%rip)", p->src2->u.name);
                             break;
                         default:
                             break;
                     }
                 }
                 break;
+            }
             case O_RET:
+            {
                 int r;
                 ensureInGPR(p->src1, &r);
-                switch (p->dest->region) {
-                    case R_LOCAL:
-                        emit("\tmovq\t%s, -%d(%%rbp)", regs[r].name, p->dest->u.offset);
-                        break;
-                    case R_GLOBAL:
-                        emit("\tmovq\t%s, %s(%%rip)", regs[r].name, p->dest->u.name);
-                        break;
-                    default:
-                        break;
-                }
+                emit("\tmovq\t%s, %%rax", regs[r].name);
                 freeGPR(r);
                 break;
+            }
             case O_ASN:
+            {
                 int r;
+                struct addr_descrip *destDesc = getAddrDesc(p->dest);
                 ensureInGPR(p->src1, &r);
+                destDesc->r = &regs[r];
+
                 switch (p->dest->region) {
                     case R_LOCAL:
                         emit("\tmovq\t%s, -%d(%%rbp)", regs[r].name, p->dest->u.offset);
@@ -361,8 +380,10 @@ int translateIcToAsm() {
                 }
                 freeGPR(r);
                 break;
+            }
             case O_BEQ: case O_BNE: case O_BLT:  case O_BLE:
             case O_BGT: case O_BGE:
+            {
                 int r1, r2;
                 ensureInGPR(p->src1, &r1);
                 ensureInGPR(p->src2, &r2);
@@ -378,18 +399,37 @@ int translateIcToAsm() {
                 freeGPR(r1);
                 freeGPR(r2);
                 break;
+            }
             case O_ADD: case O_SUB: case O_MUL:
+            // I think this is wrong, and needs to expand
+            // load descriptor?
+            // Ok, I think I got it
+            // This might need to be applied to
+            {
                 int rd, r1, r2;
+
+                struct addr_descrip *destDesc = getAddrDesc(p->dest);
                 ensureInGPR(p->dest, &rd);
+                destDesc->r = &regs[rd];
+
+                struct addr_descrip *src1Desc = getAddrDesc(p->src1);
                 ensureInGPR(p->src1, &r1);
+                src1Desc->r = &regs[r1];
+
+                struct addr_descrip *src2Desc = getAddrDesc(p->src2);
                 ensureInGPR(p->src2, &r2);
+                src2Desc->r = &regs[r2];
+
                 const char *op =
                     (p->opcode == O_ADD) ? "addq" :
                     (p->opcode == O_SUB) ? "subq" : "imulq";
                 emit("\tmovq\t%s, %s", regs[r1].name, regs[rd].name);
                 emit("\t%s\t%s, %s", op, regs[r2].name, regs[rd].name);
-                spillAddr(p->dest);
+                spillAddr(p->dest); // This will free rd
+                freeGPR(r1);
+                freeGPR(r2);
                 break;
+            }
             default:
                 fprintf(stderr, "Unknown opcode %d in translateIcToAsm()\n", p->opcode);
                 break;
