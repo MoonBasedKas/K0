@@ -620,41 +620,43 @@ void basicBlocks(struct tree *node)
     // these need to be null for later
     case forStmntWithVars:
     case forStmnt:
-        node->icode = node->kids[1]->icode;
+        
 
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
+        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
+            node->icode = appendInstrList(
+                node->icode,
+                genInstr(O_GOTO, followLabel, NULL, NULL));
         node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
         break;
     case whileStmntCtrlBody:
-        node->icode = node->kids[1]->icode;
-
-        thenLabel = genLabel();
-        followLabel = genLabel();
-        node->first = thenLabel;
-        node->follow = followLabel;
+    thenLabel = genLabel();
+    followLabel = genLabel();
+    node->first = thenLabel;
+    node->follow = followLabel;
+    node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
+    node->icode = appendInstrList(
+        node->icode,
+        genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
         node->icode = appendInstrList(
             node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
-        break;
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+    node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+    node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
+    node->icode = appendInstrList(
+        node->icode,
+        genInstr(D_LABEL, followLabel, NULL, NULL));
+    break;
     case whileStmnt:
         thenLabel = genLabel();
         node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
@@ -666,19 +668,22 @@ void basicBlocks(struct tree *node)
 
         break;
     case doWhileStmnt:
-        node->icode = node->kids[2]->icode;
+
 
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[2]->icode);
+
+
         node->icode = appendInstrList(node->icode, node->kids[1]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, thenLabel, node->kids[1]->addr, NULL));
+            node->icode = appendInstrList(
+                node->icode,
+                genInstr(O_GOTO, thenLabel, NULL, NULL));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
@@ -717,6 +722,7 @@ void basicBlocks(struct tree *node)
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, elseLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, thenLabel, NULL, NULL));
