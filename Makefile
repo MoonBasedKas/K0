@@ -73,4 +73,4 @@ valgrind: k0
 	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
 
 zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/ gdb.sh
-	zip -r hw5.zip $^
+	zip -r hw7.zip $^

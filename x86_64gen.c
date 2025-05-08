@@ -456,7 +456,7 @@ int ensureInGPR(struct addr *a, int *outReg, int assign_to_reg_definitely)
             emit("\t# Error: ensureInGPR unhandled region %d", a->region);
             return 1; // Error
     }
-    regs[r].status = 1; // Loaded, so it's clean relative to its new source from memory/const
+    regs[r].status = 1; // Loaded, so it's clean
     // d->r was set by getGPR
     // If loaded from memory, it's synced. If it's a const/address, it's "in register, clean".
     d->status = (a->region == R_CONST  ||
@@ -530,11 +530,11 @@ int translateIcToAsm(struct tree *root)
         fprintf(stderr, "Error: No ICODE found for translation.\n");
         return 0;
     }
-    struct instr *p; // Current TAC instruction
+    struct instr *p;
 
-    initCodeGen(root); // Initialize registers, buffers, string labels etc.
+    initCodeGen(root);
 
-    emitDataSections(root->icode); // Emit .data, .rodata (globals, strings)
+    emitDataSections(root->icode);
     emit(".text");
 
     for (p = root->icode; p; p = p->next)
@@ -544,8 +544,6 @@ int translateIcToAsm(struct tree *root)
             case D_PROC:
             {
                 char *fname = p->dest->u.name;
-                // IMPORTANT: Assume p->src2->u.offset is local var size IN BYTES (quad-word aligned)
-                // Your TAC generator must ensure this is correct.
                 int locals_size = (p->src2 && p->src2->region == R_CONST) ? p->src2->u.offset : 0;
                 current_func_local_size = locals_size; // Save for D_END
 
@@ -557,13 +555,8 @@ int translateIcToAsm(struct tree *root)
                 {
                     emit("\tsubq\t$%d, %%rsp", locals_size);
                 }
-                // TODO: Callee-side parameter handling:
-                // After stack frame is set up, if this function has parameters,
-                // move them from ABI registers (%rdi, %rsi, %xmm0, etc.)
-                // to their designated stack slots (-N(%rbp)).
-                // This requires knowing which TAC 'addr's are parameters.
 
-                current_gpr_arg_idx = 0; // Reset for calls *made by* this function
+                current_gpr_arg_idx = 0;
                 current_stack_arg_offset = 0;
                 break;
             }
@@ -576,7 +569,7 @@ int translateIcToAsm(struct tree *root)
                 }
                 emit("\tpopq\t%%rbp");
                 emit("\tret");
-                current_func_local_size = 0; // Reset for next function
+                current_func_local_size = 0;
                 break;
             }
             case D_LABEL:
@@ -589,10 +582,9 @@ int translateIcToAsm(struct tree *root)
                 emit("\tjmp\tL%d", p->dest->u.offset);
                 break;
             }
-            case O_PARM: // Setup parameter for a subsequent CALL (all GPR args are quad words)
+            case O_PARM:
             {
                 int r_src;
-                // Pass 0 for 'assign_to_reg_definitely' as we just need the value
                 ensureInGPR(p->src1, &r_src, 0);
 
                 if (current_gpr_arg_idx < MAX_GPR_ARGS)
@@ -617,7 +609,7 @@ int translateIcToAsm(struct tree *root)
                 {
                      emit("\tcall\t%s@PLT", p->dest->u.name); // Assuming external or needs PLT
                 }
-                else // Indirect call via register (function pointer)
+                else // Indirect call via register
                 {
                     int r_func_addr;
                     ensureInGPR(p->dest, &r_func_addr, 0); // Load function address into a register
@@ -634,10 +626,9 @@ int translateIcToAsm(struct tree *root)
                 // Store return value (usually in %rax for int/ptr/bool, %xmm0 for float/double)
                 if (p->src2 && p->src2->region != R_NONE) // If there's a destination for the return value
                 {
-                    // This simplified version assumes GPR return value (%rax)
                     // TODO: Check type of p->src2; if double, use %xmm0 and movsd
                     struct addr_descrip *res_d = getAddrDesc(p->src2);
-                    if (res_d->r) { freeReg(res_d->r - regs); res_d->r = NULL; } // Invalidate old reg val for p->src2
+                    if (res_d->r) { freeReg(res_d->r - regs); res_d->r = NULL; }
 
                     if (p->src2->region == R_LOCAL) emit("\tmovq\t%%rax, -%d(%%rbp)", p->src2->u.offset);
                     else if (p->src2->region == R_GLOBAL) emit("\tmovq\t%%rax, %s(%%rip)", p->src2->u.name);
@@ -649,12 +640,10 @@ int translateIcToAsm(struct tree *root)
                 current_stack_arg_offset = 0;
                 break;
             }
-            case O_RET: // Return from function
+            case O_RET:
             {
-                if (p->src1 && p->src1->region != R_NONE) // If there's a value to return
+                if (p->src1 && p->src1->region != R_NONE)
                 {
-                    // Assume GPR-returnable (int, bool, ptr are quad words in %rax). Doubles use %xmm0.
-                    // TODO: Check type of p->src1; if double, ensureInXMM and mov to %xmm0
                     int r_ret_val;
                     ensureInGPR(p->src1, &r_ret_val, 0); // Load return value into a register
                     emit("\tmovq\t%s, %%rax", regs[r_ret_val].name); // Move to %rax
@@ -669,12 +658,13 @@ int translateIcToAsm(struct tree *root)
                 int r_src;
                 ensureInGPR(p->src1, &r_src, 0); // Load src1. Pass 0 for assign_to_reg.
                 struct addr_descrip *dest_d = getAddrDesc(p->dest);
-                if (dest_d->r) { freeReg(dest_d->r - regs); dest_d->r = NULL; } // Invalidate old reg value of dest
+                if (dest_d->r) { freeReg(dest_d->r - regs);
+                dest_d->r = NULL; }
 
                 if (p->dest->region == R_LOCAL) emit("\tmovq\t%s, -%d(%%rbp)", regs[r_src].name, p->dest->u.offset);
                 else if (p->dest->region == R_GLOBAL) emit("\tmovq\t%s, %s(%%rip)", regs[r_src].name, p->dest->u.name);
                 else { emit("\t# O_ASN: unhandled dest region %d", p->dest->region); }
-                dest_d->status = 1; // Mark as in memory. Value in r_src is temporary.
+                dest_d->status = 1;
                 freeReg(r_src);
                 break;
             }
@@ -683,8 +673,6 @@ int translateIcToAsm(struct tree *root)
                 int r_s1, r_s2, r_dst_val;
                 ensureInGPR(p->src1, &r_s1, 0);
                 ensureInGPR(p->src2, &r_s2, 0);
-                // Get a register for the result. This register will hold dest's new value.
-                // Pass 1 for assign_to_reg if getGPR takes it and should update dest_d->r
                 r_dst_val = getGPR(p->dest);
 
                 emit("\tmovq\t%s, %s", regs[r_s1].name, regs[r_dst_val].name); // r_dst_val = src1
@@ -703,7 +691,6 @@ int translateIcToAsm(struct tree *root)
             case O_DIV: case O_MOD:
             {
                 int r_s1_dividend, r_s2_divisor;
-                // TODO: Properly save/restore %rax, %rdx if they hold other live values
                 ensureInGPR(p->src1, &r_s1_dividend, 0);
                 ensureInGPR(p->src2, &r_s2_divisor, 0);
 
@@ -722,7 +709,7 @@ int translateIcToAsm(struct tree *root)
                 if (p->dest->region == R_LOCAL) emit("\tmovq\t%s, -%d(%%rbp)", result_source_reg, p->dest->u.offset);
                 else if (p->dest->region == R_GLOBAL) emit("\tmovq\t%s, %s(%%rip)", result_source_reg, p->dest->u.name);
                 else { emit("\t# O_DIV/MOD: unhandled dest region %d", p->dest->region); }
-                dest_d->status = 1; // Mark result as in memory
+                dest_d->status = 1;
                 // TODO: Restore %rax, %rdx if they were saved
                 break;
             }
@@ -742,10 +729,7 @@ int translateIcToAsm(struct tree *root)
                 freeReg(r2);
                 break;
             }
-            // TODO: Implement O_NEG (-operand), O_AND, O_OR, O_XOR, O_NOT (bitwise) using 'q' suffix instructions
-            // Example O_NEG: ensureInGPR(p->src1, &r_src, 0); r_dest = getGPR(p->dest); emit(movq r_src,r_dest); emit(negq r_dest); ...
-            // TODO: Implement O_BIF (val == true -> cmpq $0, reg; jne label), O_BNIF (val == false -> cmpq $0, reg; je label)
-
+            // Need NEG and BIF
             default:
                 emit("\t# Error: UNKNOWN OPCODE %d (%s)", p->opcode, opCodeName(p->opcode) ? opCodeName(p->opcode) : "unknown_name");
                 // fprintf(stderr, "Unknown opcode %d in translateIcToAsm()\n", p->opcode); // Keep for debugging
@@ -775,7 +759,7 @@ int writeAsm(FILE *fp)
     return 1;
 }
 
-// Dummy g_string_literals for standalone compilation
+// Dummy g_string_literals
 #ifndef G_STRING_LITERALS_DEFINED
 #define G_STRING_LITERALS_DEFINED
 char *g_string_literals[] = {"Default k0 test string."};
