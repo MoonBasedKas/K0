@@ -43,7 +43,6 @@ struct addr *genLabel()
     memset(a, 0, sizeof(struct addr));
     a->region = R_LABEL;
     a->u.offset = labelCounter++;
-    printf("generated a label %d\n", a->u.offset);
     return a;
 }
 
