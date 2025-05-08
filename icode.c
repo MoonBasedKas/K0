@@ -734,6 +734,21 @@ void basicBlocks(struct tree *node)
 
         break;
     case elvis:
+        followLabel = genLabel();
+        node->icode = node->kids[0]->icode;
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            node->kids[1]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
         break;
     // case postfixExpr:
     // case postfixNoExpr:
@@ -1016,168 +1031,6 @@ void assignOnTrueFalse(struct tree *node)
             debugICode("Missing something in assignFollow", node->kids[4]);
         }
         break;
-
-    default:
-        break;
-    }
-}
-
-// will need recursion of some sort
-// for now just pulling out rules that have control flow stuff
-// actual icode using previouly gen labels
-void control(struct tree *node)
-{
-    for (int i = 0; i < node->nkids; i++)
-    {
-        control(node->kids[i]);
-    }
-    switch (node->prodrule)
-    {
-    case forStmntWithVars:
-    case forStmnt:
-        // TODO
-        // how do this??
-        // for range, if > min and < max and store val
-        // idk what to do for array
-        // walk down full array and store in register OR of == this element
-        // could do it with goto if found but that seems not worth unless huge array
-        break;
-
-    case whileStmntCtrlBody:
-    case whileStmnt:
-    case doWhileStmnt:
-        // TODO
-
-        // need to do speceal something for assignment ifs???
-        // YES
-        // need to check if parent is assignment and if so add code for it
-        break;
-    case emptyIf:
-    case if_k:
-    {
-        // conditional without else
-
-        node->icode = node->kids[0]->icode;
-        struct addr *thenLabel = genLabel();
-        struct addr *followLabel = genLabel();
-        node->first = thenLabel;
-        node->follow = followLabel;
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
-
-        // node->icode = code;
-        printf("BANG BANG\n");
-        printIcode(node->icode);
-        break;
-    }
-    case ifElse:
-    {
-        // conditional with else
-        struct instr *code = node->kids[0]->icode;
-        struct addr *thenLabel = genLabel();
-        struct addr *elseLabel = genLabel();
-        struct addr *followLabel = genLabel();
-        node->first = thenLabel;
-        node->follow = followLabel;
-
-        code = appendInstrList(
-            code,
-            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        code = appendInstrList(code, node->kids[2]->icode);
-        code = appendInstrList(
-            code,
-            genInstr(O_GOTO, followLabel, NULL, NULL));
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, elseLabel, NULL, NULL));
-        code = appendInstrList(code, node->kids[4]->icode);
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
-
-        node->icode = code;
-        break;
-    }
-    case ifElseIf:
-        // In theory this should be the same.
-        struct instr *code = node->kids[0]->icode;
-        struct addr *thenLabel = genLabel();
-        struct addr *elseLabel = genLabel();
-        struct addr *followLabel = genLabel();
-        node->first = thenLabel;
-        node->follow = followLabel;
-
-        code = appendInstrList(
-            code,
-            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        code = appendInstrList(code, node->kids[2]->icode);
-        code = appendInstrList(
-            code,
-            genInstr(O_GOTO, followLabel, NULL, NULL));
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, elseLabel, NULL, NULL));
-        code = appendInstrList(code, node->kids[4]->icode);
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
-
-        node->icode = code;
-        break;
-
-    case elvis:
-        // TODO
-        // i think this goes here
-        // idk tho
-
-    case postfixExpr:
-    case postfixNoExpr:
-        // TODO
-        // function call
-        // figrue that thing out
-
-    case postfixDotID:
-    case postfixDotIDExpr:
-    case postfixDotIDNoExpr:
-    case postfixSafeDotID:
-    case postfixSafeDotIDExpr:
-    case postfixSafeDotIDNoExpr:
-        // TODO
-        // figure all this thing out
-        // at this point might not need the intital part???
-        break;
-    case funcBody:
-        // TODO
-        // treat like return value??
-        // ASSIGNMENT expression
-        break;
-
-        // My eternal foe...
-    case returnVal:
-
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
-                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
-        break;
-        // USELESS
-        // case RETURN:
-
-        //     // TODO
-        //     // definlty need this thing
-        //     break;
 
     default:
         break;
