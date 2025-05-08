@@ -574,7 +574,7 @@ int translateIcToAsm(struct tree *root)
             }
             case D_LABEL:
             {
-                // printf("%d\n", p->dest->u.offset);
+                //printf("%d\n", p->dest->u.offset);
                 if (p->dest->region == R_LABEL)
                 emit("L%d:", p->dest->u.offset);
                 break;
@@ -736,7 +736,11 @@ int translateIcToAsm(struct tree *root)
                     (p->opcode == O_BEQ) ? "je"  : (p->opcode == O_BNE) ? "jne" :
                     (p->opcode == O_BLT) ? "jl"  : (p->opcode == O_BLE) ? "jle" :
                     (p->opcode == O_BGT) ? "jg"  : "jge";
-                emit("\t%s\tL%d", jmp_instr, p->dest->u.offset);
+                if (p->next && p->next->opcode == O_BNIF) {
+                    emit("\t%s\tL%d", jmp_instr, p->next->dest->u.offset);
+                } else {
+                    emit("\t%s\tL%d", jmp_instr, p->dest->u.offset);
+                }
                 freeGPR(r1);
                 freeGPR(r2);
                 break;
@@ -807,3 +811,9 @@ int writeAsm(const char *base_filename)
 
     return write_ok;
 }
+
+#ifndef G_STRING_LITERALS_DEFINED
+#define G_STRING_LITERALS_DEFINED
+char *g_string_literals[] = {"Default k0 test string."};
+int g_string_literal_count = 1;
+#endif

@@ -205,10 +205,10 @@ int main(int argc, char *argv[])
 
             system(dio);
             memset(dio,0,4096);
-            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o "));
-            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            strcat(dio, "-lc /usr/lib/x86_64-linux-gnu/crtn.o");
             
             system(dio);
             memset(dio,0,4096);
@@ -229,10 +229,10 @@ int main(int argc, char *argv[])
 
             system(dio);
             memset(dio,0,4096);
-            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
+            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o "));
-            strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            strcat(dio, "-lc /usr/lib/x86_64-linux-gnu/crtn.o");
             
             system(dio);
             memset(dio,0,4096);
