@@ -86,4 +86,5 @@ struct addr *genConst(int val);
 void tacPrint(struct instr *code);
 void freeInstrList(struct instr *list);
 void recordStringLiteral(const char *raw);
+struct addr *genConstD(double val);
 #endif
