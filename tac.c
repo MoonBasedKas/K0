@@ -16,9 +16,7 @@ char *regionName(int i)
     return regionnames[i - R_GLOBAL];
 }
 char *opcodenames[] = {
-
     "ADD", "SUB", "MUL", "DIV", "MOD", "RNG", "RNU", "IN", "NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
-
     "BLT", "BLE", "BGT", "BGE", "BEQ", "BNE", "BIF", "BNIF", "PARM", "CALL",
     "RETURN"};
 char *opCodeName(int i)
@@ -45,7 +43,6 @@ struct addr *genLabel()
     memset(a, 0, sizeof(struct addr));
     a->region = R_LABEL;
     a->u.offset = labelCounter++;
-    printf("generated a label %d\n", a->u.offset);
     return a;
 }
 
@@ -64,7 +61,8 @@ struct addr *genLocal(int size, struct symTab *scope)
     scope->varSize = ((scope->varSize + SLOT - 1) / SLOT) * SLOT;
 
     struct addr *a = malloc(sizeof(struct addr));
-    if(!a) {
+    if (!a)
+    {
         fprintf(stderr, "out of memory\n");
         exit(4);
     }
@@ -144,7 +142,9 @@ struct instr *appendInstrList(struct instr *l1, struct instr *l2)
         return l2;
     struct instr *ltmp = l1;
     while (ltmp->next != NULL)
+
         ltmp = ltmp->next;
+
     ltmp->next = l2;
     return l1;
 }
@@ -160,19 +160,20 @@ struct instr *concatInstrList(struct instr *l1, struct instr *l2)
  *  fuck D_GLOB
  */
 
-struct StringLit {
+struct StringLit
+{
     char *s;
-    int   len;
+    int len;
     struct StringLit *next;
 };
 
 static struct StringLit *stringHead = NULL;
 
-
-void recordStringLiteral(const char *raw) {
+void recordStringLiteral(const char *raw)
+{
     struct StringLit *n = malloc(sizeof *n);
-    n->len  = strlen(raw) + 1;
-    n->s    = strdup(raw);
+    n->len = strlen(raw) + 1;
+    n->s = strdup(raw);
     n->next = stringHead;
     stringHead = n;
 }
@@ -202,9 +203,12 @@ static void printAddr(struct addr *a)
         fprintf(iTarget, "const:%d", a->u.offset);
         break;
     case R_STRING: // Catch like below
-        if (a->u.name) {
+        if (a->u.name)
+        {
             fprintf(iTarget, "\"%s\"", a->u.name);
-        } else {
+        }
+        else
+        {
             fprintf(iTarget, "str:%d", a->u.offset);
         }
         break;
@@ -228,12 +232,14 @@ static void printAddr(struct addr *a)
 
 /**
  * @brief Drops the string section
- * 
+ *
  * This was easier than trying to align everything in a cursed IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE IF ELSE
  * @param out
  */
-void dumpStringSection(FILE *out) {
-    for (struct StringLit *p = stringHead; p; p = p->next) {
+void dumpStringSection(FILE *out)
+{
+    for (struct StringLit *p = stringHead; p; p = p->next)
+    {
         // one .string directive per literal
         fprintf(out, ".string %d\n", p->len);
         fprintf(out, "\t\"%s\"\n", p->s);
@@ -255,18 +261,14 @@ void tacPrint(struct instr *code)
     while (p)
     {
         // skip the string length + data pair since we already dumped them
-        if (p->opcode == D_GLOB
-            && p->dest && p->dest->region == R_CONST
-            && p->next && p->next->opcode == D_GLOB
-            && p->next->dest && p->next->dest->region == R_STRING)
+        if (p->opcode == D_GLOB && p->dest && p->dest->region == R_CONST && p->next && p->next->opcode == D_GLOB && p->next->dest && p->next->dest->region == R_STRING)
         {
             p = p->next->next;
             continue;
         }
 
         // skip any lone string length entry
-        if (p->opcode == D_GLOB
-            && p->dest && p->dest->region == R_CONST)
+        if (p->opcode == D_GLOB && p->dest && p->dest->region == R_CONST)
         {
             p = p->next;
             continue;
@@ -284,8 +286,7 @@ void tacPrint(struct instr *code)
         else if (p->opcode == D_LABEL)
         {
             // code section or label
-            if (p->dest->region == R_NAME
-                && strcmp(p->dest->u.name, ".code") == 0)
+            if (p->dest->region == R_NAME && strcmp(p->dest->u.name, ".code") == 0)
             {
                 fprintf(iTarget, ".code\n");
             }
@@ -300,9 +301,18 @@ void tacPrint(struct instr *code)
         {
             // other pseudo-ops
             fprintf(iTarget, "\t%s ", pseudoName(p->opcode));
-            if (p->dest)  printAddr(p->dest);
-            if (p->src1) { fprintf(iTarget, ","); printAddr(p->src1); }
-            if (p->src2) { fprintf(iTarget, ","); printAddr(p->src2); }
+            if (p->dest)
+                printAddr(p->dest);
+            if (p->src1)
+            {
+                fprintf(iTarget, ",");
+                printAddr(p->src1);
+            }
+            if (p->src2)
+            {
+                fprintf(iTarget, ",");
+                printAddr(p->src2);
+            }
             fprintf(iTarget, "\n");
         }
         else if (p->opcode == O_CALL)
@@ -318,9 +328,18 @@ void tacPrint(struct instr *code)
         {
             // arithmetic or branch
             fprintf(iTarget, "\t%s\t", opCodeName(p->opcode));
-            if (p->dest)  printAddr(p->dest);
-            if (p->src1) { fprintf(iTarget, ","); printAddr(p->src1); }
-            if (p->src2) { fprintf(iTarget, ","); printAddr(p->src2); }
+            if (p->dest)
+                printAddr(p->dest);
+            if (p->src1)
+            {
+                fprintf(iTarget, ",");
+                printAddr(p->src1);
+            }
+            if (p->src2)
+            {
+                fprintf(iTarget, ",");
+                printAddr(p->src2);
+            }
             fprintf(iTarget, "\n");
         }
         else
