@@ -596,7 +596,7 @@ int translateIcToAsm(struct tree *root)
                     emit("\tpushq\t%s", regs[r_src].name);
                     current_stack_arg_offset += 8; // Quad word
                 }
-                freeReg(r_src); // Value is now in ABI reg or on stack
+                freeGPR(r_src); // Value is now in ABI reg or on stack
                 break;
             }
             case O_CALL:
@@ -614,7 +614,7 @@ int translateIcToAsm(struct tree *root)
                     int r_func_addr;
                     ensureInGPR(p->dest, &r_func_addr, 0); // Load function address into a register
                     emit("\tcall\t*%s", regs[r_func_addr].name);
-                    freeReg(r_func_addr);
+                    freeGPR(r_func_addr);
                 }
 
                 // Clean up stack arguments IF any were pushed by O_PARM
@@ -628,7 +628,7 @@ int translateIcToAsm(struct tree *root)
                 {
                     // TODO: Check type of p->src2; if double, use %xmm0 and movsd
                     struct addr_descrip *res_d = getAddrDesc(p->src2);
-                    if (res_d->r) { freeReg(res_d->r - regs); res_d->r = NULL; }
+                    if (res_d->r) { freeGPR(res_d->r - regs); res_d->r = NULL; }
 
                     if (p->src2->region == R_LOCAL) emit("\tmovq\t%%rax, -%d(%%rbp)", p->src2->u.offset);
                     else if (p->src2->region == R_GLOBAL) emit("\tmovq\t%%rax, %s(%%rip)", p->src2->u.name);
@@ -647,7 +647,7 @@ int translateIcToAsm(struct tree *root)
                     int r_ret_val;
                     ensureInGPR(p->src1, &r_ret_val, 0); // Load return value into a register
                     emit("\tmovq\t%s, %%rax", regs[r_ret_val].name); // Move to %rax
-                    freeReg(r_ret_val);
+                    freeGPR(r_ret_val);
                 }
                 // Else: void return, %rax content not explicitly set by this TAC.
                 // Actual 'ret' instruction is part of D_END
@@ -658,14 +658,14 @@ int translateIcToAsm(struct tree *root)
                 int r_src;
                 ensureInGPR(p->src1, &r_src, 0); // Load src1. Pass 0 for assign_to_reg.
                 struct addr_descrip *dest_d = getAddrDesc(p->dest);
-                if (dest_d->r) { freeReg(dest_d->r - regs);
+                if (dest_d->r) { freeGPR(dest_d->r - regs);
                 dest_d->r = NULL; }
 
                 if (p->dest->region == R_LOCAL) emit("\tmovq\t%s, -%d(%%rbp)", regs[r_src].name, p->dest->u.offset);
                 else if (p->dest->region == R_GLOBAL) emit("\tmovq\t%s, %s(%%rip)", regs[r_src].name, p->dest->u.name);
                 else { emit("\t# O_ASN: unhandled dest region %d", p->dest->region); }
                 dest_d->status = 1;
-                freeReg(r_src);
+                freeGPR(r_src);
                 break;
             }
             case O_ADD: case O_SUB: case O_MUL:
@@ -683,9 +683,9 @@ int translateIcToAsm(struct tree *root)
                 markRegDirty(r_dst_val);    // Value in r_dst_val is new
                 spillReg(&regs[r_dst_val]); // Store result from r_dst_val to p->dest's memory
 
-                freeReg(r_s1);
-                freeReg(r_s2);
-                freeReg(r_dst_val); // Result is now in memory for p->dest
+                freeGPR(r_s1);
+                freeGPR(r_s2);
+                freeGPR(r_dst_val); // Result is now in memory for p->dest
                 break;
             }
             case O_DIV: case O_MOD:
@@ -699,12 +699,12 @@ int translateIcToAsm(struct tree *root)
                 emit("\tidivq\t%s", regs[r_s2_divisor].name);      // Divide %rdx:%rax by divisor reg
                 // holy fuck
 
-                freeReg(r_s1_dividend);
-                freeReg(r_s2_divisor);
+                freeGPR(r_s1_dividend);
+                freeGPR(r_s2_divisor);
 
                 char *result_source_reg = (p->opcode == O_DIV) ? "%rax" : "%rdx"; // Quotient or Remainder
                 struct addr_descrip *dest_d = getAddrDesc(p->dest);
-                if (dest_d->r) { freeReg(dest_d->r - regs); dest_d->r = NULL; }
+                if (dest_d->r) { freeGPR(dest_d->r - regs); dest_d->r = NULL; }
 
                 if (p->dest->region == R_LOCAL) emit("\tmovq\t%s, -%d(%%rbp)", result_source_reg, p->dest->u.offset);
                 else if (p->dest->region == R_GLOBAL) emit("\tmovq\t%s, %s(%%rip)", result_source_reg, p->dest->u.name);
@@ -725,8 +725,8 @@ int translateIcToAsm(struct tree *root)
                     (p->opcode == O_BLT) ? "jl"  : (p->opcode == O_BLE) ? "jle" :
                     (p->opcode == O_BGT) ? "jg"  : "jge";
                 emit("\t%s\tL%d", jmp_instr, p->dest->u.offset);
-                freeReg(r1);
-                freeReg(r2);
+                freeGPR(r1);
+                freeGPR(r2);
                 break;
             }
             // Need NEG and BIF
