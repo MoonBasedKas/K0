@@ -155,7 +155,22 @@ void localAddr(struct tree *node)
             entry->addr = genLocal(typeSize(entry->type), entry->scope);
         break;
     }
+    // WOAW arrays (based, based, based, based, based, based, based, ...)
+    case arrayDec:
+    case arrayDecValueless:
+    entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
+    if (entry)
+        entry->addr = genLocal(typeSize(entry->type->u.array.elemType) * node->kids[2]->kids[1]->leaf->ival, node->table);
+    break;
 
+        break;
+
+    case arrayDecEqual:
+    case arrayDecEqualValueless:
+    entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
+    if (entry)
+        entry->addr = genLocal(typeSize(entry->type->u.array.elemType) * node->kids[4]->kids[1]->leaf->ival, node->table);
+    break;
     default:
         break;
     }
@@ -440,20 +455,16 @@ void basicBlocks(struct tree *node)
         node->icode = genInstr(O_CALL, fnName, genConst(0), retSlot);
         break;
     }
-    // need to do speceal something for assignment ifs???
-    // cause when this happens if hasn't been evaluated yet
-    // does that cause problems here or can i leave this and then just deal later???
-    // maybe this is fine here cause it will just append NULL to the end of the list and then
-    // when we get to if latter we can fix it????
-    // no that won't work cause we copy this later into the upper code so it can't be fixed latter
-    // maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
+
     case assignment:
     case assignAdd:
     case assignSub:
-    case arrayAssignSub:
-    case arrayAssignAdd:
-    case arrayAssignment:
-        switch (node->kids[1]->prodrule)
+    node->addr = node->kids[0]->addr;
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));     // tac.c
+                                break;
+    // WHY? This literally checks for conditions which never occur.
+    switch (node->kids[1]->prodrule)
         {
         case emptyIf:
         case if_k:
@@ -462,11 +473,17 @@ void basicBlocks(struct tree *node)
             break;
 
         default:
-            node->addr = node->kids[0]->addr;
-            node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
-                                          genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));     // tac.c
+
             break;
         }
+    case arrayAssignSub:
+    case arrayAssignAdd:
+    case arrayAssignment:
+        // Okay, 
+        
+        node->addr = node->kids[0]->kids[0]->addr;
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                        genInstr(O_ASN, node->addr, node->kids[0]->kids[1]->addr, node->kids[1]->addr));     // tac.c
         break;
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
