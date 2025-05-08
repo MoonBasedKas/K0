@@ -37,9 +37,6 @@ int symError = 0;
 int main(int argc, char *argv[])
 {
     char *dio = malloc(4096);
-    char *as;
-    char *ld;
-    char *gcc;
 
     int dot = 0; // False
     int tree = 0;

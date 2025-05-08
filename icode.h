@@ -10,4 +10,6 @@ void assignFollow(struct tree *node);
 void assignOnTrueFalse(struct tree *node);
 void control(struct tree *node);
 void debugICode(char *string, struct tree *node);
+void printIcode(struct instr *i);
+void theGreatICodeMerge(struct tree *node);
 #endif

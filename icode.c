@@ -26,6 +26,8 @@ void resetICodeDone(struct tree *node)
 
 void buildICode(struct tree *node)
 {
+
+    struct instr *all = NULL;
     localAddr(node);
     resetICodeDone(node);
     basicBlocks(node);
@@ -33,10 +35,11 @@ void buildICode(struct tree *node)
     assignFirst(node);
     assignFollow(node);
     assignOnTrueFalse(node);
+    theGreatICodeMerge(node);
 
     if (node->prodrule == program)
     {
-        struct instr *all = NULL;
+        // all = NULL;
         for (int i = 0; i < node->nkids; i++)
         {
             if (node->kids[i]->icode)
@@ -44,6 +47,32 @@ void buildICode(struct tree *node)
         }
         node->icode = all;
     }
+}
+
+void theGreatICodeMerge(struct tree *node)
+{
+
+    for (int i = 1; i < node->nkids; i++)
+        node->icode = appendInstrList(
+            node->icode,
+            node->kids[i]->icode);
+}
+
+/**
+ * @brief Prints the icode list.
+ *
+ * @param i
+ */
+void printIcode(struct instr *i)
+{
+    struct instr *j = i;
+    while (j != NULL)
+    {
+        printf("%p-", j);
+        printf("%d\t", j->opcode);
+        j = j->next;
+    }
+    printf("\n");
 }
 
 void localAddr(struct tree *node)
@@ -579,6 +608,7 @@ void basicBlocks(struct tree *node)
     }
     default:
     {
+        // THE DARK SECRET OF WHY BASIC INSTRUCTIONS WORK. PRAISE THY ANCIENT TEXT!
         if (node->nkids > 0)
         {
             node->icode = copyInstrList(node->kids[0]->icode);
@@ -632,6 +662,11 @@ void assignFirst(struct tree *node)
     // in assignFollow and assignOnTrueFasle print out message saying that something needs to be added here if something is NULL
 }
 
+/**
+ * @brief Assigns the labels for on follow.
+ *
+ * @param node
+ */
 void assignFollow(struct tree *node)
 {
     int last = 0;
@@ -722,6 +757,11 @@ void assignFollow(struct tree *node)
     }
 }
 
+/**
+ * @brief Assigns the labels for on true and on false.
+ *
+ * @param node
+ */
 void assignOnTrueFalse(struct tree *node)
 {
     for (int i = 0; i < node->nkids; i++)
@@ -854,12 +894,12 @@ void control(struct tree *node)
     case if_k:
     {
         // conditional without else
+
         struct instr *code = node->kids[0]->icode;
         struct addr *thenLabel = genLabel();
         struct addr *followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-
         code = appendInstrList(
             code,
             genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
@@ -962,7 +1002,9 @@ void control(struct tree *node)
         // ASSIGNMENT expression
         break;
 
+        // My eternal foe...
     case returnVal:
+
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
                                       genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
         break;
