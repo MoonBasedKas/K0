@@ -574,6 +574,8 @@ int translateIcToAsm(struct tree *root)
             }
             case D_LABEL:
             {
+                // printf("%d\n", p->dest->u.offset);
+                if (p->dest->region == R_LABEL)
                 emit("L%d:", p->dest->u.offset);
                 break;
             }
