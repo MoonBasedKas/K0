@@ -491,8 +491,7 @@ void basicBlocks(struct tree *node)
                      node->addr,
                      node->kids[0]->addr,
                      node->kids[1]->addr));
-        // NOT PART OF FOR LOOP
-        // BOOLEAN EXPRESSION
+        // PART OF FOOR LOOP
         break;
 
     case infixFunction:
@@ -579,7 +578,8 @@ void basicBlocks(struct tree *node)
         node->addr = genConst(node->leaf->ival);
         break;
     case REAL_LITERAL:
-        node->addr = genConst(node->leaf->dval);
+        node->addr = genConstD(node->leaf->dval);
+        break;
     case TRUE:
         node->addr = genConst(1);
         break;
@@ -628,9 +628,7 @@ void basicBlocks(struct tree *node)
 
         break;
 
-    // when hit control flow, break without concating child code
     // Evil idea: We make this control.
-    // these need to be null for later
     case forStmntWithVars:
     case forStmnt:
         
@@ -700,7 +698,6 @@ void basicBlocks(struct tree *node)
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
-        break;
         break;
     case emptyIf:
     case if_k:
