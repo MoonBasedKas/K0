@@ -687,7 +687,8 @@ void basicBlocks(struct tree *node)
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
+        node->icode = appendInstrList(node->kids[0]->icode, genInstr(D_LABEL, thenLabel, 0, 0));
+        node->icode = appendInstrList(node->icode, node->kids[1]->icode);
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
