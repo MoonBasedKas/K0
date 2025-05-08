@@ -191,7 +191,6 @@ int main(int argc, char *argv[])
 
         // The great file generator.
         important = getFileName(fileNames[i]);
-        printf("%s\n", important);
         if (s)
         { // Generates .s and stop
             continue;
