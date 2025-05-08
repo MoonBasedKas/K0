@@ -699,20 +699,27 @@ void basicBlocks(struct tree *node)
     case forStmntWithVars:
     case forStmnt:
         
-
+        node->kids[1]->addr = genLocal(typeSize(node->kids[1]->type), node->kids[1]->table);
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-        node->icode = appendInstrList(node->kids[0]->icode, genInstr(D_LABEL, thenLabel, 0, 0));
-        node->icode = appendInstrList(node->icode, node->kids[1]->icode);
+        node->icode = appendInstrList(genInstr(O_ASN, node->kids[1]->addr, node->kids[2]->kids[0]->addr, 0), node->kids[1]->icode);
+        node->icode = appendInstrList(node->icode, genInstr(D_LABEL, thenLabel, 0, 0));
+        if(node->kids[2]->prodrule == RANGE){ // RANGE
+            node->icode = appendInstrList(node->icode, genInstr(O_BLT, node->kids[1]->addr, node->kids[2]->kids[1]->addr, 0));
+        } else{ // RANGE UNTIL
+            node->icode = appendInstrList(node->icode, genInstr(O_BLE, node->kids[1]->addr, node->kids[2]->kids[1]->addr, 0));
+        }
+        
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
             node->icode = appendInstrList(
                 node->icode,
                 genInstr(O_GOTO, followLabel, NULL, NULL));
-        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(node->icode, node->kids[3]->icode);
+        node->icode = appendInstrList(node->icode, genInstr(O_ADD, node->kids[1]->addr, genConst(1), node->kids[1]->addr));
         node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
