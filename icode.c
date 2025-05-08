@@ -35,7 +35,6 @@ void buildICode(struct tree *node)
     assignOnTrueFalse(node);
 
     basicBlocks(node);
-    // control(node);
 
     theGreatICodeMerge(node);
 
@@ -194,6 +193,53 @@ void basicBlocks(struct tree *node)
     case funcDecParamType:
     case funcDecParamBody:
     case funcDecTypeBody:
+        // grab parameter count from your typeInfo
+        int paramCount = 0;
+        if (node->type && node->type->basicType == FUNCTION_TYPE)
+        {
+            paramCount = node->type->u.func.numParams;
+        }
+
+        // build the PROC header using the real paramCount and varSize
+        struct addr *procName = malloc(sizeof *procName);
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
+
+        struct instr *code = genInstr(
+            D_PROC,
+            procName,
+            genConst(paramCount),          // <— real # of params
+            genConst(node->table->varSize) // <— real frame size
+        );
+
+        // now emit the “.code” marker
+        struct addr *codeName = malloc(sizeof *codeName);
+        codeName->region = R_NAME;
+        codeName->u.name = strdup(".code");
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, codeName, NULL, NULL));
+
+        // entry label for the function
+        struct instr *entryLabel = genInstr(
+            D_LABEL,
+            procName,
+            NULL,
+            NULL);
+        code = appendInstrList(code, entryLabel);
+
+        // append the body’s IR and an implicit “return unit”
+        if (node->kids[3] && node->kids[3]->icode)
+        {
+            code = appendInstrList(code, node->kids[3]->icode);
+        }
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, genConst(0), NULL, NULL));
+
+        node->icode = code;
+        node->icodeDone = 0;
+        break;
     case funcDecType:
     case funcDecBody:
     {
