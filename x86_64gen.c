@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "x86_64gen.h"
+#include "tac.h"
+#include "tree.h"
 
 /*
 We can make it
@@ -11,7 +13,6 @@ Everything will be fine
 // Register pools
 struct regdescrip regs[NUM_GPR];
 struct regdescrip xmmRegs[NUM_XMM];
-
 // Address map
 struct addr_descrip *addrMap = NULL;
 
@@ -27,6 +28,39 @@ static const char *xmmNames[NUM_XMM] = {
     "%xmm0", "%xmm1", "%xmm2", "%xmm3",
     "%xmm4", "%xmm5", "%xmm6", "%xmm7"
 };
+
+// Gonna make an internal buffer for the asm
+static char **asmBuf;
+static int bufCap = 0;
+static int bufLen = 0;
+
+static void initAsmBuf(void) {
+    bufCap = 128;
+    bufLen = 0;
+    asmBuf = malloc(bufCap * sizeof(*asmBuf));
+    if (!asmBuf){
+        fprintf(stderr, "Failed to allocate memory for asmBuf\n");
+        exit(1);
+    }
+}
+
+static void pumpUpTheJam(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    char tmp[256];
+    vsnprintf(tmp, sizeof(tmp), fmt, ap);
+    va_end(ap);
+
+    if (bufLen >= bufCap) {
+        bufCap *= 2;
+        asmBuf = realloc(asmBuf, bufCap * sizeof(*asmBuf));
+        if (!asmBuf){
+            fprintf(stderr, "Can't pump up the jam :(\n");
+            exit(1);
+        }
+    }
+    asmBuf[bufLen++] = strdup(tmp);
+}
 
 /**
  *  @brief Initialize register pools
