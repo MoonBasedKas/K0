@@ -767,7 +767,7 @@ void basicBlocks(struct tree *node)
         struct instr *code = expr->icode
                                  ? copyInstrList(expr->icode)
                                  : NULL;
-        // emit the RET with that value we fucking hope
+        // emit the RET with that value we hope
         code = appendInstrList(
             code,
             genInstr(O_RET, expr->addr, NULL, NULL));
