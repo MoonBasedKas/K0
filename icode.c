@@ -778,14 +778,15 @@ void basicBlocks(struct tree *node)
     case if_k:
         // conditional without else
 
-        node->icode = node->kids[0]->icode;
+        node->icode = node->kids[1]->icode;
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
         node->icode = appendInstrList(
             node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
+            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, followLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, thenLabel, NULL, NULL));
