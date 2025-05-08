@@ -250,9 +250,6 @@ void basicBlocks(struct tree *node)
         {
             code = appendInstrList(code, node->kids[4]->icode);
         }
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, genConst(0), NULL, NULL));
 
         node->icode = code;
         node->icodeDone = 0;
@@ -299,9 +296,6 @@ void basicBlocks(struct tree *node)
         {
             code = appendInstrList(code, node->kids[3]->icode);
         }
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, genConst(0), NULL, NULL));
 
         node->icode = code;
         node->icodeDone = 0;
@@ -778,14 +772,15 @@ void basicBlocks(struct tree *node)
     case if_k:
         // conditional without else
 
-        node->icode = node->kids[0]->icode;
+        node->icode = node->kids[1]->icode;
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
         node->icode = appendInstrList(
             node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
+            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, followLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, thenLabel, NULL, NULL));
@@ -853,19 +848,18 @@ void basicBlocks(struct tree *node)
     case returnVal:
     {
         // kid[0] is the expression being returned
-        struct tree *expr = node->kids[0];
+        struct tree *expr = node->kids[1];
         // splice in its code…
         struct instr *code = expr->icode
                                  ? copyInstrList(expr->icode)
                                  : NULL;
-        // emit the RET with that value we fucking hope
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, expr->addr, NULL, NULL));
+        // code = appendInstrList(
+        //     code,
+        //     genInstr(O_RET, expr->addr, NULL, NULL));
         node->icode = code;
         // This may be very useless.
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
-                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
+        node->icode = appendInstrList(node->kids[1]->icode, // tac.c
+                                      genInstr(O_RET, node->kids[1]->addr, NULL, NULL));     // tac.c
         break;
     }
     case RETURN:
