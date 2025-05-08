@@ -175,6 +175,11 @@ void basicBlocks(struct tree *node)
     struct addr *thenLabel = NULL;
     struct addr *elseLabel = NULL;
     struct addr *followLabel = NULL;
+    struct addr *procName = NULL;
+    struct addr *codeName = NULL;
+    struct instr *code = NULL;
+    struct instr *entryLabel = NULL;
+    int paramCount = 0;
     int op = 0;
     for (int i = 0; i < node->nkids; i++)
     {
@@ -190,18 +195,64 @@ void basicBlocks(struct tree *node)
     switch (node->prodrule)
     {
     case funcDecAll:
-    case funcDecParamType:
-    case funcDecParamBody:
-    case funcDecTypeBody:
         // grab parameter count from your typeInfo
-        int paramCount = 0;
+        
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
         }
 
         // build the PROC header using the real paramCount and varSize
-        struct addr *procName = malloc(sizeof *procName);
+        procName = malloc(sizeof *procName);
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
+
+        code = genInstr(
+            D_PROC,
+            procName,
+            genConst(paramCount),          // <— real # of params
+            genConst(node->table->varSize) // <— real frame size
+        );
+
+        // now emit the “.code” marker
+        codeName = malloc(sizeof *codeName);
+        codeName->region = R_NAME;
+        codeName->u.name = strdup(".code");
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, codeName, NULL, NULL));
+
+        // entry label for the function
+        entryLabel = genInstr(
+            D_LABEL,
+            procName,
+            NULL,
+            NULL);
+        code = appendInstrList(code, entryLabel);
+
+        // append the body’s IR and an implicit “return unit”
+        if (node->kids[4] && node->kids[4]->icode)
+        {
+            code = appendInstrList(code, node->kids[4]->icode);
+        }
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, genConst(0), NULL, NULL));
+
+        node->icode = code;
+        node->icodeDone = 0;
+        break;
+    case funcDecParamType:
+    case funcDecParamBody:
+    case funcDecTypeBody:
+        // grab parameter count from your typeInfo
+        if (node->type && node->type->basicType == FUNCTION_TYPE)
+        {
+            paramCount = node->type->u.func.numParams;
+        }
+
+        // build the PROC header using the real paramCount and varSize
+        procName = malloc(sizeof *procName);
         procName->region = R_NAME;
         procName->u.name = node->kids[1]->leaf->text;
 
@@ -213,7 +264,7 @@ void basicBlocks(struct tree *node)
         );
 
         // now emit the “.code” marker
-        struct addr *codeName = malloc(sizeof *codeName);
+        codeName = malloc(sizeof *codeName);
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
         code = appendInstrList(
@@ -221,7 +272,7 @@ void basicBlocks(struct tree *node)
             genInstr(D_LABEL, codeName, NULL, NULL));
 
         // entry label for the function
-        struct instr *entryLabel = genInstr(
+        entryLabel = genInstr(
             D_LABEL,
             procName,
             NULL,
@@ -245,7 +296,6 @@ void basicBlocks(struct tree *node)
     {
 
         // grab parameter count from your typeInfo
-        int paramCount = 0;
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
@@ -256,7 +306,7 @@ void basicBlocks(struct tree *node)
         procName->region = R_NAME;
         procName->u.name = node->kids[1]->leaf->text;
 
-        struct instr *code = genInstr(
+        code = genInstr(
             D_PROC,
             procName,
             genConst(paramCount),          // <— real # of params
@@ -264,7 +314,7 @@ void basicBlocks(struct tree *node)
         );
 
         // now emit the “.code” marker
-        struct addr *codeName = malloc(sizeof *codeName);
+        codeName = malloc(sizeof *codeName);
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
         code = appendInstrList(
@@ -272,7 +322,7 @@ void basicBlocks(struct tree *node)
             genInstr(D_LABEL, codeName, NULL, NULL));
 
         // entry label for the function
-        struct instr *entryLabel = genInstr(
+        entryLabel = genInstr(
             D_LABEL,
             procName,
             NULL,
