@@ -57,6 +57,6 @@ void markRegDirty(int regIdx);          // Marks a register as dirty
 
 // Translation and Output
 int translateIcToAsm(struct tree *root);
-int writeAsm(FILE *fp);
+int writeAsm(const char *base_filename);
 
 #endif

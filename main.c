@@ -17,6 +17,7 @@
 #include "errorHandling.h"
 #include "tac.h"
 #include "icode.h"
+#include "x86_64gen.h"
 
 char *filename;
 char temp[100];
@@ -43,7 +44,6 @@ int main(int argc, char *argv[])
     int symtab = 0;
     int fileCount = 0;
     int debug = 0;
-    int ic = 0;
     int c = 0;
     int s = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
@@ -72,10 +72,7 @@ int main(int argc, char *argv[])
         {
             debug = 1;
         }
-        else if (!strcmp(argv[i], "-ic"))
-        {
-            ic = 1;
-        }
+
         else if (!strcmp(argv[i], "-s"))
         {
             s = 1;
@@ -92,7 +89,6 @@ int main(int argc, char *argv[])
             printf("-dot: Generates a dot file, needs to be compiled.\n");
             printf("-tree: View the syntax tree of the program.\n");
             printf("-symtab: View the symbol tables.\n");
-            printf("-ic: View the intermediate code.\n");
             printf("-debug: One does not reveal what their debug command does.\n");
         }
         else
@@ -145,7 +141,11 @@ int main(int argc, char *argv[])
         checkMutability(root);
         verifyDeclared(root, rootScope); // symTabHelper.c
         buildICode(root);
+        iTarget = openGenFile(fileNames[i], "ic");
 
+        tacPrint(root->icode);
+        if (iTarget != NULL)
+            fclose(iTarget);
         if (symError != 0 && debug == 0)
             return 3; // If something is undeclared.
 
@@ -178,16 +178,9 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        if (ic || 1 == 1) // TODO: remove this when assignment is done.
-        {
-            iTarget = openGenFile(fileNames[i], "ic");
 
-            tacPrint(root->icode);
-            if (iTarget != NULL)
-                fclose(iTarget);
-        }
-        // translateIcToAsm()
-        // writeAsm();
+        translateIcToAsm(root);
+        writeAsm(fileNames[i]);
 
         // The great file generator.
         if (s || 1 == 1)

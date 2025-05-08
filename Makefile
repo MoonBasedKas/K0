@@ -73,7 +73,7 @@ clean:
 	rm lex.yy.c *.o k0 *.tab.* *.h.gch *.dot *.png lab9 *.ic
 
 valgrind: k0
-	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 TestCasesOld/ktstuff.kt
+	valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./k0 ./tests/drJTests/gotos.kt
 
-zip: *.c *.h k0gram.y kotlex.l Makefile README TestCasesOld/ tests/ gdb.sh
+zip: *.c *.h k0gram.y kotlex.l Makefile README tests/
 	zip -r hw7.zip $^

@@ -42,7 +42,7 @@ static char **asmBuf;
 static int bufCap = 0;
 static int bufLen = 0;
 
-extern *g_string_literals[];
+extern char *g_string_literals[];
 extern int g_string_literal_count;
 char **g_string_labels = NULL;
 
@@ -744,19 +744,56 @@ int translateIcToAsm(struct tree *root)
  *  @param fp File pointer
  *  @return 1 if successful, 0 otherwise
  */
-int writeAsm(FILE *fp)
+int writeAsm(const char *base_filename)
 {
-    if (!fp || !asmBuf) return 0;
+    if(!asmBuf) return 0;
+    char *output_filename = malloc(strlen(base_filename) + 3);
+    if(!output_filename) {
+        fprintf(stderr, "Failed to allocate memory for output filename\n");
+        free(asmBuf);
+        return 0;
+    }
+    strcpy(output_filename, base_filename);
+    char *dot = strrchr(output_filename, '.');
+    if (dot) *dot = '\0';
+    strcat(output_filename, ".s");
+
+    printf("Opening assembly file: %s\n", output_filename);
+    FILE *fp = fopen(output_filename, "w");
+    if (!fp)
+    {
+        fprintf(stderr, "Error opening generated file '%s'\n", output_filename);
+        free(output_filename);
+
+        for (int i = 0; i < bufLen; i++) free(asmBuf[i]);
+        free(asmBuf); asmBuf = NULL; bufLen = 0; bufCap = 0;
+        return 0; // Indicate failure
+    }
+
+    int write_ok = 1;
     for (int i = 0; i < bufLen; i++)
     {
-        fprintf(fp, "%s\n", asmBuf[i]);
-        free(asmBuf[i]); // Free the duplicated line
+        if (fprintf(fp, "%s\n", asmBuf[i]) < 0)
+        {
+            fprintf(stderr, "Error writing to assembly file %s.\n", output_filename);
+            write_ok = 0;
+            break;
+        }
+        free(asmBuf[i]);
     }
+
+    if (fclose(fp) != 0) {
+        fprintf(stderr, "Error closing assembly file %s.\n", output_filename);
+        write_ok = 0;
+    }
+
+    free(output_filename);
     free(asmBuf);
-    asmBuf = NULL; // NO DOUBLE FREE ERIK
+    asmBuf = NULL;
     bufLen = 0;
     bufCap = 0;
-    return 1;
+
+    return write_ok;
 }
 
 // Dummy g_string_literals
