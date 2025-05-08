@@ -848,19 +848,18 @@ void basicBlocks(struct tree *node)
     case returnVal:
     {
         // kid[0] is the expression being returned
-        struct tree *expr = node->kids[0];
+        struct tree *expr = node->kids[1];
         // splice in its code…
         struct instr *code = expr->icode
                                  ? copyInstrList(expr->icode)
                                  : NULL;
-        // emit the RET with that value we fucking hope
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, expr->addr, NULL, NULL));
+        // code = appendInstrList(
+        //     code,
+        //     genInstr(O_RET, expr->addr, NULL, NULL));
         node->icode = code;
         // This may be very useless.
-        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
-                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
+        node->icode = appendInstrList(node->kids[1]->icode, // tac.c
+                                      genInstr(O_RET, node->kids[1]->addr, NULL, NULL));     // tac.c
         break;
     }
     case RETURN:
