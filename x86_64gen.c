@@ -697,7 +697,7 @@ int translateIcToAsm(struct tree *root)
                 emit("\tmovq\t%s, %%rax", regs[r_s1_dividend].name); // Dividend to %rax
                 emit("\tcqto");                                     // Sign-extend %rax into %rdx:%rax for idivq
                 emit("\tidivq\t%s", regs[r_s2_divisor].name);      // Divide %rdx:%rax by divisor reg
-                // holy fuck
+                // Praise by the Sun
 
                 freeGPR(r_s1_dividend);
                 freeGPR(r_s2_divisor);
