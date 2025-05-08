@@ -30,11 +30,13 @@ void buildICode(struct tree *node)
     struct instr *all = NULL;
     localAddr(node);
     resetICodeDone(node);
-    basicBlocks(node);
-    control(node);
     assignFirst(node);
     assignFollow(node);
     assignOnTrueFalse(node);
+
+    basicBlocks(node);
+    // control(node);
+
     theGreatICodeMerge(node);
 
     if (node->prodrule == program)
@@ -171,6 +173,9 @@ void localAddr(struct tree *node)
  */
 void basicBlocks(struct tree *node)
 {
+    struct addr *thenLabel = NULL;
+    struct addr *elseLabel = NULL;
+    struct addr *followLabel = NULL;
     int op = 0;
     for (int i = 0; i < node->nkids; i++)
     {
@@ -565,17 +570,71 @@ void basicBlocks(struct tree *node)
         break;
 
     // when hit control flow, break without concating child code
+    // Evil idea: We make this control.
     // these need to be null for later
     case forStmntWithVars:
     case forStmnt:
+        break;
     case whileStmntCtrlBody:
     case whileStmnt:
+        break;
     case doWhileStmnt:
+        break;
     case emptyIf:
     case if_k:
+        // conditional without else
+
+        node->icode = node->kids[0]->icode;
+        thenLabel = genLabel();
+        followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
+        // node->icode = code;
+        printf("BANG BANG\n");
+        printIcode(node->icode);
+        break;
     case ifElse:
     case ifElseIf:
+        // conditional with else
+        node->icode = node->kids[0]->icode;
+        thenLabel = genLabel();
+        elseLabel = genLabel();
+        followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, elseLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[4]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
+        break;
     case elvis:
+        break;
     // case postfixExpr:
     // case postfixNoExpr:
     // case postfixDotID:
@@ -598,6 +657,9 @@ void basicBlocks(struct tree *node)
             code,
             genInstr(O_RET, expr->addr, NULL, NULL));
         node->icode = code;
+        // This may be very useless.
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                      genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
         break;
     }
     case RETURN:
@@ -895,23 +957,25 @@ void control(struct tree *node)
     {
         // conditional without else
 
-        struct instr *code = node->kids[0]->icode;
+        node->icode = node->kids[0]->icode;
         struct addr *thenLabel = genLabel();
         struct addr *followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-        code = appendInstrList(
-            code,
+        node->icode = appendInstrList(
+            node->icode,
             genInstr(O_BNIF, followLabel, node->kids[0]->addr, NULL));
-        code = appendInstrList(
-            code,
+        node->icode = appendInstrList(
+            node->icode,
             genInstr(D_LABEL, thenLabel, NULL, NULL));
-        code = appendInstrList(code, node->kids[2]->icode);
-        code = appendInstrList(
-            code,
+        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(
+            node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
 
-        node->icode = code;
+        // node->icode = code;
+        printf("BANG BANG\n");
+        printIcode(node->icode);
         break;
     }
     case ifElse:
@@ -1008,11 +1072,12 @@ void control(struct tree *node)
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
                                       genInstr(O_RET, node->addr, node->kids[1]->addr, NULL));     // tac.c
         break;
-    case RETURN:
+        // USELESS
+        // case RETURN:
 
-        // TODO
-        // definlty need this thing
-        break;
+        //     // TODO
+        //     // definlty need this thing
+        //     break;
 
     default:
         break;
