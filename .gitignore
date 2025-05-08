@@ -16,3 +16,4 @@ lab9
 !/lab9/
 k0.exe
 *.ic
+tests/drJTests/basic.s

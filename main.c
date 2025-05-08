@@ -31,13 +31,15 @@ void openFile(char *name);
 FILE *openGenFile(char *name, char *ext);
 void populateTypes();
 void populateStdlib();
-char *getFileName(char *f, char *ext);
+char *getFileName(char *f);
+char *addExt(char *f, char *ext);
 void populateLibraries();
 int symError = 0;
 
 int main(int argc, char *argv[])
 {
     char *dio = malloc(4096);
+    char *important = NULL;
 
     int dot = 0; // False
     int tree = 0;
@@ -45,6 +47,7 @@ int main(int argc, char *argv[])
     int fileCount = 0;
     int debug = 0;
     int c = 0;
+    int ic = 0;
     int s = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
     if (fileNames == NULL)
@@ -71,8 +74,9 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[i], "-debug"))
         {
             debug = 1;
+        } else if (!strcmp(argv[i], "-ic")){
+            ic = 1;
         }
-
         else if (!strcmp(argv[i], "-s"))
         {
             s = 1;
@@ -141,11 +145,7 @@ int main(int argc, char *argv[])
         checkMutability(root);
         verifyDeclared(root, rootScope); // symTabHelper.c
         buildICode(root);
-        iTarget = openGenFile(fileNames[i], "ic");
 
-        tacPrint(root->icode);
-        if (iTarget != NULL)
-            fclose(iTarget);
         if (symError != 0 && debug == 0)
             return 3; // If something is undeclared.
 
@@ -178,48 +178,82 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
+        if(ic == 1){
+            
+            iTarget = openGenFile(fileNames[i], "ic");
 
+            tacPrint(root->icode);
+            if (iTarget != NULL)
+                fclose(iTarget);
+        }
         translateIcToAsm(root);
         writeAsm(fileNames[i]);
 
         // The great file generator.
-        if (s || 1 == 1)
+        important = getFileName(fileNames[i]);
+        if (s)
         { // Generates .s and stop
             continue;
         }
         else if (c)
         { // Generates .o
-            strcpy(dio, "as --gstabs+ -o ");
-            strcat(dio, getFileName(fileNames[i], "o "));
-            strcat(dio, getFileName(fileNames[i], "s"));
+            memset(dio,0,4096);
+            dio = strcpy(dio, "as --gstabs+ -o ");
+            dio = strcat(dio, addExt(important, ".o "));
+            important = getFileName(fileNames[i]);
+            dio = strcat(dio, addExt(important, ".s"));
+
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
-            strcat(dio, getFileName(fileNames[i], "o "));
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".o "));
             strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "rm ");
-            strcat(dio, getFileName(fileNames[i], "s"));
+            important = getFileName(fileNames[i]);
+            
+            strcat(dio, addExt(important, ".s"));
             system(dio);
+            memset(dio,0,4096);
         }
         else
         { // Generates executable.
-            strcpy(dio, "as --gstabs+ -o ");
-            strcat(dio, getFileName(fileNames[i], "o "));
-            strcat(dio, getFileName(fileNames[i], "s"));
+            memset(dio,0,4096);
+            dio = strcpy(dio, "as --gstabs+ -o ");
+            dio = strcat(dio, addExt(important, ".o "));
+            important = getFileName(fileNames[i]);
+            dio = strcat(dio, addExt(important, ".s"));
+
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/7/crtbegin.o ");
-            strcat(dio, getFileName(fileNames[i], "o "));
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".o "));
             strcat(dio, "-lc /usr/lib/gcc/x86_64-linux-gnu/7/crtend.o /usr/lib/x86_64-linux-gnu/crtn.o");
+            
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "rm ");
-            strcat(dio, getFileName(fileNames[i], "s"));
+            important = getFileName(fileNames[i]);
+            
+            strcat(dio, addExt(important, ".s"));
+            
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "gcc ");
-            strcat(dio, getFileName(fileNames[i], "o"));
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".o"));
             system(dio);
+            memset(dio,0,4096);
             strcpy(dio, "rm ");
-            strcat(dio, getFileName(fileNames[i], "o"));
+            memset(dio,0,4096);
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".o"));
             system(dio);
+            memset(dio,0,4096);
         }
 
         freeTable(rootScope); // symTab.c
@@ -320,11 +354,18 @@ FILE *openGenFile(char *name, char *ext)
  * @param ext
  * @return char*
  */
-char *getFileName(char *f, char *ext)
+char *getFileName(char *f)
 {
-    char *fName = malloc(512);
-    fName = strrchr(f, '.');
-    strcat(fName, ".");
-    strcat(fName, ext);
-    return fName;
+    char *fName = strdup(f);
+    char *violation = NULL;
+    char *result = malloc(4096);
+    violation = strrchr(fName, '.');
+    if(violation)
+        *(violation) = '\0';
+    strcpy(result, fName);
+    return result;
+}
+
+char *addExt(char *f, char *ext){
+    return strcat(f, ext);
 }

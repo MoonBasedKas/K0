@@ -166,7 +166,7 @@ struct instr *concatInstrList(struct instr *l1, struct instr *l2)
 /**
  *  Stuff for grabbing the string list for easier printing
  *  D_GLOB printed where it wanted
- *  fuck D_GLOB
+ *  
  */
 
 struct StringLit

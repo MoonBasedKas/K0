@@ -853,9 +853,10 @@ void basicBlocks(struct tree *node)
         struct instr *code = expr->icode
                                  ? copyInstrList(expr->icode)
                                  : NULL;
-        // code = appendInstrList(
-        //     code,
-        //     genInstr(O_RET, expr->addr, NULL, NULL));
+        // emit the RET with that value we hope
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, expr->addr, NULL, NULL));
         node->icode = code;
         // This may be very useless.
         node->icode = appendInstrList(node->kids[1]->icode, // tac.c
