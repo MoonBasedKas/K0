@@ -30,9 +30,9 @@ void buildICode(struct tree *node)
     struct instr *all = NULL;
     localAddr(node);
     resetICodeDone(node);
-    assignFirst(node);
-    assignFollow(node);
-    assignOnTrueFalse(node);
+    // assignFirst(node);
+    // assignFollow(node);
+    // assignOnTrueFalse(node);
 
     basicBlocks(node);
 
@@ -945,6 +945,7 @@ void assignOnTrueFalse(struct tree *node)
     {
         assignOnTrueFalse(node->kids[i]);
     }
+    return;
 
     switch (node->prodrule)
     {
@@ -1019,17 +1020,17 @@ void assignOnTrueFalse(struct tree *node)
         break;
     case elvis:
         // true is when the value isn't null, might change latter
-        node->onTrue = node->kids[0]->first;
-        if (node->onTrue == NULL)
-        {
-            debugICode("Missing something in assignFirst", node->kids[2]);
-        }
+        // node->onTrue = node->kids[0]->first;
+        // if (node->onTrue == NULL)
+        // {
+        //     debugICode("Missing something in assignFirst", node->kids[2]);
+        // }
         // false is the alternate value, might change latter
-        node->onFalse = node->kids[1]->first;
-        if (node->onFalse == NULL)
-        {
-            debugICode("Missing something in assignFollow", node->kids[4]);
-        }
+        // node->onFalse = node->kids[1]->first;
+        // if (node->onFalse == NULL)
+        // {
+        //     debugICode("Missing something in assignFollow", node->kids[4]);
+        // }
         break;
 
     default:
