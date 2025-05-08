@@ -599,6 +599,16 @@ int translateIcToAsm(struct tree *root)
                 freeGPR(r_src); // Value is now in ABI reg or on stack
                 break;
             }
+            case O_BNIF:
+            {
+                int r_cond;
+                ensureInGPR(p->src1, &r_cond, 0);
+                emit("\tcmpq\t$0, %s", regs[r_cond].name);
+                emit("\tje\tL%d", p->dest->u.offset);
+
+                freeGPR(r_cond);
+                break;
+            }
             case O_CALL:
             {
                 // p->dest is func name (R_NAME) or func addr
@@ -795,10 +805,3 @@ int writeAsm(const char *base_filename)
 
     return write_ok;
 }
-
-// Dummy g_string_literals
-#ifndef G_STRING_LITERALS_DEFINED
-#define G_STRING_LITERALS_DEFINED
-char *g_string_literals[] = {"Default k0 test string."};
-int g_string_literal_count = 1;
-#endif

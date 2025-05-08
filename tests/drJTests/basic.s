@@ -8,16 +8,19 @@ main:
 	pushq	%rbp
 	movq	%rsp, %rbp
 	subq	$8, %rsp
-L1292920336:
-L1292905152:
+L-288028976:
+L-288044352:
 	movq	$5, %rax
 	movq	%rax, -0(%rbp)
+L1:
 	movq	-0(%rbp), %rax
 	movq	$0, %rbx
 	cmpq	%rbx, %rax
 	jg	L8
-	# Error: UNKNOWN OPCODE 3026 (BNIF)
-L1:
+	movq	-8(%rbp), %rax
+	cmpq	$0, %rax
+	je	L2
+	jmp	L2
 	movq	-0(%rbp), %rax
 	movq	$1, %rbx
 	movq	%rax, %rcx
@@ -25,4 +28,5 @@ L1:
 	movq	%rcx, -16(%rbp)
 	movq	-16(%rbp), %rax
 	movq	%rax, -0(%rbp)
+	jmp	L1
 L2:
