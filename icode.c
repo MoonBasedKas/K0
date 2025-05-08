@@ -250,9 +250,6 @@ void basicBlocks(struct tree *node)
         {
             code = appendInstrList(code, node->kids[4]->icode);
         }
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, genConst(0), NULL, NULL));
 
         node->icode = code;
         node->icodeDone = 0;
@@ -299,9 +296,6 @@ void basicBlocks(struct tree *node)
         {
             code = appendInstrList(code, node->kids[3]->icode);
         }
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, genConst(0), NULL, NULL));
 
         node->icode = code;
         node->icodeDone = 0;
