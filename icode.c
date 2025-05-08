@@ -418,10 +418,6 @@ void basicBlocks(struct tree *node)
             break;
         }
         break;
-
-    // are we doing short circuting??
-    // YES this needs to move then
-    // TODO
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
@@ -442,7 +438,10 @@ void basicBlocks(struct tree *node)
         case DOUBLE_TYPE:
         case CHAR_TYPE:
         case BOOL_TYPE:
-
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BEQ, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+            break;
         // need to figure these out
         case STRING_TYPE:
         case ARRAY_TYPE:
@@ -452,10 +451,20 @@ void basicBlocks(struct tree *node)
             break;
         }
     case notEqual:
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BNE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
     // checks equality of pointers for structures same as == for primatives
+    break;
     case eqeqeq:
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BEQ, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+                                  break;
     case notEqeqeq:
-
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BNE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
 
     case less:
@@ -495,7 +504,7 @@ void basicBlocks(struct tree *node)
     case range:
     case rangeUntil:
         op = node->prodrule == range ? O_RNG : O_RNU;
-        // TODO determine array size.
+        // Don't need to determine array size, just a range from x->y
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
             concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
@@ -570,9 +579,13 @@ void basicBlocks(struct tree *node)
         node->addr = genConst(node->leaf->ival);
         break;
     case REAL_LITERAL:
+        node->addr = genConst(node->leaf->dval);
     case TRUE:
+        node->addr = genConst(1);
+        break;
     case FALSE:
     case NULL_K:
+    node->addr = genConst(0);
         break;
 
     case LINE_STRING:

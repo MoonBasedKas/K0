@@ -88,6 +88,15 @@ struct addr *genConst(int val)
     return a;
 }
 
+
+struct addr *genConstD(double val){
+    struct addr *a = malloc(sizeof(struct addr));
+    memset(a, 0, sizeof(struct addr));
+    a->region = R_CONST;
+    a->u.offset = val;
+    return a;
+}
+
 /**
  * @brief Generates the instruction
  *
