@@ -155,7 +155,22 @@ void localAddr(struct tree *node)
             entry->addr = genLocal(typeSize(entry->type), entry->scope);
         break;
     }
+    // WOAW arrays (based, based, based, based, based, based, based, ...)
+    case arrayDec:
+    case arrayDecValueless:
+    entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
+    if (entry)
+        entry->addr = genLocal(8 * node->kids[2]->kids[1]->leaf->ival, node->table);
+    break;
 
+        break;
+
+    case arrayDecEqual:
+    case arrayDecEqualValueless:
+    entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
+    if (entry)
+        entry->addr = genLocal(node->kids[4]->kids[1]->leaf->ival, node->table);
+    break;
     default:
         break;
     }
@@ -175,6 +190,11 @@ void basicBlocks(struct tree *node)
     struct addr *thenLabel = NULL;
     struct addr *elseLabel = NULL;
     struct addr *followLabel = NULL;
+    struct addr *procName = NULL;
+    struct addr *codeName = NULL;
+    struct instr *code = NULL;
+    struct instr *entryLabel = NULL;
+    int paramCount = 0;
     int op = 0;
     for (int i = 0; i < node->nkids; i++)
     {
@@ -190,18 +210,64 @@ void basicBlocks(struct tree *node)
     switch (node->prodrule)
     {
     case funcDecAll:
-    case funcDecParamType:
-    case funcDecParamBody:
-    case funcDecTypeBody:
         // grab parameter count from your typeInfo
-        int paramCount = 0;
+        
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
         }
 
         // build the PROC header using the real paramCount and varSize
-        struct addr *procName = malloc(sizeof *procName);
+        procName = malloc(sizeof *procName);
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
+
+        code = genInstr(
+            D_PROC,
+            procName,
+            genConst(paramCount),          // <— real # of params
+            genConst(node->table->varSize) // <— real frame size
+        );
+
+        // now emit the “.code” marker
+        codeName = malloc(sizeof *codeName);
+        codeName->region = R_NAME;
+        codeName->u.name = strdup(".code");
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, codeName, NULL, NULL));
+
+        // entry label for the function
+        entryLabel = genInstr(
+            D_LABEL,
+            procName,
+            NULL,
+            NULL);
+        code = appendInstrList(code, entryLabel);
+
+        // append the body’s IR and an implicit “return unit”
+        if (node->kids[4] && node->kids[4]->icode)
+        {
+            code = appendInstrList(code, node->kids[4]->icode);
+        }
+        code = appendInstrList(
+            code,
+            genInstr(O_RET, genConst(0), NULL, NULL));
+
+        node->icode = code;
+        node->icodeDone = 0;
+        break;
+    case funcDecParamType:
+    case funcDecParamBody:
+    case funcDecTypeBody:
+        // grab parameter count from your typeInfo
+        if (node->type && node->type->basicType == FUNCTION_TYPE)
+        {
+            paramCount = node->type->u.func.numParams;
+        }
+
+        // build the PROC header using the real paramCount and varSize
+        procName = malloc(sizeof *procName);
         procName->region = R_NAME;
         procName->u.name = node->kids[1]->leaf->text;
 
@@ -213,7 +279,7 @@ void basicBlocks(struct tree *node)
         );
 
         // now emit the “.code” marker
-        struct addr *codeName = malloc(sizeof *codeName);
+        codeName = malloc(sizeof *codeName);
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
         code = appendInstrList(
@@ -221,7 +287,7 @@ void basicBlocks(struct tree *node)
             genInstr(D_LABEL, codeName, NULL, NULL));
 
         // entry label for the function
-        struct instr *entryLabel = genInstr(
+        entryLabel = genInstr(
             D_LABEL,
             procName,
             NULL,
@@ -245,7 +311,6 @@ void basicBlocks(struct tree *node)
     {
 
         // grab parameter count from your typeInfo
-        int paramCount = 0;
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
@@ -256,7 +321,7 @@ void basicBlocks(struct tree *node)
         procName->region = R_NAME;
         procName->u.name = node->kids[1]->leaf->text;
 
-        struct instr *code = genInstr(
+        code = genInstr(
             D_PROC,
             procName,
             genConst(paramCount),          // <— real # of params
@@ -264,7 +329,7 @@ void basicBlocks(struct tree *node)
         );
 
         // now emit the “.code” marker
-        struct addr *codeName = malloc(sizeof *codeName);
+        codeName = malloc(sizeof *codeName);
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
         code = appendInstrList(
@@ -272,7 +337,7 @@ void basicBlocks(struct tree *node)
             genInstr(D_LABEL, codeName, NULL, NULL));
 
         // entry label for the function
-        struct instr *entryLabel = genInstr(
+        entryLabel = genInstr(
             D_LABEL,
             procName,
             NULL,
@@ -390,20 +455,16 @@ void basicBlocks(struct tree *node)
         node->icode = genInstr(O_CALL, fnName, genConst(0), retSlot);
         break;
     }
-    // need to do speceal something for assignment ifs???
-    // cause when this happens if hasn't been evaluated yet
-    // does that cause problems here or can i leave this and then just deal later???
-    // maybe this is fine here cause it will just append NULL to the end of the list and then
-    // when we get to if latter we can fix it????
-    // no that won't work cause we copy this later into the upper code so it can't be fixed latter
-    // maybe i just check if child is an if, and if so we break out and deal latter and otherwise handle now
+
     case assignment:
     case assignAdd:
     case assignSub:
-    case arrayAssignSub:
-    case arrayAssignAdd:
-    case arrayAssignment:
-        switch (node->kids[1]->prodrule)
+    node->addr = node->kids[0]->addr;
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));     // tac.c
+                                break;
+    // WHY? This literally checks for conditions which never occur.
+    switch (node->kids[1]->prodrule)
         {
         case emptyIf:
         case if_k:
@@ -412,16 +473,18 @@ void basicBlocks(struct tree *node)
             break;
 
         default:
-            node->addr = node->kids[0]->addr;
-            node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
-                                          genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL));     // tac.c
+
             break;
         }
+    case arrayAssignSub:
+    case arrayAssignAdd:
+    case arrayAssignment:
+        // Okay, 
+        
+        node->addr = node->kids[0]->kids[0]->addr;
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
+                                        genInstr(O_ASN, node->addr, node->kids[0]->kids[1]->addr, node->kids[1]->addr));     // tac.c
         break;
-
-    // are we doing short circuting??
-    // YES this needs to move then
-    // TODO
     case disj:
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),           // tac.c
@@ -442,7 +505,10 @@ void basicBlocks(struct tree *node)
         case DOUBLE_TYPE:
         case CHAR_TYPE:
         case BOOL_TYPE:
-
+        node->addr = genLocal(typeSize(node->type), node->table);
+        node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                      genInstr(O_BEQ, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+            break;
         // need to figure these out
         case STRING_TYPE:
         case ARRAY_TYPE:
@@ -452,10 +518,20 @@ void basicBlocks(struct tree *node)
             break;
         }
     case notEqual:
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BNE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
     // checks equality of pointers for structures same as == for primatives
+    break;
     case eqeqeq:
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BEQ, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
+                                  break;
     case notEqeqeq:
-
+    node->addr = genLocal(typeSize(node->type), node->table);
+    node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode),            // tac.c
+                                  genInstr(O_BNE, node->addr, node->kids[0]->addr, node->kids[1]->addr)); // tac.c
         break;
 
     case less:
@@ -482,8 +558,7 @@ void basicBlocks(struct tree *node)
                      node->addr,
                      node->kids[0]->addr,
                      node->kids[1]->addr));
-        // NOT PART OF FOR LOOP
-        // BOOLEAN EXPRESSION
+        // PART OF FOOR LOOP
         break;
 
     case infixFunction:
@@ -495,7 +570,7 @@ void basicBlocks(struct tree *node)
     case range:
     case rangeUntil:
         op = node->prodrule == range ? O_RNG : O_RNU;
-        // TODO determine array size.
+        // Don't need to determine array size, just a range from x->y
         node->addr = genLocal(typeSize(node->type), node->table);
         node->icode = appendInstrList(
             concatInstrList(node->kids[0]->icode, node->kids[1]->icode),
@@ -570,9 +645,14 @@ void basicBlocks(struct tree *node)
         node->addr = genConst(node->leaf->ival);
         break;
     case REAL_LITERAL:
+        node->addr = genConstD(node->leaf->dval);
+        break;
     case TRUE:
+        node->addr = genConst(1);
+        break;
     case FALSE:
     case NULL_K:
+    node->addr = genConst(0);
         break;
 
     case LINE_STRING:
@@ -615,46 +695,54 @@ void basicBlocks(struct tree *node)
 
         break;
 
-    // when hit control flow, break without concating child code
     // Evil idea: We make this control.
-    // these need to be null for later
     case forStmntWithVars:
     case forStmnt:
-        node->icode = node->kids[1]->icode;
-
+        
+        node->kids[1]->addr = genLocal(typeSize(node->kids[1]->type), node->kids[1]->table);
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
+        node->icode = appendInstrList(genInstr(O_ASN, node->kids[1]->addr, node->kids[2]->kids[0]->addr, 0), node->kids[1]->icode);
+        node->icode = appendInstrList(node->icode, genInstr(D_LABEL, thenLabel, 0, 0));
+        if(node->kids[2]->prodrule == RANGE){ // RANGE
+            node->icode = appendInstrList(node->icode, genInstr(O_BLT, node->kids[1]->addr, node->kids[2]->kids[1]->addr, 0));
+        } else{ // RANGE UNTIL
+            node->icode = appendInstrList(node->icode, genInstr(O_BLE, node->kids[1]->addr, node->kids[2]->kids[1]->addr, 0));
+        }
+        
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+            node->icode = appendInstrList(
+                node->icode,
+                genInstr(O_GOTO, followLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[3]->icode);
+        node->icode = appendInstrList(node->icode, genInstr(O_ADD, node->kids[1]->addr, genConst(1), node->kids[1]->addr));
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
         break;
     case whileStmntCtrlBody:
-        node->icode = node->kids[1]->icode;
-
-        thenLabel = genLabel();
-        followLabel = genLabel();
-        node->first = thenLabel;
-        node->follow = followLabel;
+    thenLabel = genLabel();
+    followLabel = genLabel();
+    node->first = thenLabel;
+    node->follow = followLabel;
+    node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
+    node->icode = appendInstrList(
+        node->icode,
+        genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
         node->icode = appendInstrList(
             node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
-        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
-        break;
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+    node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+    node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
+    node->icode = appendInstrList(
+        node->icode,
+        genInstr(D_LABEL, followLabel, NULL, NULL));
+    break;
     case whileStmnt:
         thenLabel = genLabel();
         node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
@@ -666,23 +754,25 @@ void basicBlocks(struct tree *node)
 
         break;
     case doWhileStmnt:
-        node->icode = node->kids[2]->icode;
+
 
         thenLabel = genLabel();
         followLabel = genLabel();
         node->first = thenLabel;
         node->follow = followLabel;
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[2]->icode);
+
+
         node->icode = appendInstrList(node->icode, node->kids[1]->icode);
         node->icode = appendInstrList(
             node->icode,
+            genInstr(O_BNIF, thenLabel, node->kids[1]->addr, NULL));
+            node->icode = appendInstrList(
+                node->icode,
+                genInstr(O_GOTO, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(
+            node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
-        break;
         break;
     case emptyIf:
     case if_k:
@@ -717,6 +807,7 @@ void basicBlocks(struct tree *node)
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        node->icode = appendInstrList(node->icode, genInstr(O_GOTO, elseLabel, 0, 0));
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, thenLabel, NULL, NULL));

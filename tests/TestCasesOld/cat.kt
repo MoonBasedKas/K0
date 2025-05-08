@@ -5,8 +5,6 @@ fun main(): Int{
 
 
 fun cat(x : Int, y : Int): Int{
-    if(1 == 1){
-        println("hi")
-    }
+
     return x + y
 }
