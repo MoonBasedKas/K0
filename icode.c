@@ -160,7 +160,7 @@ void localAddr(struct tree *node)
     case arrayDecValueless:
     entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
     if (entry)
-        entry->addr = genLocal(typeSize(entry->type->u.array.elemType) * node->kids[2]->kids[1]->leaf->ival, node->table);
+        entry->addr = genLocal(8 * node->kids[2]->kids[1]->leaf->ival, node->table);
     break;
 
         break;
@@ -169,7 +169,7 @@ void localAddr(struct tree *node)
     case arrayDecEqualValueless:
     entry = contains(node->table, node->kids[1]->kids[0]->leaf->text);
     if (entry)
-        entry->addr = genLocal(typeSize(entry->type->u.array.elemType) * node->kids[4]->kids[1]->leaf->ival, node->table);
+        entry->addr = genLocal(node->kids[4]->kids[1]->leaf->ival, node->table);
     break;
     default:
         break;
