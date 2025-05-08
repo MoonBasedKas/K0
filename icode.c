@@ -34,9 +34,11 @@ void buildICode(struct tree *node)
     assignFollow(node);
     assignOnTrueFalse(node);
 
-    if (node->prodrule == program) {
+    if (node->prodrule == program)
+    {
         struct instr *all = NULL;
-        for (int i = 0; i < node->nkids; i++) {
+        for (int i = 0; i < node->nkids; i++)
+        {
             if (node->kids[i]->icode)
                 all = appendInstrList(all, node->kids[i]->icode);
         }
@@ -46,85 +48,89 @@ void buildICode(struct tree *node)
 
 void localAddr(struct tree *node)
 {
-    if (!node->table) {
+    if (!node->table)
+    {
         fprintf(stderr, "localAddr: called with null scope\n");
         exit(1);
     }
     struct symEntry *entry = NULL;
     switch (node->prodrule)
     {
-        // handles both variable declarations and parameters
-        case varDec:
-        case varDecQuests:
-            entry = contains(node->table, node->kids[0]->leaf->text);    // symTab.c
-            if (entry) {
-                struct symTab *scope = node->table;
-                while (scope->parent) {
-                    scope = scope->parent;
-                }
-                entry->addr = genLocal(
-                        typeSize(entry->type),
-                        scope); // tac.c typeHelpers.c
+    // handles both variable declarations and parameters
+    case varDec:
+    case varDecQuests:
+        entry = contains(node->table, node->kids[0]->leaf->text); // symTab.c
+        if (entry)
+        {
+            struct symTab *scope = node->table;
+            while (scope->parent)
+            {
+                scope = scope->parent;
             }
-            break;
+            entry->addr = genLocal(
+                typeSize(entry->type),
+                scope); // tac.c typeHelpers.c
+        }
+        break;
 
-        case funcDecAll:
-        case funcDecParamType:
-        case funcDecParamBody:
-        case funcDecTypeBody:
-        case funcDecType:
-        case funcDecBody: {
-            struct addr *lbl = genLabel();
-            node->addr = lbl;
+    case funcDecAll:
+    case funcDecParamType:
+    case funcDecParamBody:
+    case funcDecTypeBody:
+    case funcDecType:
+    case funcDecBody:
+    {
+        struct addr *lbl = genLabel();
+        node->addr = lbl;
 
-            entry = contains(node->table, node->kids[1]->leaf->text);
-            if (entry)
-                entry->addr = lbl;
-            break;
-        }
-        case propDecAssign: {
-            entry = contains(
-                node->table,
-                node->kids[1]->kids[0]->leaf->text
-            );
-            if (entry)
-                entry->addr = genLocal(
-                    typeSize(entry->type),
-                    node->table
-                );
-            break;
-        }
-        case propDecReceiverAssign: {
-            entry = contains(
-                node->table,
-                node->kids[2]->kids[0]->leaf->text
-            );
-            if (entry)
-                entry->addr = genLocal(
-                    typeSize(entry->type),
-                    node->table
-                );
-        }
-        case propDecTypeParamsAssign: {
-            entry = contains(
-                node->table,
-                node->kids[2]->kids[0]->leaf->text
-            );
-            if (entry)
-                entry->addr = genLocal(typeSize(entry->type), entry->scope);
-            break;
-        }
-        case propDecAll: {
-            entry = contains(node->table, node->kids[3]->kids[0]->leaf->text);
-            if (entry)
-                entry->addr = genLocal(typeSize(entry->type), entry->scope);
-            break;
-        }
-
-        default:
-            break;
+        entry = contains(node->table, node->kids[1]->leaf->text);
+        if (entry)
+            entry->addr = lbl;
+        break;
     }
-    for (int i = 0; i < node->nkids; i++) {
+    case propDecAssign:
+    {
+        entry = contains(
+            node->table,
+            node->kids[1]->kids[0]->leaf->text);
+        if (entry)
+            entry->addr = genLocal(
+                typeSize(entry->type),
+                node->table);
+        break;
+    }
+    case propDecReceiverAssign:
+    {
+        entry = contains(
+            node->table,
+            node->kids[2]->kids[0]->leaf->text);
+        if (entry)
+            entry->addr = genLocal(
+                typeSize(entry->type),
+                node->table);
+    }
+    case propDecTypeParamsAssign:
+    {
+        entry = contains(
+            node->table,
+            node->kids[2]->kids[0]->leaf->text);
+        if (entry)
+            entry->addr = genLocal(typeSize(entry->type), entry->scope);
+        break;
+    }
+    case propDecAll:
+    {
+        entry = contains(node->table, node->kids[3]->kids[0]->leaf->text);
+        if (entry)
+            entry->addr = genLocal(typeSize(entry->type), entry->scope);
+        break;
+    }
+
+    default:
+        break;
+    }
+    for (int i = 0; i < node->nkids; i++)
+    {
         localAddr(node->kids[i]);
     }
 }
@@ -155,24 +161,26 @@ void basicBlocks(struct tree *node)
     case funcDecParamBody:
     case funcDecTypeBody:
     case funcDecType:
-    case funcDecBody: {
+    case funcDecBody:
+    {
 
         // grab parameter count from your typeInfo
         int paramCount = 0;
-        if (node->type && node->type->basicType == FUNCTION_TYPE) {
+        if (node->type && node->type->basicType == FUNCTION_TYPE)
+        {
             paramCount = node->type->u.func.numParams;
         }
 
         // build the PROC header using the real paramCount and varSize
         struct addr *procName = malloc(sizeof *procName);
-        procName->region    = R_NAME;
-        procName->u.name    = node->kids[1]->leaf->text;
+        procName->region = R_NAME;
+        procName->u.name = node->kids[1]->leaf->text;
 
         struct instr *code = genInstr(
             D_PROC,
             procName,
-            genConst(paramCount),              // <— real # of params
-            genConst(node->table->varSize)     // <— real frame size
+            genConst(paramCount),          // <— real # of params
+            genConst(node->table->varSize) // <— real frame size
         );
 
         // now emit the “.code” marker
@@ -181,28 +189,26 @@ void basicBlocks(struct tree *node)
         codeName->u.name = strdup(".code");
         code = appendInstrList(
             code,
-            genInstr(D_LABEL, codeName, NULL, NULL)
-        );
+            genInstr(D_LABEL, codeName, NULL, NULL));
 
         // entry label for the function
         struct instr *entryLabel = genInstr(
             D_LABEL,
             procName,
             NULL,
-            NULL
-        );
+            NULL);
         code = appendInstrList(code, entryLabel);
 
         // append the body’s IR and an implicit “return unit”
-        if (node->kids[2] && node->kids[2]->icode) {
+        if (node->kids[2] && node->kids[2]->icode)
+        {
             code = appendInstrList(code, node->kids[2]->icode);
         }
         code = appendInstrList(
             code,
-            genInstr(O_RET, genConst(0), NULL, NULL)
-        );
+            genInstr(O_RET, genConst(0), NULL, NULL));
 
-        node->icode     = code;
+        node->icode = code;
         node->icodeDone = 0;
         break;
     }
@@ -241,69 +247,69 @@ void basicBlocks(struct tree *node)
         node->icode = concatInstrList(node->kids[1]->icode, genInstr(O_ASN, node->addr, node->kids[1]->addr, NULL)); // tac.c
         break;
     case postfixExpr:
-        {
-            struct tree *fnNode = node->kids[0];
-            struct tree *argTree = node->kids[1];
-            struct instr *code = NULL;
+    {
+        struct tree *fnNode = node->kids[0];
+        struct tree *argTree = node->kids[1];
+        struct instr *code = NULL;
 
-            /* if it really is an expressionList, walk it;
-               otherwise treat it as a single-expression list */
-            if (argTree->prodrule == expressionList)
+        /* if it really is an expressionList, walk it;
+           otherwise treat it as a single-expression list */
+        if (argTree->prodrule == expressionList)
+        {
+            if (argTree->icode)
+                code = copyInstrList(argTree->icode);
+            struct tree *cur = argTree;
+            while (cur->prodrule == expressionList)
             {
-                if (argTree->icode)
-                    code = copyInstrList(argTree->icode);
-                struct tree *cur = argTree;
-                while (cur->prodrule == expressionList)
-                {
-                    struct tree *oneArg = cur->kids[0];
-                    code = appendInstrList(code,
-                                           genInstr(O_PARM, oneArg->addr, NULL, NULL));
-                    if (cur->nkids == 2)
-                        cur = cur->kids[1];
-                    else
-                        break;
-                }
-            }
-            else
-            {
-                /* single argument */
-                if (argTree->icode)
-                    code = copyInstrList(argTree->icode);
+                struct tree *oneArg = cur->kids[0];
                 code = appendInstrList(code,
-                                       genInstr(O_PARM, argTree->addr, NULL, NULL));
+                                       genInstr(O_PARM, oneArg->addr, NULL, NULL));
+                if (cur->nkids == 2)
+                    cur = cur->kids[1];
+                else
+                    break;
             }
-
-            int nargs = countExprList(argTree);
-
-            /* build the CALL */
-            struct addr *fnName = malloc(sizeof *fnName);
-            fnName->region = R_NAME;
-            fnName->u.name = fnNode->leaf->text;
-
-            struct addr *retSlot = genLocal(typeSize(node->type), node->table);
-            node->addr = retSlot;
-
-            code = appendInstrList(code,
-                                   genInstr(O_CALL, fnName, genConst(nargs), retSlot));
-
-            node->icode = code;
-            node->icodeDone = 0;
-            break;
         }
-    case postfixNoExpr:
+        else
         {
-            struct tree *fnNode = node->kids[0];
-            struct addr *fnName = malloc(sizeof *fnName);
-            fnName->region = R_NAME;
-            fnName->u.name = fnNode->leaf->text;
-
-            struct addr *retSlot = genLocal(typeSize(node->type), node->table);
-            node->addr = retSlot;
-
-            /* zero-arg call */
-            node->icode = genInstr(O_CALL, fnName, genConst(0), retSlot);
-            break;
+            /* single argument */
+            if (argTree->icode)
+                code = copyInstrList(argTree->icode);
+            code = appendInstrList(code,
+                                   genInstr(O_PARM, argTree->addr, NULL, NULL));
         }
+
+        int nargs = countExprList(argTree);
+
+        /* build the CALL */
+        struct addr *fnName = malloc(sizeof *fnName);
+        fnName->region = R_NAME;
+        fnName->u.name = fnNode->leaf->text;
+
+        struct addr *retSlot = genLocal(typeSize(node->type), node->table);
+        node->addr = retSlot;
+
+        code = appendInstrList(code,
+                               genInstr(O_CALL, fnName, genConst(nargs), retSlot));
+
+        node->icode = code;
+        node->icodeDone = 0;
+        break;
+    }
+    case postfixNoExpr:
+    {
+        struct tree *fnNode = node->kids[0];
+        struct addr *fnName = malloc(sizeof *fnName);
+        fnName->region = R_NAME;
+        fnName->u.name = fnNode->leaf->text;
+
+        struct addr *retSlot = genLocal(typeSize(node->type), node->table);
+        node->addr = retSlot;
+
+        /* zero-arg call */
+        node->icode = genInstr(O_CALL, fnName, genConst(0), retSlot);
+        break;
+    }
     // need to do speceal something for assignment ifs???
     // cause when this happens if hasn't been evaluated yet
     // does that cause problems here or can i leave this and then just deal later???
@@ -550,34 +556,37 @@ void basicBlocks(struct tree *node)
     // case postfixSafeDotIDExpr:
     // case postfixSafeDotIDNoExpr:
     // case funcBody:
-    case returnVal: {
+    case returnVal:
+    {
         // kid[0] is the expression being returned
         struct tree *expr = node->kids[0];
         // splice in its code…
         struct instr *code = expr->icode
-            ? copyInstrList(expr->icode)
-            : NULL;
+                                 ? copyInstrList(expr->icode)
+                                 : NULL;
         // emit the RET with that value we fucking hope
         code = appendInstrList(
             code,
-            genInstr(O_RET, expr->addr, NULL, NULL)
-        );
+            genInstr(O_RET, expr->addr, NULL, NULL));
         node->icode = code;
         break;
     }
-    case RETURN: {
+    case RETURN:
+    {
         // emit a RET const:0
         node->icode = genInstr(O_RET, genConst(0), NULL, NULL);
         break;
     }
-    default: {
-        if (node->nkids > 0) {
+    default:
+    {
+        if (node->nkids > 0)
+        {
             node->icode = copyInstrList(node->kids[0]->icode);
-            for (int i = 1; i < node->nkids; i++) {
+            for (int i = 1; i < node->nkids; i++)
+            {
                 node->icode = appendInstrList(
                     node->icode,
-                    node->kids[i]->icode
-                );
+                    node->kids[i]->icode);
             }
         }
         break;
@@ -608,7 +617,7 @@ void assignFirst(struct tree *node)
         /* only gen a .first if this node has icode, its parent does not,
         and that parent actually exists
         */
-       node->first = genLabel();
+        node->first = genLabel();
         if (node->icode && node->parent && node->parent->icode == NULL)
         {
             node->first = genLabel();
@@ -642,7 +651,7 @@ void assignFollow(struct tree *node)
     case whileStmnt:
         last = node->nkids - 1;
         node->kids[last]->follow = node->first;
-        
+
         break;
     case doWhileStmnt:
         int body = 1;
@@ -768,7 +777,7 @@ void assignOnTrueFalse(struct tree *node)
     // need to do speceal something for assignment ifs??? since they can be assigned??
     case emptyIf:
     case if_k:
-        node->onTrue  = node->first;
+        node->onTrue = node->first;
         if (node->onTrue == NULL)
         {
             debugICode("if_k(T/F):Missing something in assignFirst", node);
@@ -780,7 +789,7 @@ void assignOnTrueFalse(struct tree *node)
         }
         break;
     case ifElseIf:
-        node->onTrue  = node->first;
+        node->onTrue = node->first;
         if (node->onTrue == NULL)
         {
             debugICode("ifElseIf(T/F):Missing something in assignFirst", node);
@@ -816,7 +825,8 @@ void assignOnTrueFalse(struct tree *node)
 // actual icode using previouly gen labels
 void control(struct tree *node)
 {
-    for (int i = 0; i < node->nkids; i++) {
+    for (int i = 0; i < node->nkids; i++)
+    {
         control(node->kids[i]);
     }
     switch (node->prodrule)
@@ -836,17 +846,18 @@ void control(struct tree *node)
     case doWhileStmnt:
         // TODO
 
-    // need to do speceal something for assignment ifs???
-    // YES
-    // need to check if parent is assignment and if so add code for it
+        // need to do speceal something for assignment ifs???
+        // YES
+        // need to check if parent is assignment and if so add code for it
         break;
     case emptyIf:
-    case if_k: {
+    case if_k:
+    {
         // conditional without else
         struct instr *code = node->kids[0]->icode;
-        struct addr *thenLabel   = genLabel();
+        struct addr *thenLabel = genLabel();
         struct addr *followLabel = genLabel();
-        node->first  = thenLabel;
+        node->first = thenLabel;
         node->follow = followLabel;
 
         code = appendInstrList(
@@ -863,13 +874,14 @@ void control(struct tree *node)
         node->icode = code;
         break;
     }
-    case ifElse: {
+    case ifElse:
+    {
         // conditional with else
-        struct instr *code       = node->kids[0]->icode;
-        struct addr  *thenLabel  = genLabel();
-        struct addr  *elseLabel  = genLabel();
-        struct addr  *followLabel= genLabel();
-        node->first  = thenLabel;
+        struct instr *code = node->kids[0]->icode;
+        struct addr *thenLabel = genLabel();
+        struct addr *elseLabel = genLabel();
+        struct addr *followLabel = genLabel();
+        node->first = thenLabel;
         node->follow = followLabel;
 
         code = appendInstrList(
@@ -894,7 +906,34 @@ void control(struct tree *node)
         break;
     }
     case ifElseIf:
-        // TODO
+        // In theory this should be the same.
+        struct instr *code = node->kids[0]->icode;
+        struct addr *thenLabel = genLabel();
+        struct addr *elseLabel = genLabel();
+        struct addr *followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+
+        code = appendInstrList(
+            code,
+            genInstr(O_BNIF, elseLabel, node->kids[0]->addr, NULL));
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        code = appendInstrList(code, node->kids[2]->icode);
+        code = appendInstrList(
+            code,
+            genInstr(O_GOTO, followLabel, NULL, NULL));
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, elseLabel, NULL, NULL));
+        code = appendInstrList(code, node->kids[4]->icode);
+        code = appendInstrList(
+            code,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
+        node->icode = code;
+        break;
 
     case elvis:
         // TODO

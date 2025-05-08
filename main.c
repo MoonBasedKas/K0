@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     char *as;
     char *ld;
     char *gcc;
-    
+
     int dot = 0; // False
     int tree = 0;
     int symtab = 0;
@@ -184,18 +184,21 @@ int main(int argc, char *argv[])
         if (ic || 1 == 1) // TODO: remove this when assignment is done.
         {
             iTarget = openGenFile(fileNames[i], "ic");
-            
+
             tacPrint(root->icode);
-            printf("%p\n", root->icode);
-            if (iTarget != NULL) fclose(iTarget);
+            if (iTarget != NULL)
+                fclose(iTarget);
         }
         // translateIcToAsm()
         // writeAsm();
-        
+
         // The great file generator.
-        if (s){ // Generates .s and stop
+        if (s || 1 == 1)
+        { // Generates .s and stop
             continue;
-        } else if(c){ // Generates .o
+        }
+        else if (c)
+        { // Generates .o
             strcpy(dio, "as --gstabs+ -o ");
             strcat(dio, getFileName(fileNames[i], "o "));
             strcat(dio, getFileName(fileNames[i], "s"));
@@ -207,7 +210,9 @@ int main(int argc, char *argv[])
             strcpy(dio, "rm ");
             strcat(dio, getFileName(fileNames[i], "s"));
             system(dio);
-        } else { // Generates executable.
+        }
+        else
+        { // Generates executable.
             strcpy(dio, "as --gstabs+ -o ");
             strcat(dio, getFileName(fileNames[i], "o "));
             strcat(dio, getFileName(fileNames[i], "s"));
@@ -296,18 +301,21 @@ FILE *openGenFile(char *name, char *ext)
 {
     /* build output filename */
     char *n = malloc(strlen(name) + strlen(ext) + 2);
-    if (!n) {
+    if (!n)
+    {
         perror("malloc");
         exit(1);
     }
     strcpy(n, name);
     char *dot = strrchr(n, '.');
-    if (dot) *dot = '\0';
+    if (dot)
+        *dot = '\0';
     strcat(n, ".");
     strcat(n, ext);
 
     FILE *f = fopen(n, "w");
-    if (!f) {
+    if (!f)
+    {
         perror("opening generated file");
         exit(1);
     }
@@ -317,12 +325,13 @@ FILE *openGenFile(char *name, char *ext)
 
 /**
  * @brief Generates a file name with a given extension.
- * 
- * @param f 
- * @param ext 
- * @return char* 
+ *
+ * @param f
+ * @param ext
+ * @return char*
  */
-char *getFileName(char *f, char *ext){
+char *getFileName(char *f, char *ext)
+{
     char *fName = malloc(512);
     fName = strrchr(f, ".");
     strcat(fName, ".");
