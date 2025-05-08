@@ -622,9 +622,51 @@ void basicBlocks(struct tree *node)
     case forStmnt:
         break;
     case whileStmntCtrlBody:
+        node->icode = node->kids[1]->icode;
+
+        thenLabel = genLabel();
+        followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[2]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+        break;
     case whileStmnt:
+        thenLabel = genLabel();
+        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
+        followLabel = genLabel();
+        node->icode = appendInstrList(node->icode, genInstr(O_BNIF, thenLabel, node->kids[1]->addr, 0));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+
         break;
     case doWhileStmnt:
+        node->icode = node->kids[2]->icode;
+
+        thenLabel = genLabel();
+        followLabel = genLabel();
+        node->first = thenLabel;
+        node->follow = followLabel;
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, thenLabel, NULL, NULL));
+        node->icode = appendInstrList(node->icode, node->kids[1]->icode);
+        node->icode = appendInstrList(
+            node->icode,
+            genInstr(D_LABEL, followLabel, NULL, NULL));
+        break;
         break;
     case emptyIf:
     case if_k:
@@ -645,10 +687,6 @@ void basicBlocks(struct tree *node)
         node->icode = appendInstrList(
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
-
-        // node->icode = code;
-        printf("BANG BANG\n");
-        printIcode(node->icode);
         break;
     case ifElse:
     case ifElseIf:
