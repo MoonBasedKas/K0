@@ -85,6 +85,6 @@ struct addr *genLocal(int size, struct symTab *scope);
 struct addr *genConst(int val);
 void tacPrint(struct instr *code);
 void freeInstrList(struct instr *list);
-void recordStringLiteral(const char *raw);
+int recordStringLiteral(const char *raw);
 struct addr *genConstD(double val);
 #endif

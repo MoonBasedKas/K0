@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     int fileCount = 0;
     int debug = 0;
     int c = 0;
-    int ic = 0;
+    //int ic = 0;
     int s = 0;
     char **fileNames = malloc(sizeof(char *) * argc);
     if (fileNames == NULL)
@@ -74,9 +74,10 @@ int main(int argc, char *argv[])
         else if (!strcmp(argv[i], "-debug"))
         {
             debug = 1;
-        } else if (!strcmp(argv[i], "-ic")){
+        } /*
+        else if (!strcmp(argv[i], "-ic")){
             ic = 1;
-        }
+        }*/
         else if (!strcmp(argv[i], "-s"))
         {
             s = 1;
@@ -104,7 +105,7 @@ int main(int argc, char *argv[])
 
     if (fileCount == 0)
     {
-        fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] [-ic] {filename1} {filename2} ...\n");
+        fprintf(stderr, "Usage: ./k0 [-dot] [-tree] [-symtab] {filename1} {filename2} ...\n");
         free(fileNames);
         exit(1);
     }
@@ -178,14 +179,12 @@ int main(int argc, char *argv[])
         {
             printf("No errors in file: %s\n\n", fileNames[i]);
         }
-        if(ic == 1){
-            
-            iTarget = openGenFile(fileNames[i], "ic");
 
-            tacPrint(root->icode);
-            if (iTarget != NULL)
-                fclose(iTarget);
-        }
+        iTarget = openGenFile(fileNames[i], "ic");
+        tacPrint(root->icode);
+        if (iTarget != NULL)
+            fclose(iTarget);
+
         translateIcToAsm(root);
         writeAsm(fileNames[i]);
 
@@ -193,67 +192,100 @@ int main(int argc, char *argv[])
         important = getFileName(fileNames[i]);
         if (s)
         { // Generates .s and stop
+            char asm_filename_temp[256];
+            char base_filename_temp[254];
+
+            // strncpy and snprintf hate each other
+            strncpy(base_filename_temp, fileNames[i], sizeof(base_filename_temp) - 1);
+            base_filename_temp[sizeof(base_filename_temp) - 1] = '\0';
+
+            char *dot_ptr_temp = strrchr(base_filename_temp, '.');
+            if (dot_ptr_temp) *dot_ptr_temp = '\0';
+
+            // strlen(base_filename_temp) is at most 253.
+            // So base_filename_temp + ".s" + '\0' will be at most 253 + 2 + 1 = 256 bytes
+            // fuck off
+            snprintf(asm_filename_temp, sizeof(asm_filename_temp), "%s.s", base_filename_temp);
+            printf("Assembly file %s generated. Stopping as per -s option.\n", asm_filename_temp);
+
+            fclose(yyin);
+            freeTree(root);
+            freeTable(rootScope);
+            yylex_destroy();
             continue;
         }
         else if (c)
         { // Generates .o
             memset(dio,0,4096);
-            dio = strcpy(dio, "as --gstabs+ -o ");
-            dio = strcat(dio, addExt(important, ".o "));
-            important = getFileName(fileNames[i]);
-            dio = strcat(dio, addExt(important, ".s"));
-
-            system(dio);
-            memset(dio,0,4096);
-            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o ");
+            strcpy(dio, "as --gstabs+ -o ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o "));
-            strcat(dio, "-lc /usr/lib/x86_64-linux-gnu/crtn.o");
-            
+            free(important);
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".s"));
+            free(important);
             system(dio);
+
+            char base_filename_msg_c[256];
+            strncpy(base_filename_msg_c, fileNames[i], sizeof(base_filename_msg_c) - 1);
+            base_filename_msg_c[sizeof(base_filename_msg_c) - 1] = '\0';
+            char *dot_ptr_base_msg_c = strrchr(base_filename_msg_c, '.');
+            if (dot_ptr_base_msg_c) *dot_ptr_base_msg_c = '\0';
+
+
             memset(dio,0,4096);
             strcpy(dio, "rm ");
             important = getFileName(fileNames[i]);
-            
             strcat(dio, addExt(important, ".s"));
+            free(important);
             system(dio);
-            memset(dio,0,4096);
         }
         else
         { // Generates executable.
+            printf("Assembling and Linking (to executable)...\n");
             memset(dio,0,4096);
-            dio = strcpy(dio, "as --gstabs+ -o ");
-            dio = strcat(dio, addExt(important, ".o "));
-            important = getFileName(fileNames[i]);
-            dio = strcat(dio, addExt(important, ".s"));
-
-            system(dio);
-            memset(dio,0,4096);
-            strcpy(dio, "ld -dynamic-linker /lib64/ld-linux-x86-64.so.2 /usr/lib/x86_64-linux-gnu/crt1.o /usr/lib/x86_64-linux-gnu/crti.o ");
+            strcpy(dio, "as --gstabs+ -o ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o "));
-            strcat(dio, "-lc /usr/lib/x86_64-linux-gnu/crtn.o");
-            
-            system(dio);
-            memset(dio,0,4096);
-            strcpy(dio, "rm ");
+            free(important);
             important = getFileName(fileNames[i]);
-            
             strcat(dio, addExt(important, ".s"));
-            
+            free(important);
+            printf("Executing: %s\n", dio);
             system(dio);
+
             memset(dio,0,4096);
             strcpy(dio, "gcc ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o"));
+            strcat(dio, " -o ");
+            free(important);
+            important = getFileName(fileNames[i]);
+            strcat(dio, important);
+            free(important);
+            printf("Executing: %s\n", dio);
             system(dio);
+
             memset(dio,0,4096);
             strcpy(dio, "rm ");
+            important = getFileName(fileNames[i]);
+            strcat(dio, addExt(important, ".s"));
+            free(important);
+            system(dio);
+
             memset(dio,0,4096);
+            strcpy(dio, "rm ");
             important = getFileName(fileNames[i]);
             strcat(dio, addExt(important, ".o"));
+            free(important);
             system(dio);
-            memset(dio,0,4096);
+
+            char base_filename_msg_exe[256];
+            strncpy(base_filename_msg_exe, fileNames[i], sizeof(base_filename_msg_exe) - 1);
+            base_filename_msg_exe[sizeof(base_filename_msg_exe) - 1] = '\0';
+            char *dot_ptr_base_msg_exe = strrchr(base_filename_msg_exe, '.');
+            if (dot_ptr_base_msg_exe) *dot_ptr_base_msg_exe = '\0';
+            printf("Executable generation process complete for %s\n", base_filename_msg_exe);
         }
 
         freeTable(rootScope); // symTab.c

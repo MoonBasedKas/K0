@@ -544,8 +544,9 @@ int translateIcToAsm(struct tree *root)
             case D_PROC:
             {
                 char *fname = p->dest->u.name;
+                // p->src1 is param info, p->src2 is local var size in bytes.
                 int locals_size = (p->src2 && p->src2->region == R_CONST) ? p->src2->u.offset : 0;
-                current_func_local_size = locals_size; // Save for D_END
+                current_func_local_size = locals_size; // save for D_END
 
                 emit(".globl %s", fname);
                 emit("%s:", fname);
@@ -555,21 +556,20 @@ int translateIcToAsm(struct tree *root)
                 {
                     emit("\tsubq\t$%d, %%rsp", locals_size);
                 }
-
                 current_gpr_arg_idx = 0;
                 current_stack_arg_offset = 0;
                 break;
             }
             case D_END:
             {
-                // Use current_func_local_size captured at D_PROC
+                // current_func_local_size was set by D_PROC.
                 if (current_func_local_size > 0)
                 {
-                    emit("\taddq\t$%d, %%rsp", current_func_local_size); // Deallocate locals
+                    emit("\taddq\t$%d, %%rsp", current_func_local_size);
                 }
                 emit("\tpopq\t%%rbp");
                 emit("\tret");
-                current_func_local_size = 0;
+                // current_func_local_size = 0;
                 break;
             }
             case D_LABEL:
@@ -607,7 +607,6 @@ int translateIcToAsm(struct tree *root)
                 ensureInGPR(p->src1, &r_cond, 0);
                 emit("\tcmpq\t$0, %s", regs[r_cond].name);
                 emit("\tje\tL%d", p->dest->u.offset);
-
                 freeGPR(r_cond);
                 break;
             }
@@ -737,9 +736,9 @@ int translateIcToAsm(struct tree *root)
                     (p->opcode == O_BLT) ? "jl"  : (p->opcode == O_BLE) ? "jle" :
                     (p->opcode == O_BGT) ? "jg"  : "jge";
                 if (p->next && p->next->opcode == O_BNIF) {
-                    emit("\t%s\tL%d", jmp_instr, p->next->dest->u.offset);
+                    emit("\t%s\t\tL%d", jmp_instr, p->next->dest->u.offset);
                 } else {
-                    emit("\t%s\tL%d", jmp_instr, p->dest->u.offset);
+                    emit("\t%s\t\tL%d", jmp_instr, p->dest->u.offset);
                 }
                 freeGPR(r1);
                 freeGPR(r2);
@@ -811,9 +810,3 @@ int writeAsm(const char *base_filename)
 
     return write_ok;
 }
-
-#ifndef G_STRING_LITERALS_DEFINED
-#define G_STRING_LITERALS_DEFINED
-char *g_string_literals[] = {"Default k0 test string."};
-int g_string_literal_count = 1;
-#endif

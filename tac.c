@@ -7,13 +7,18 @@
 #include <string.h>
 #include "tac.h"
 
+#define MAX_STRINGS 256
+char *g_string_literals[MAX_STRINGS];
+int g_string_literal_count = 0;
+
 FILE *iTarget = NULL;
 
 // Handles names
 char *regionnames[] = {"global", "loc", "class", "lab", "const", "str", "name", "none"};
 char *regionName(int i)
 {
-    return regionnames[i - R_GLOBAL];
+    if (i >= R_GLOBAL && i <= R_NONE) return regionnames[i - R_GLOBAL];
+    return "unknown_region";
 }
 char *opcodenames[] = {
     "ADD", "SUB", "MUL", "DIV", "MOD", "RNG", "RNU", "IN", "NEG", "AND", "OR", "XOR", "NOT", "ASN", "ADDR", "LCONT", "SCONT", "GOTO",
@@ -21,16 +26,18 @@ char *opcodenames[] = {
     "RETURN"};
 char *opCodeName(int i)
 {
-    return opcodenames[i - O_ADD];
+    if (i >= O_ADD && i <= O_RET) return opcodenames[i - O_ADD];
+    return NULL;
 }
 char *pseudonames[] = {
     "glob", "proc", "loc", "lab", "end", "prot"};
 char *pseudoName(int i)
 {
-    return pseudonames[i - D_GLOB];
+    if (i >= D_GLOB && i <= D_PROT) return pseudonames[i - D_GLOB];
+    return "UNKNOWN_PSEUDO";
 }
 
-int labelCounter;
+int labelCounter = 1;
 
 /**
  * @brief Generates a label
@@ -40,6 +47,7 @@ int labelCounter;
 struct addr *genLabel()
 {
     struct addr *a = malloc(sizeof(struct addr));
+    if (!a) { perror("malloc genLabel"); exit(EXIT_FAILURE); }
     memset(a, 0, sizeof(struct addr));
     a->region = R_LABEL;
     a->u.offset = labelCounter++;
@@ -68,8 +76,8 @@ struct addr *genLocal(int size, struct symTab *scope)
     }
     memset(a, 0, sizeof(struct addr));
     a->region = R_LOCAL;
-    a->u.offset = scope->varSize;
     scope->varSize += SLOT;
+    a->u.offset = scope->varSize;
     return a;
 }
 
@@ -82,6 +90,7 @@ struct addr *genLocal(int size, struct symTab *scope)
 struct addr *genConst(int val)
 {
     struct addr *a = malloc(sizeof(struct addr));
+    if (!a) { perror("malloc genConst"); exit(EXIT_FAILURE); }
     memset(a, 0, sizeof(struct addr));
     a->region = R_CONST;
     a->u.offset = val;
@@ -91,9 +100,14 @@ struct addr *genConst(int val)
 
 struct addr *genConstD(double val){
     struct addr *a = malloc(sizeof(struct addr));
+    if (!a) { perror("malloc genConstD"); exit(EXIT_FAILURE); }
     memset(a, 0, sizeof(struct addr));
     a->region = R_CONST;
-    a->u.offset = val;
+    if (sizeof(a->u.offset) >= sizeof(double)) {
+        memcpy(&(a->u.offset), &val, sizeof(double));
+    } else {
+        a->u.offset = (int)val; // Truncation
+    }
     return a;
 }
 
@@ -109,12 +123,12 @@ struct addr *genConstD(double val){
 struct instr *genInstr(int op, struct addr *a1, struct addr *a2, struct addr *a3)
 {
     struct instr *rv = malloc(sizeof(struct instr));
-    memset(rv, 0, sizeof(struct instr));
     if (rv == NULL)
     {
         fprintf(stderr, "out of memory\n");
         exit(4);
     }
+    memset(rv, 0, sizeof(struct instr));
     rv->opcode = op;
     rv->dest = a1;
     rv->src1 = a2;
@@ -164,27 +178,28 @@ struct instr *concatInstrList(struct instr *l1, struct instr *l2)
 }
 
 /**
- *  Stuff for grabbing the string list for easier printing
- *  D_GLOB printed where it wanted
- *  
- */
+ * Stuff for grabbing the string list for easier printing
+ * D_GLOB printed where it wanted
+ * */
 
-struct StringLit
+int recordStringLiteral(const char *raw)
 {
-    char *s;
-    int len;
-    struct StringLit *next;
-};
+    for (int i = 0; i < g_string_literal_count; i++) {
+        if (g_string_literals[i] && strcmp(g_string_literals[i], raw) == 0) {
+            return i;
+        }
+    }
+    if (g_string_literal_count >= MAX_STRINGS) {
+        fprintf(stderr, "Error: String table overflow (max %d strings). Increase MAX_STRINGS.\n", MAX_STRINGS);
+        exit(4);
+    }
 
-static struct StringLit *stringHead = NULL;
-
-void recordStringLiteral(const char *raw)
-{
-    struct StringLit *n = malloc(sizeof *n);
-    n->len = strlen(raw) + 1;
-    n->s = strdup(raw);
-    n->next = stringHead;
-    stringHead = n;
+    g_string_literals[g_string_literal_count] = strdup(raw);
+    if (!g_string_literals[g_string_literal_count]) {
+        fprintf(stderr, "strdup failed in recordStringLiteral\n");
+        exit(4);
+    }
+    return g_string_literal_count++;
 }
 
 /**
@@ -200,7 +215,8 @@ static void printAddr(struct addr *a)
     switch (a->region)
     {
     case R_GLOBAL:
-        fprintf(iTarget, "global:%d", a->u.offset);
+        if (a->u.name) fprintf(iTarget, "%s", a->u.name);
+        else fprintf(iTarget, "global_val:%d", a->u.offset);
         break;
     case R_LOCAL:
         fprintf(iTarget, "loc:%d", a->u.offset);
@@ -211,30 +227,24 @@ static void printAddr(struct addr *a)
     case R_CONST:
         fprintf(iTarget, "const:%d", a->u.offset);
         break;
-    case R_STRING: // Catch like below
-        if (a->u.name)
-        {
-            fprintf(iTarget, "\"%s\"", a->u.name);
-        }
-        else
-        {
-            fprintf(iTarget, "str:%d", a->u.offset);
-        }
+    case R_STRING:
+        fprintf(iTarget, "str:%d", a->u.offset);
         break;
     case R_NAME:
-        // If .u.name is set, print it; otherwise, fallback to offset.
         if (a->u.name)
         {
             fprintf(iTarget, "%s", a->u.name);
         }
         else
         {
-            // "str:0" if offset = 0
-            fprintf(iTarget, "str:%d", a->u.offset);
+            fprintf(iTarget, "name_val:%d", a->u.offset);
         }
         break;
+    case R_NONE:
+        fprintf(iTarget, "_");
+        break;
     default:
-        fprintf(iTarget, "unknown:%d", a->u.offset);
+        fprintf(iTarget, "unknown_reg:%d", a->u.offset);
         break;
     }
 }
@@ -247,11 +257,15 @@ static void printAddr(struct addr *a)
  */
 void dumpStringSection(FILE *out)
 {
-    for (struct StringLit *p = stringHead; p; p = p->next)
+    if (!out) return;
+    for (int i = 0; i < g_string_literal_count; i++)
     {
-        // one .string directive per literal
-        fprintf(out, ".string %d\n", p->len);
-        fprintf(out, "\t\"%s\"\n", p->s);
+        if (g_string_literals[i])
+        {
+            int len_with_null = strlen(g_string_literals[i]) + 1;
+            fprintf(out, ".string %d\t\t; str:%d\n", len_with_null, i);
+            fprintf(out, "\t\"%s\\000\"\n", g_string_literals[i]);
+        }
     }
 }
 
@@ -262,40 +276,39 @@ void dumpStringSection(FILE *out)
  */
 void tacPrint(struct instr *code)
 {
+    if (!iTarget) {
+        iTarget = stdout;
+    }
     struct instr *p = code;
 
-    // first emit all string literals
     dumpStringSection(iTarget);
 
     while (p)
     {
-        // skip the string length + data pair since we already dumped them
+        /*
         if (p->opcode == D_GLOB && p->dest && p->dest->region == R_CONST && p->next && p->next->opcode == D_GLOB && p->next->dest && p->next->dest->region == R_STRING)
         {
             p = p->next->next;
             continue;
         }
-
-        // skip any lone string length entry
         if (p->opcode == D_GLOB && p->dest && p->dest->region == R_CONST)
         {
             p = p->next;
             continue;
         }
+        */
 
         if (p->opcode == D_PROC)
         {
-            // procedure header
             fprintf(iTarget, "proc ");
             printAddr(p->dest);
             fprintf(iTarget, ",%d,%d\n",
-                    p->src1->u.offset,
-                    p->src2->u.offset);
+                    p->src1 ? p->src1->u.offset : 0,
+                    p->src2 ? p->src2->u.offset : 0);
         }
         else if (p->opcode == D_LABEL)
         {
-            // code section or label
-            if (p->dest->region == R_NAME && strcmp(p->dest->u.name, ".code") == 0)
+            if (p->dest && p->dest->region == R_NAME && p->dest->u.name && strcmp(p->dest->u.name, ".code") == 0)
             {
                 fprintf(iTarget, ".code\n");
             }
@@ -308,8 +321,8 @@ void tacPrint(struct instr *code)
         }
         else if (p->opcode >= D_GLOB && p->opcode <= D_PROT)
         {
-            // other pseudo-ops
-            fprintf(iTarget, "\t%s ", pseudoName(p->opcode));
+            const char* ps_name = pseudoName(p->opcode);
+            fprintf(iTarget, "\t%s ", ps_name ? ps_name : "UNKNOWN_PSEUDO");
             if (p->dest)
                 printAddr(p->dest);
             if (p->src1)
@@ -326,17 +339,16 @@ void tacPrint(struct instr *code)
         }
         else if (p->opcode == O_CALL)
         {
-            // call instruction
             fprintf(iTarget, "\tCALL\t");
             printAddr(p->dest);
-            fprintf(iTarget, ",%d,", p->src1->u.offset);
+            fprintf(iTarget, ",%d,", p->src1 ? p->src1->u.offset : 0);
             printAddr(p->src2);
             fprintf(iTarget, "\n");
         }
         else if (p->opcode >= O_ADD && p->opcode <= O_RET)
         {
-            // arithmetic or branch
-            fprintf(iTarget, "\t%s\t", opCodeName(p->opcode));
+            const char* op_name = opCodeName(p->opcode);
+            fprintf(iTarget, "\t%s\t", op_name ? op_name : "UNKNOWN_OP");
             if (p->dest)
                 printAddr(p->dest);
             if (p->src1)
@@ -353,8 +365,7 @@ void tacPrint(struct instr *code)
         }
         else
         {
-            // anything else
-            fprintf(iTarget, "UNKNOWN(%d)\n", p->opcode);
+            fprintf(iTarget, "UNKNOWN_OPCODE_VAL(%d)\n", p->opcode);
         }
 
         p = p->next;
@@ -402,6 +413,7 @@ static bool alreadyFreed(struct FreedNode *head, void *p)
 static struct FreedNode *markFreed(struct FreedNode *head, void *p)
 {
     struct FreedNode *fn = malloc(sizeof(struct FreedNode));
+    if (!fn) { perror("malloc markFreed"); exit(EXIT_FAILURE); }
     fn->ptr = p;
     fn->next = head;
     return fn;
@@ -414,37 +426,56 @@ static struct FreedNode *markFreed(struct FreedNode *head, void *p)
  */
 void freeInstrList(struct instr *list)
 {
-    struct FreedNode *freedList = NULL;
+    struct FreedNode *freedAddrList = NULL;
     struct instr *cur = list;
+    struct instr *next_instr;
 
     while (cur)
     {
-        struct instr *next = cur->next;
+        next_instr = cur->next;
         // tired of switchs
-        if (cur->dest && !alreadyFreed(freedList, cur->dest))
+        if (cur->dest && !alreadyFreed(freedAddrList, cur->dest))
         {
-            freedList = markFreed(freedList, cur->dest);
+            // if ((cur->dest->region == R_GLOBAL || cur->dest->region == R_NAME) && cur->dest->u.name) {
+            //     free(cur->dest->u.name);
+            // }
+            freedAddrList = markFreed(freedAddrList, cur->dest);
             free(cur->dest);
         }
-        if (cur->src1 && !alreadyFreed(freedList, cur->src1))
+        if (cur->src1 && !alreadyFreed(freedAddrList, cur->src1))
         {
-            freedList = markFreed(freedList, cur->src1);
+            // if ((cur->src1->region == R_GLOBAL || cur->src1->region == R_NAME) && cur->src1->u.name) {
+            //     free(cur->src1->u.name);
+            // }
+            freedAddrList = markFreed(freedAddrList, cur->src1);
             free(cur->src1);
         }
-        if (cur->src2 && !alreadyFreed(freedList, cur->src2))
+        if (cur->src2 && !alreadyFreed(freedAddrList, cur->src2))
         {
-            freedList = markFreed(freedList, cur->src2);
+            // if ((cur->src2->region == R_GLOBAL || cur->src2->region == R_NAME) && cur->src2->u.name) {
+            //     free(cur->src2->u.name);
+            // }
+            freedAddrList = markFreed(freedAddrList, cur->src2);
             free(cur->src2);
         }
         free(cur);
-        cur = next;
+        cur = next_instr;
     }
 
     // Free FreedNode list freefreelistfreedfree
-    while (freedList)
+    struct FreedNode *tmp_freed_node;
+    while (freedAddrList)
     {
-        struct FreedNode *tmp = freedList->next;
-        free(freedList);
-        freedList = tmp;
+        tmp_freed_node = freedAddrList->next;
+        free(freedAddrList);
+        freedAddrList = tmp_freed_node;
     }
+
+    for (int i = 0; i < g_string_literal_count; i++) {
+        if (g_string_literals[i]) {
+            free(g_string_literals[i]);
+            g_string_literals[i] = NULL;
+        }
+    }
+    g_string_literal_count = 0;
 }

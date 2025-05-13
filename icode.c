@@ -211,7 +211,7 @@ void basicBlocks(struct tree *node)
     {
     case funcDecAll:
         // grab parameter count from your typeInfo
-        
+
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
@@ -303,50 +303,27 @@ void basicBlocks(struct tree *node)
     case funcDecType:
     case funcDecBody:
     {
-
-        // grab parameter count from your typeInfo
         if (node->type && node->type->basicType == FUNCTION_TYPE)
         {
             paramCount = node->type->u.func.numParams;
         }
-
-        // build the PROC header using the real paramCount and varSize
-        struct addr *procName = malloc(sizeof *procName);
+        procName = malloc(sizeof *procName);
+        if (!procName) { perror("malloc procName"); exit(EXIT_FAILURE); }
         procName->region = R_NAME;
         procName->u.name = node->kids[1]->leaf->text;
-
-        code = genInstr(
-            D_PROC,
-            procName,
-            genConst(paramCount),          // <— real # of params
-            genConst(node->table->varSize) // <— real frame size
-        );
-
-        // now emit the “.code” marker
+        code = genInstr( D_PROC, procName, genConst(paramCount), genConst(node->table->varSize) );
         codeName = malloc(sizeof *codeName);
+        if (!codeName) { perror("malloc codeName"); exit(EXIT_FAILURE); }
         codeName->region = R_NAME;
         codeName->u.name = strdup(".code");
-        code = appendInstrList(
-            code,
-            genInstr(D_LABEL, codeName, NULL, NULL));
-
-        // entry label for the function
-        entryLabel = genInstr(
-            D_LABEL,
-            procName,
-            NULL,
-            NULL);
+        code = appendInstrList( code, genInstr(D_LABEL, codeName, NULL, NULL));
+        entryLabel = genInstr( D_LABEL, procName, NULL, NULL);
         code = appendInstrList(code, entryLabel);
-
-        // append the body’s IR and an implicit “return unit”
         if (node->kids[2] && node->kids[2]->icode)
         {
             code = appendInstrList(code, node->kids[2]->icode);
         }
-        code = appendInstrList(
-            code,
-            genInstr(O_RET, genConst(0), NULL, NULL));
-
+        code = appendInstrList( code, genInstr(D_END, procName, genConst(paramCount), genConst(node->table->varSize))); // Ensure D_END
         node->icode = code;
         node->icodeDone = 0;
         break;
@@ -473,8 +450,8 @@ void basicBlocks(struct tree *node)
     case arrayAssignSub:
     case arrayAssignAdd:
     case arrayAssignment:
-        // Okay, 
-        
+        // Okay,
+
         node->addr = node->kids[0]->kids[0]->addr;
         node->icode = appendInstrList(concatInstrList(node->kids[0]->icode, node->kids[1]->icode), // tac.c
                                         genInstr(O_ASN, node->addr, node->kids[0]->kids[1]->addr, node->kids[1]->addr));     // tac.c
@@ -652,6 +629,7 @@ void basicBlocks(struct tree *node)
     case LINE_STRING:
     case MULTILINE_STRING:
     {
+        /*
         int len = strlen(node->leaf->sval) + 1;
 
         // Calculate the size of the string
@@ -668,6 +646,26 @@ void basicBlocks(struct tree *node)
         recordStringLiteral(node->leaf->sval); // tac.c for printing
         node->icode = code;
         node->addr = strAddr;
+        */
+
+        int string_index = recordStringLiteral(node->leaf->sval);
+
+        if (string_index < 0) {
+            fprintf(stderr, "Error: Could not record string literal in icode.c: %s\n", node->leaf->sval);
+            node->addr = genConst(0);
+            node->icode = NULL;
+            break;
+        }
+
+        struct addr *strAddr = malloc(sizeof(struct addr));
+        if (!strAddr) { perror("malloc for strAddr in icode.c basicBlocks"); exit(EXIT_FAILURE); }
+        memset(strAddr, 0, sizeof(struct addr));
+        strAddr->region = R_STRING;
+        strAddr->u.offset = string_index;
+        strAddr->u.name = NULL;
+
+        node->addr = strAddr;
+        node->icode = NULL;
         break;
     }
 
@@ -692,7 +690,7 @@ void basicBlocks(struct tree *node)
     // Evil idea: We make this control.
     case forStmntWithVars:
     case forStmnt:
-        
+
         node->kids[1]->addr = genLocal(typeSize(node->kids[1]->type), node->kids[1]->table);
         thenLabel = genLabel();
         followLabel = genLabel();
@@ -705,7 +703,7 @@ void basicBlocks(struct tree *node)
         } else{ // RANGE UNTIL
             node->icode = appendInstrList(node->icode, genInstr(O_BLE, node->kids[1]->addr, node->kids[2]->kids[1]->addr, 0));
         }
-        
+
         node->icode = appendInstrList(
             node->icode,
             genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
@@ -719,34 +717,41 @@ void basicBlocks(struct tree *node)
             node->icode,
             genInstr(D_LABEL, followLabel, NULL, NULL));
         break;
-    case whileStmntCtrlBody:
-    thenLabel = genLabel();
-    followLabel = genLabel();
-    node->first = thenLabel;
-    node->follow = followLabel;
-    node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
-    node->icode = appendInstrList(
-        node->icode,
-        genInstr(O_BNIF, followLabel, node->kids[1]->addr, NULL));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(O_GOTO, followLabel, NULL, NULL));
-    node->icode = appendInstrList(node->icode, node->kids[2]->icode);
-    node->icode = appendInstrList(node->icode, genInstr(O_GOTO, thenLabel, 0, 0));
-    node->icode = appendInstrList(
-        node->icode,
-        genInstr(D_LABEL, followLabel, NULL, NULL));
-    break;
     case whileStmnt:
-        thenLabel = genLabel();
-        node->icode = appendInstrList(genInstr(D_LABEL, thenLabel, 0, 0), node->kids[1]->icode);
-        followLabel = genLabel();
-        node->icode = appendInstrList(node->icode, genInstr(O_BNIF, thenLabel, node->kids[1]->addr, 0));
-        node->icode = appendInstrList(
-            node->icode,
-            genInstr(D_LABEL, followLabel, NULL, NULL));
+    case whileStmntCtrlBody:
+    {
+        struct tree *condition_expr_node;
+        struct tree *body_node;
 
+        if (node->prodrule == whileStmnt) {
+            condition_expr_node = node->kids[1];
+            body_node = node->kids[3];
+        } else { // whileStmntCtrlBody
+            condition_expr_node = node->kids[1];
+            body_node = node->kids[2];
+        }
+
+        if (!condition_expr_node || !body_node) break; 
+
+        struct addr *loop_condition_label = genLabel();
+        struct addr *loop_exit_label = genLabel();
+
+        node->first = loop_condition_label;
+        node->follow = loop_exit_label;
+
+        node->icode = genInstr(D_LABEL, loop_condition_label, NULL, NULL);
+        if (condition_expr_node->icode) node->icode = appendInstrList(node->icode, copyInstrList(condition_expr_node->icode));
+        if (condition_expr_node->addr) node->icode = appendInstrList(node->icode,
+                            genInstr(O_BNIF, loop_exit_label, condition_expr_node->addr, NULL));
+        if (body_node->icode) node->icode = appendInstrList(node->icode, copyInstrList(body_node->icode));
+        node->icode = appendInstrList(node->icode,
+                            genInstr(O_GOTO, loop_condition_label, NULL, NULL));
+        node->icode = appendInstrList(node->icode,
+                            genInstr(D_LABEL, loop_exit_label, NULL, NULL));
+
+        node->icodeDone = 0;
         break;
+    }
     case doWhileStmnt:
 
 
