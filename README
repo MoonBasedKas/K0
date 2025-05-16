@@ -1,4 +1,16 @@
-HW7 : Lily, Kassidy, Erik
+# K0 
+K0 is a toy Kotlin compiler developed by Lily Houghteling, Kassidy Maberry, and Erik Noll.
 
-Lily = 2
-Kassidy = 2
+The compiler is meant to cover a small subset of Kotlin where a intro to programming class may use it. Types must be 
+explicitly declared, classes have been removed, and the standard library has been reduced. This compiler works on 
+x86_64 machines and on most linux operating systems, so long as the user has flex and bison installed. This compiler 
+is limited to compiling only one file.
+
+Compiling the Compiler will only require the make command in the directory with the makefile.
+
+Commands:
+-tree: Prints out the syntax tree of the program.
+-symtab: Prints out the symbol tables of a given program.
+-ic: Prints out the generated intermediate code for this compiler.
+-s: Prints out the x86_64 assembly in AT&T syntax.
+-o: Generates an object file.
